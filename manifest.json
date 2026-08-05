@@ -2,7 +2,7 @@
   "name": "Agenda Gabinete 247",
   "short_name": "Gabinete 247",
   "description": "Sistema de agenda com chat integrado e notificações",
-  "start_url": "/",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#009739",
@@ -20,12 +20,12 @@
   "shortcuts": [
     {
       "name": "Nova Agenda",
-      "url": "/?action=new",
+      "url": "/index.html?action=new",
       "description": "Adicionar novo compromisso"
     },
     {
       "name": "Chat",
-      "url": "/?action=chat",
+      "url": "/index.html?action=chat",
       "description": "Abrir chat de suporte"
     }
   ],
