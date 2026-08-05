@@ -1678,7 +1678,6 @@
                     })
                 });
                 const data = await response.json();
-                console.log('📊 Compromissos carregados:', data);
                 
                 if (data.status === 'sucesso' && data.dados) {
                     return data.dados;
@@ -1894,8 +1893,37 @@
         let compromissoAtual = null;
 
         // ==========================================
-        // FUNÇÕES DA AGENDA
+        // FUNÇÕES DA AGENDA (Com Sincronização)
         // ==========================================
+        
+        let isSincronizandoAgenda = false;
+
+        async function sincronizarAgenda() {
+            if (isSincronizandoAgenda) return;
+            isSincronizandoAgenda = true;
+            
+            try {
+                const agendaServer = await carregarCompromissos();
+                if (agendaServer && agendaServer.length >= 0) {
+                    
+                    // Ajusta o ID para os novos cadastros caso alguém adicione
+                    const maxId = Math.max(...agendaServer.map(c => parseInt(c.id) || 0), 0);
+                    proximoId = maxId + 1;
+
+                    // Se a quantidade for diferente ou algum conteúdo mudou, atualiza a tela
+                    if (JSON.stringify(agendaServer) !== JSON.stringify(compromissos)) {
+                        compromissos = agendaServer;
+                        popularFiltros();
+                        aplicarFiltros();
+                    }
+                }
+            } catch (error) {
+                console.error("Erro na sincronização da agenda:", error);
+            }
+            
+            isSincronizandoAgenda = false;
+        }
+
         function abrirGoogleMaps(endereco) {
             if (!endereco || endereco.trim() === '') {
                 alert('Endereço não disponível para este compromisso.');
@@ -2715,7 +2743,10 @@
                 // ==================================================
                 // O SEGREDO MÁGICO: Sincronizar de 5 em 5 segundos!
                 // ==================================================
-                setInterval(sincronizarChat, 5000);
+                setInterval(() => {
+                    sincronizarChat();
+                    sincronizarAgenda();
+                }, 5000);
 
             } catch (error) {
                 Swal.close();
