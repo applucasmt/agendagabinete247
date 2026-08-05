@@ -105,7 +105,7 @@
             color: #1a1a2e;
             cursor: pointer;
             transition: border-color 0.2s;
-            min-width: 120px;
+            min-width: 90px;
         }
 
         .filtros-container select:focus {
@@ -142,23 +142,24 @@
 
         .agenda-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
             width: 100%;
             max-width: 1200px;
         }
 
+        /* NOVO DESIGN DO CARD COM DATA GIGANTE */
         .card {
             background: #ffffff;
             border-radius: 16px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 1.5rem 1.2rem;
+            padding: 1.2rem;
             cursor: pointer;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
             border-left: 6px solid #009739;
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            gap: 1.2rem;
+            align-items: flex-start;
         }
 
         .card:hover {
@@ -166,42 +167,84 @@
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
         }
 
+        .card-date-box {
+            background: #e8f5e9;
+            color: #009739;
+            min-width: 70px;
+            height: 75px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #c8e6c9;
+        }
+
+        .card-date-box .dia {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .card-date-box .mes {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 3px;
+            letter-spacing: 1px;
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            min-width: 0;
+        }
+
         .card-titulo {
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 1.15rem;
+            font-weight: 700;
             color: #1a1a2e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .card-data-range {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #555;
             display: flex;
             align-items: center;
             gap: 0.3rem;
-            margin-bottom: 0.2rem;
         }
 
         .card-horario {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #009739;
-            font-weight: 500;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.3rem;
         }
 
         .card-local {
-            font-size: 0.9rem;
-            color: #555;
+            font-size: 0.85rem;
+            color: #6b7280;
             display: flex;
             align-items: center;
             gap: 0.3rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .card-actions {
             display: flex;
             gap: 0.5rem;
-            margin-top: 0.3rem;
+            margin-top: 0.2rem;
             flex-wrap: wrap;
         }
 
@@ -230,13 +273,10 @@
         .card-status-badge {
             display: inline-block;
             font-size: 0.7rem;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            background: #e8f5e9;
-            color: #009739;
             padding: 0.2rem 0.8rem;
             border-radius: 20px;
-            margin-top: 0.2rem;
             align-self: flex-start;
         }
 
@@ -248,6 +288,7 @@
             font-size: 1.1rem;
         }
 
+        /* Restante do CSS mantido intacto */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -1334,6 +1375,13 @@
                 <option value="12">Dezembro</option>
             </select>
         </label>
+        <label>
+            🔢 Dia
+            <select id="filtroDia">
+                <option value="">Todos</option>
+                <!-- Preenchido pelo JS -->
+            </select>
+        </label>
         <button class="btn-limpar" id="btnLimparFiltros">✕ Limpar filtros</button>
         <span class="contador" id="contadorCompromissos">0 compromissos</span>
     </div>
@@ -1444,7 +1492,7 @@
         </div>
     </div>
 
-    <!-- NOVO: Popup para Adiar Compromisso -->
+    <!-- Popup para Adiar Compromisso -->
     <div class="login-overlay" id="adiarOverlay">
         <div class="login-modal">
             <h2>⏳ Adiar Compromisso</h2>
@@ -1532,129 +1580,11 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC3M-hTVUOn2ivp_CrU0nbyhmooX2a4Uw49P5Mrq_TfSaJPlWrsBUw5xxWQZQE8tDt6A/exec';
 
         // ==========================================
-        // SISTEMA DE SOM E NOTIFICAÇÕES
+        // SISTEMA DE NOTIFICAÇÕES (NATIVO MOBILE PWA)
         // ==========================================
-        class SistemaSom {
-            constructor() {
-                this.audioElement = null;
-                this.audioCtx = null;
-                this.somHabilitado = true;
-                this.desbloqueado = false;
-                
-                this.inicializarAudio();
-                this.configurarDesbloqueio();
-            }
-
-            inicializarAudio() {
-                try {
-                    this.audioElement = new Audio('notificacao.mp3');
-                    this.audioElement.load();
-                } catch (e) {
-                    console.warn('Erro ao carregar mp3', e);
-                }
-
-                try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.audioCtx = new AudioContext();
-                } catch (e) {
-                    console.warn('Web Audio API não suportada');
-                }
-            }
-
-            // O Desbloqueio silencioso no primeiro toque da tela (Especial Mobile)
-            configurarDesbloqueio() {
-                const desbloquear = () => {
-                    if (this.desbloqueado) return;
-
-                    if (this.audioElement) {
-                        this.audioElement.volume = 0; // Muta o áudio
-                        let p = this.audioElement.play();
-                        if (p !== undefined) {
-                            p.then(() => {
-                                this.audioElement.pause();
-                                this.audioElement.currentTime = 0;
-                                this.audioElement.volume = 1; // Restaura o volume
-                            }).catch(() => {});
-                        }
-                    }
-
-                    if (this.audioCtx && this.audioCtx.state === 'suspended') {
-                        this.audioCtx.resume();
-                    }
-
-                    this.desbloqueado = true;
-                    document.removeEventListener('touchstart', desbloquear);
-                    document.removeEventListener('click', desbloquear);
-                };
-
-                document.addEventListener('touchstart', desbloquear, { once: true });
-                document.addEventListener('click', desbloquear, { once: true });
-            }
-
-            tocarFallback() {
-                if (!this.audioCtx) return;
-                try {
-                    if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
-                    
-                    const osc = this.audioCtx.createOscillator();
-                    const gain = this.audioCtx.createGain();
-                    
-                    osc.connect(gain);
-                    gain.connect(this.audioCtx.destination);
-                    
-                    osc.frequency.value = 880;
-                    osc.type = 'sine';
-                    
-                    gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
-                    
-                    osc.start(this.audioCtx.currentTime);
-                    osc.stop(this.audioCtx.currentTime + 0.15);
-                    
-                    setTimeout(() => {
-                        try {
-                            const osc2 = this.audioCtx.createOscillator();
-                            const gain2 = this.audioCtx.createGain();
-                            osc2.connect(gain2);
-                            gain2.connect(this.audioCtx.destination);
-                            osc2.frequency.value = 1100;
-                            osc2.type = 'sine';
-                            gain2.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
-                            gain2.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
-                            osc2.start(this.audioCtx.currentTime);
-                            osc2.stop(this.audioCtx.currentTime + 0.1);
-                        } catch(e){}
-                    }, 200);
-                } catch (e) {
-                    console.warn('Erro no fallback', e);
-                }
-            }
-
-            tocar() {
-                if (!this.somHabilitado) return;
-
-                if (this.audioElement) {
-                    this.audioElement.currentTime = 0;
-                    this.audioElement.volume = 1;
-                    let promise = this.audioElement.play();
-                    
-                    if (promise !== undefined) {
-                        promise.catch(error => {
-                            console.warn('Autoplay mp3 bloqueado, tentando fallback...', error);
-                            this.tocarFallback();
-                        });
-                    }
-                } else {
-                    this.tocarFallback();
-                }
-            }
-        }
-
-        const sistemaSom = new SistemaSom();
-
         class SistemaNotificacao {
             constructor() {
-                this.permissoes = { notificacao: false, som: true };
+                this.permissoes = { notificacao: false };
                 this.inicializar();
             }
 
@@ -1670,6 +1600,7 @@
             }
 
             enviar(titulo, mensagem, dados = {}) {
+                // Notificação Nativa (Gera o som padrão do SO)
                 if (this.permissoes.notificacao && 'Notification' in window) {
                     try {
                         const notification = new Notification(titulo, {
@@ -1680,7 +1611,7 @@
                             data: dados,
                             requireInteraction: true,
                             vibrate: [200, 100, 200],
-                            actions: dados.actions || [{ action: 'open', title: 'Abrir' }]
+                            silent: false // Garante que o som do SO toque
                         });
 
                         notification.onclick = () => {
@@ -1689,9 +1620,15 @@
                             notification.close();
                         };
                     } catch (error) {
-                        console.warn('Erro na notificação:', error);
+                        console.warn('Erro na notificação nativa:', error);
                     }
                 }
+
+                // Válvula de segurança: Tenta vibrar o celular caso a notificação falhe mas o app esteja aberto
+                if (navigator.vibrate) {
+                    navigator.vibrate([200, 100, 200]);
+                }
+
                 this.mostrarToast(titulo, mensagem);
             }
 
@@ -1845,6 +1782,7 @@
         const popup = document.getElementById('popupCard');
         const filtroAno = document.getElementById('filtroAno');
         const filtroMes = document.getElementById('filtroMes');
+        const filtroDia = document.getElementById('filtroDia'); // NOVO: Filtro Dia
         const btnLimpar = document.getElementById('btnLimparFiltros');
         const contador = document.getElementById('contadorCompromissos');
 
@@ -1862,7 +1800,7 @@
         
         const adminTitulo = document.getElementById('adminTitulo');
         const adminData = document.getElementById('adminData');
-        const adminDataFim = document.getElementById('adminDataFim'); // NOVO: Data Fim
+        const adminDataFim = document.getElementById('adminDataFim');
         const adminHora = document.getElementById('adminHora');
         const adminLocal = document.getElementById('adminLocal');
         const adminParticipantes = document.getElementById('adminParticipantes');
@@ -1903,10 +1841,9 @@
         const btnConcluir = document.getElementById('btnConcluir');
         const closeIcon = document.getElementById('popupClose');
 
-        // Modal de Adiar
         const adiarOverlay = document.getElementById('adiarOverlay');
         const adiarDataInput = document.getElementById('adiarDataInput');
-        const adiarDataFimInput = document.getElementById('adiarDataFimInput'); // NOVO: Data Fim
+        const adiarDataFimInput = document.getElementById('adiarDataFimInput');
         const adiarHoraInput = document.getElementById('adiarHoraInput');
         const adiarLocalInput = document.getElementById('adiarLocalInput');
         const btnConfirmarAdiar = document.getElementById('btnConfirmarAdiar');
@@ -1915,16 +1852,14 @@
         let compromissoAtual = null;
 
         // ==========================================
-        // FUNÇÕES ÚTEIS PARA CORRIGIR DATAS DO GOOGLE
+        // FUNÇÕES ÚTEIS DE FORMATAÇÃO
         // ==========================================
         function formatarDataVisao(dataStr) {
             if (!dataStr) return '';
-            // Se vier com o formato T, corta só a data para o input date (YYYY-MM-DD)
             if (dataStr.includes('T')) return dataStr.split('T')[0];
             return dataStr;
         }
 
-        // Nova função para mostrar a data bonita na tela (DD/MM/AAAA)
         function formatarDataBR(dataStr) {
             const d = formatarDataVisao(dataStr);
             if (!d) return '';
@@ -1937,7 +1872,6 @@
 
         function formatarHoraVisao(horaStr) {
             if (!horaStr) return '--:--';
-            // Se vier formato T longo de tempo, tenta arrumar
             if (horaStr.includes('T')) {
                 const d = new Date(horaStr);
                 return d.getUTCHours().toString().padStart(2, '0') + ':' + d.getUTCMinutes().toString().padStart(2, '0');
@@ -1946,7 +1880,7 @@
         }
 
         // ==========================================
-        // FUNÇÕES DA AGENDA (Com Sincronização)
+        // FUNÇÕES DA AGENDA E FILTROS
         // ==========================================
         let isSincronizandoAgenda = false;
 
@@ -1957,7 +1891,6 @@
             try {
                 const agendaServer = await carregarCompromissos();
                 if (agendaServer && agendaServer.length >= 0) {
-                    
                     const maxId = Math.max(...agendaServer.map(c => parseInt(c.id) || 0), 0);
                     proximoId = maxId + 1;
 
@@ -1981,6 +1914,14 @@
             }
             const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
             window.open(url, '_blank');
+        }
+
+        function inicializarDiasNoFiltro() {
+            filtroDia.innerHTML = '<option value="">Todos</option>';
+            for(let i=1; i<=31; i++) {
+                const val = i.toString().padStart(2, '0');
+                filtroDia.innerHTML += `<option value="${val}">${val}</option>`;
+            }
         }
 
         function popularFiltros() {
@@ -2007,16 +1948,20 @@
         function aplicarFiltros() {
             const anoSelecionado = filtroAno.value;
             const mesSelecionado = filtroMes.value;
+            const diaSelecionado = filtroDia.value;
 
             compromissosFiltrados = compromissos.filter(comp => {
                 const dataAjustada = formatarDataVisao(comp.dia);
                 const partes = dataAjustada.split('-') || [];
                 const ano = partes[0];
                 const mes = partes[1] ? parseInt(partes[1]) : null;
+                const dia = partes[2] ? partes[2].substring(0, 2) : null;
 
                 let passou = true;
                 if (anoSelecionado && ano !== anoSelecionado) passou = false;
                 if (mesSelecionado && mes !== parseInt(mesSelecionado)) passou = false;
+                if (diaSelecionado && dia !== diaSelecionado) passou = false;
+                
                 return passou;
             });
 
@@ -2043,9 +1988,7 @@
                 else if (comp.status === 'Adiado') borderColor = '#f59e0b';
                 card.style.borderLeftColor = borderColor;
 
-                const statusBadge = document.createElement('span');
-                statusBadge.className = 'card-status-badge';
-                statusBadge.textContent = comp.status || 'Pendente';
+                const statusBadge = `<div class="card-status-badge" style="background: ${borderColor}15; color: ${borderColor}">${comp.status || 'Pendente'}</div>`;
 
                 const temEndereco = comp.local && 
                     !comp.local.toLowerCase().includes('online') && 
@@ -2057,16 +2000,33 @@
                 let htmlDataRange = `📅 ${formatarDataBR(comp.dia)}`;
                 if (comp.diaFim) htmlDataRange += ` até ${formatarDataBR(comp.diaFim)}`;
 
+                // Extraindo Dia e Mês para o Ícone Grande
+                let diaNum = '--';
+                let mesNome = '---';
+                if (comp.dia) {
+                    const dataObj = new Date(formatarDataVisao(comp.dia) + 'T12:00:00');
+                    if(!isNaN(dataObj)) {
+                        diaNum = String(dataObj.getDate()).padStart(2, '0');
+                        mesNome = dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase();
+                    }
+                }
+
                 card.innerHTML = `
-                    <div class="card-titulo">${comp.titulo || 'Sem título'}</div>
-                    <div class="card-data-range">${htmlDataRange}</div>
-                    <div class="card-horario">🕒 ${formatarHoraVisao(comp.hora)}</div>
-                    <div class="card-local">📍 ${comp.local || 'Local não informado'}</div>
-                    <div class="card-actions">
-                        ${temEndereco ? `<button class="btn-mapa" data-local="${comp.local}">📍 Ver no Mapa</button>` : ''}
+                    <div class="card-date-box" style="color: ${borderColor}; border-color: ${borderColor}40; background: ${borderColor}10;">
+                        <span class="dia">${diaNum}</span>
+                        <span class="mes">${mesNome}</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-titulo">${comp.titulo || 'Sem título'}</div>
+                        <div class="card-data-range">${htmlDataRange}</div>
+                        <div class="card-horario">🕒 ${formatarHoraVisao(comp.hora)}</div>
+                        <div class="card-local">📍 ${comp.local || 'Local não informado'}</div>
+                        ${statusBadge}
+                        <div class="card-actions">
+                            ${temEndereco ? `<button class="btn-mapa" data-local="${comp.local}">📍 Ver no Mapa</button>` : ''}
+                        </div>
                     </div>
                 `;
-                card.appendChild(statusBadge);
 
                 card.addEventListener('click', (e) => {
                     if (e.target.classList.contains('btn-mapa')) return;
@@ -2157,7 +2117,7 @@
             adminEditId.value = comp.id;
             adminTitulo.value = comp.titulo || '';
             adminData.value = formatarDataVisao(comp.dia);
-            adminDataFim.value = formatarDataVisao(comp.diaFim); // Carrega Data Fim
+            adminDataFim.value = formatarDataVisao(comp.diaFim);
             adminHora.value = formatarHoraVisao(comp.hora);
             adminLocal.value = comp.local || '';
             adminParticipantes.value = comp.participantes || '';
@@ -2174,7 +2134,7 @@
             adminEditId.value = '';
             adminTitulo.value = '';
             adminData.value = new Date().toISOString().split('T')[0];
-            adminDataFim.value = ''; // Limpa Data Fim
+            adminDataFim.value = ''; 
             adminHora.value = '';
             adminLocal.value = '';
             adminParticipantes.value = '';
@@ -2192,7 +2152,6 @@
 
             popupTitulo.textContent = comp.titulo || 'Sem título';
             
-            // Popula Data e Data Fim visualmente
             let dataExibicao = formatarDataBR(comp.dia);
             if (comp.diaFim) {
                 dataExibicao += ' até ' + formatarDataBR(comp.diaFim);
@@ -2276,7 +2235,6 @@
             Swal.fire({ title: '✅ Concluído!', text: 'Compromisso concluído.', icon: 'success', timer: 1500, showConfirmButton: false });
         }
 
-        // NOVO MODO "ADIAR" COM MODAL
         function acaoAdiar() {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Cancelado') {
@@ -2284,7 +2242,6 @@
                 return;
             }
 
-            // Popula os campos do novo modal com os dados limpos
             adiarDataInput.value = formatarDataVisao(compromissoAtual.dia);
             adiarDataFimInput.value = formatarDataVisao(compromissoAtual.diaFim);
             adiarHoraInput.value = formatarHoraVisao(compromissoAtual.hora);
@@ -2297,7 +2254,6 @@
             adiarOverlay.classList.remove('ativo');
         });
 
-        // Fechar clicando no fundo escuro
         adiarOverlay.addEventListener('click', (e) => {
             if (e.target === adiarOverlay) adiarOverlay.classList.remove('ativo');
         });
@@ -2315,7 +2271,6 @@
                 return;
             }
 
-            // Atualiza os dados localmente
             compromissoAtual.dia = novaData;
             compromissoAtual.diaFim = novaDataFim;
             compromissoAtual.hora = novaHora;
@@ -2326,7 +2281,6 @@
             fecharPopup();
             adiarOverlay.classList.remove('ativo');
 
-            // Salva no Google Sheets
             Swal.fire({ title: 'Salvando nova data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await atualizarCompromissoRemoto(compromissoAtual);
             Swal.fire({ title: '✅ Adiado!', text: 'O compromisso foi adiado com sucesso.', icon: 'success', timer: 2000, showConfirmButton: false });
@@ -2358,22 +2312,32 @@
                     const msgsTemporarias = mensagensChat.filter(m => String(m.id).startsWith('temp_'));
                     mensagensChat = [...msgsServer, ...msgsTemporarias];
 
-                    let tocarSom = false;
+                    let dispararNotificacao = false;
+                    let tituloNotif = '';
+                    let bodyNotif = '';
 
                     novasMensagens.forEach(msg => {
                         if (!adminLogado && msg.remetente === 'admin') {
-                            tocarSom = true;
+                            dispararNotificacao = true;
+                            tituloNotif = '📬 Nova resposta do administrador';
+                            bodyNotif = msg.texto.substring(0, 100);
+                            
                             if (!chatWindow.classList.contains('aberto')) {
                                 userChatBadge.style.display = 'flex';
                                 userChatBadge.textContent = parseInt(userChatBadge.textContent || 0) + 1;
                             }
                         } 
                         else if (adminLogado && msg.remetente === 'user') {
-                            tocarSom = true;
+                            dispararNotificacao = true;
+                            tituloNotif = '📬 Nova mensagem de um usuário';
+                            bodyNotif = msg.texto.substring(0, 100);
                         }
                     });
 
-                    if (tocarSom) sistemaSom.tocar();
+                    // Usa a notificação NATIVA para tocar o som padrão do celular
+                    if (dispararNotificacao) {
+                        sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
+                    }
 
                     atualizarChatUsuario();
                     if (adminLogado) atualizarChatAdmin();
@@ -2475,7 +2439,7 @@
 
             const titulo = adminTitulo.value.trim();
             const dia = adminData.value;
-            const diaFim = adminDataFim.value; // NOVO: Captura Data Fim
+            const diaFim = adminDataFim.value; 
             const hora = adminHora.value;
             const local = adminLocal.value.trim();
             const participantes = adminParticipantes.value.trim() || 'Não informado';
@@ -2503,7 +2467,7 @@
                 id: proximoId++,
                 titulo,
                 dia,
-                diaFim, // Incluído
+                diaFim, 
                 hora,
                 local,
                 participantes,
@@ -2548,7 +2512,7 @@
 
             const titulo = adminTitulo.value.trim();
             const dia = adminData.value;
-            const diaFim = adminDataFim.value; // NOVO: Captura Data Fim
+            const diaFim = adminDataFim.value; 
             const hora = adminHora.value;
             const local = adminLocal.value.trim();
             const participantes = adminParticipantes.value.trim() || 'Não informado';
@@ -2569,7 +2533,7 @@
                 ...compromissos[index],
                 titulo,
                 dia,
-                diaFim, // Atualizado
+                diaFim, 
                 hora,
                 local,
                 participantes,
@@ -2638,7 +2602,6 @@
                 adminPanel.classList.add('ativo');
                 lockBtn.innerHTML = '🔓';
                 
-                // ESCONDER O CHAT DO USUÁRIO QUANDO FOR ADMIN
                 chatButton.style.display = 'none';
                 chatWindow.classList.remove('aberto');
 
@@ -2669,7 +2632,6 @@
             adminPanel.classList.remove('ativo');
             lockBtn.innerHTML = '🔒';
             
-            // MOSTRAR O CHAT DO USUÁRIO NOVAMENTE AO SAIR DO PAINEL
             chatButton.style.display = 'flex';
 
             limparFormAdmin();
@@ -2694,9 +2656,12 @@
 
         filtroAno.addEventListener('change', aplicarFiltros);
         filtroMes.addEventListener('change', aplicarFiltros);
+        filtroDia.addEventListener('change', aplicarFiltros);
+        
         btnLimpar.addEventListener('click', () => {
             filtroAno.value = '';
             filtroMes.value = '';
+            filtroDia.value = '';
             aplicarFiltros();
         });
 
@@ -2813,6 +2778,8 @@
                 willOpen: () => { Swal.showLoading(); }
             });
 
+            inicializarDiasNoFiltro();
+
             try {
                 const compromissosData = await carregarCompromissos();
                 if (compromissosData && compromissosData.length > 0) {
@@ -2859,15 +2826,6 @@
                 }).then(() => { inicializar(); });
             }
         }
-
-        window.testarNotificacao = function() {
-            sistemaNotificacao.enviar(
-                '🔔 Teste de Notificação',
-                'Esta é uma notificação de teste do Gabinete 247!',
-                { tag: 'teste', url: window.location.href }
-            );
-            sistemaSom.tocar();
-        };
 
         document.addEventListener('DOMContentLoaded', inicializar);
     </script>
