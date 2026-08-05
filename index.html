@@ -1668,7 +1668,15 @@
         // ==========================================
         async function carregarCompromissos() {
             try {
-                const response = await fetch(`${SCRIPT_URL}?acao=listar`);
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        acao: 'listar'
+                    })
+                });
                 const data = await response.json();
                 console.log('📊 Compromissos carregados:', data);
                 
@@ -1747,7 +1755,15 @@
 
         async function carregarMensagensChat() {
             try {
-                const response = await fetch(`${SCRIPT_URL}?acao=listar_chat`);
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        acao: 'listar_chat'
+                    })
+                });
                 const data = await response.json();
                 console.log('💬 Mensagens carregadas:', data);
                 
