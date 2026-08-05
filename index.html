@@ -172,6 +172,15 @@
             color: #1a1a2e;
         }
 
+        .card-data-range {
+            font-size: 0.9rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 0.2rem;
+        }
+
         .card-horario {
             font-size: 0.95rem;
             color: #009739;
@@ -1346,13 +1355,17 @@
             <form id="formAdmin">
                 <input type="hidden" id="adminEditId" value="">
                 <div class="form-row">
-                    <div class="form-group">
+                    <div class="form-group full-width">
                         <label>Título *</label>
                         <input type="text" id="adminTitulo" placeholder="Ex: Reunião com equipe" required>
                     </div>
                     <div class="form-group">
-                        <label>Data *</label>
+                        <label>Data Início *</label>
                         <input type="date" id="adminData" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Fim (Opcional)</label>
+                        <input type="date" id="adminDataFim">
                     </div>
                     <div class="form-group">
                         <label>Hora *</label>
@@ -1415,7 +1428,7 @@
             <button class="popup-close" id="popupClose">&times;</button>
             <h2 id="popupTitulo">Título</h2>
             <div class="popup-info">
-                <p><strong>📅 Dia:</strong> <span id="popupDia">—</span></p>
+                <p><strong>📅 Período:</strong> <span id="popupDia">—</span></p>
                 <p><strong>⏰ Hora:</strong> <span id="popupHora">—</span></p>
                 <p><strong>📍 Local:</strong> <span id="popupLocal">—</span></p>
                 <p><strong>👥 Participantes:</strong> <span id="popupParticipantes">—</span></p>
@@ -1437,8 +1450,12 @@
             <h2>⏳ Adiar Compromisso</h2>
             <p class="subtitle">Selecione os novos dados para o compromisso.</p>
             <div class="form-group">
-                <label>Nova Data</label>
+                <label>Nova Data Início</label>
                 <input type="date" id="adiarDataInput">
+            </div>
+            <div class="form-group">
+                <label>Nova Data Fim (Opcional)</label>
+                <input type="date" id="adiarDataFimInput">
             </div>
             <div class="form-group">
                 <label>Nova Hora</label>
@@ -1515,95 +1532,120 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC3M-hTVUOn2ivp_CrU0nbyhmooX2a4Uw49P5Mrq_TfSaJPlWrsBUw5xxWQZQE8tDt6A/exec';
 
         // ==========================================
-        // SISTEMA DE SOM E NOTIFICAÇÕES (MANTIDO)
+        // SISTEMA DE SOM E NOTIFICAÇÕES
         // ==========================================
         class SistemaSom {
             constructor() {
-                this.audio = null;
+                this.audioElement = null;
+                this.audioCtx = null;
                 this.somHabilitado = true;
+                this.desbloqueado = false;
+                
                 this.inicializarAudio();
+                this.configurarDesbloqueio();
             }
 
             inicializarAudio() {
                 try {
-                    this.audio = new Audio('notificacao.mp3');
-                    this.audio.addEventListener('error', () => {
-                        console.warn('Arquivo de som não encontrado. Usando fallback.');
-                        this.criarSomFallback();
-                    });
-                    this.audio.load();
-                } catch (error) {
-                    console.warn('Erro ao carregar áudio:', error);
-                    this.criarSomFallback();
+                    this.audioElement = new Audio('notificacao.mp3');
+                    this.audioElement.load();
+                } catch (e) {
+                    console.warn('Erro ao carregar mp3', e);
+                }
+
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioCtx = new AudioContext();
+                } catch (e) {
+                    console.warn('Web Audio API não suportada');
                 }
             }
 
-            criarSomFallback() {
+            // O Desbloqueio silencioso no primeiro toque da tela (Especial Mobile)
+            configurarDesbloqueio() {
+                const desbloquear = () => {
+                    if (this.desbloqueado) return;
+
+                    if (this.audioElement) {
+                        this.audioElement.volume = 0; // Muta o áudio
+                        let p = this.audioElement.play();
+                        if (p !== undefined) {
+                            p.then(() => {
+                                this.audioElement.pause();
+                                this.audioElement.currentTime = 0;
+                                this.audioElement.volume = 1; // Restaura o volume
+                            }).catch(() => {});
+                        }
+                    }
+
+                    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                        this.audioCtx.resume();
+                    }
+
+                    this.desbloqueado = true;
+                    document.removeEventListener('touchstart', desbloquear);
+                    document.removeEventListener('click', desbloquear);
+                };
+
+                document.addEventListener('touchstart', desbloquear, { once: true });
+                document.addEventListener('click', desbloquear, { once: true });
+            }
+
+            tocarFallback() {
+                if (!this.audioCtx) return;
                 try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    const audioCtx = new AudioContext();
+                    if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
                     
-                    this.playFallback = () => {
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+                    
+                    osc.frequency.value = 880;
+                    osc.type = 'sine';
+                    
+                    gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
+                    
+                    osc.start(this.audioCtx.currentTime);
+                    osc.stop(this.audioCtx.currentTime + 0.15);
+                    
+                    setTimeout(() => {
                         try {
-                            const oscillator = audioCtx.createOscillator();
-                            const gainNode = audioCtx.createGain();
-                            oscillator.connect(gainNode);
-                            gainNode.connect(audioCtx.destination);
-                            oscillator.frequency.value = 880;
-                            oscillator.type = 'sine';
-                            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                            oscillator.start(audioCtx.currentTime);
-                            oscillator.stop(audioCtx.currentTime + 0.15);
-                            
-                            setTimeout(() => {
-                                try {
-                                    const osc2 = audioCtx.createOscillator();
-                                    const gain2 = audioCtx.createGain();
-                                    osc2.connect(gain2);
-                                    gain2.connect(audioCtx.destination);
-                                    osc2.frequency.value = 1100;
-                                    osc2.type = 'sine';
-                                    gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                                    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                                    osc2.start(audioCtx.currentTime);
-                                    osc2.stop(audioCtx.currentTime + 0.1);
-                                } catch (e) {}
-                            }, 200);
-                        } catch (error) {
-                            console.warn('Erro no som fallback:', error);
-                        }
-                    };
-                    
-                    this.audio = {
-                        play: () => {
-                            if (this.somHabilitado && audioCtx.state === 'suspended') {
-                                audioCtx.resume();
-                            }
-                            this.playFallback();
-                        }
-                    };
-                } catch (error) {
-                    console.warn('Web Audio API não disponível');
-                    this.audio = { play: () => {} };
+                            const osc2 = this.audioCtx.createOscillator();
+                            const gain2 = this.audioCtx.createGain();
+                            osc2.connect(gain2);
+                            gain2.connect(this.audioCtx.destination);
+                            osc2.frequency.value = 1100;
+                            osc2.type = 'sine';
+                            gain2.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+                            gain2.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
+                            osc2.start(this.audioCtx.currentTime);
+                            osc2.stop(this.audioCtx.currentTime + 0.1);
+                        } catch(e){}
+                    }, 200);
+                } catch (e) {
+                    console.warn('Erro no fallback', e);
                 }
             }
 
             tocar() {
                 if (!this.somHabilitado) return;
-                try {
-                    if (this.audio && this.audio.play) {
-                        if (this.audio.currentTime > 0) {
-                            this.audio.currentTime = 0;
-                        }
-                        this.audio.play().catch(() => {
-                            if (this.playFallback) this.playFallback();
+
+                if (this.audioElement) {
+                    this.audioElement.currentTime = 0;
+                    this.audioElement.volume = 1;
+                    let promise = this.audioElement.play();
+                    
+                    if (promise !== undefined) {
+                        promise.catch(error => {
+                            console.warn('Autoplay mp3 bloqueado, tentando fallback...', error);
+                            this.tocarFallback();
                         });
-                    } else if (this.playFallback) {
-                        this.playFallback();
                     }
-                } catch (error) {
-                    console.warn('Erro ao tocar som:', error);
+                } else {
+                    this.tocarFallback();
                 }
             }
         }
@@ -1817,12 +1859,15 @@
         const btnLimparForm = document.getElementById('btnLimparForm');
         const formAdmin = document.getElementById('formAdmin');
         const adminEditId = document.getElementById('adminEditId');
+        
         const adminTitulo = document.getElementById('adminTitulo');
         const adminData = document.getElementById('adminData');
+        const adminDataFim = document.getElementById('adminDataFim'); // NOVO: Data Fim
         const adminHora = document.getElementById('adminHora');
         const adminLocal = document.getElementById('adminLocal');
         const adminParticipantes = document.getElementById('adminParticipantes');
         const adminStatus = document.getElementById('adminStatus');
+        
         const listaAdmin = document.getElementById('listaAdmin');
         const btnSalvar = document.getElementById('btnSalvar');
         const btnAtualizar = document.getElementById('btnAtualizar');
@@ -1861,6 +1906,7 @@
         // Modal de Adiar
         const adiarOverlay = document.getElementById('adiarOverlay');
         const adiarDataInput = document.getElementById('adiarDataInput');
+        const adiarDataFimInput = document.getElementById('adiarDataFimInput'); // NOVO: Data Fim
         const adiarHoraInput = document.getElementById('adiarHoraInput');
         const adiarLocalInput = document.getElementById('adiarLocalInput');
         const btnConfirmarAdiar = document.getElementById('btnConfirmarAdiar');
@@ -1872,10 +1918,21 @@
         // FUNÇÕES ÚTEIS PARA CORRIGIR DATAS DO GOOGLE
         // ==========================================
         function formatarDataVisao(dataStr) {
-            if (!dataStr) return '--/--/----';
-            // Se vier com o formato T (ex: 2026-08-05T04:00:00.000Z), corta só a data
+            if (!dataStr) return '';
+            // Se vier com o formato T, corta só a data para o input date (YYYY-MM-DD)
             if (dataStr.includes('T')) return dataStr.split('T')[0];
             return dataStr;
+        }
+
+        // Nova função para mostrar a data bonita na tela (DD/MM/AAAA)
+        function formatarDataBR(dataStr) {
+            const d = formatarDataVisao(dataStr);
+            if (!d) return '';
+            const partes = d.split('-');
+            if (partes.length === 3) {
+                return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+            return d;
         }
 
         function formatarHoraVisao(horaStr) {
@@ -1997,8 +2054,12 @@
                     !comp.local.toLowerCase().includes('meet') &&
                     !comp.local.toLowerCase().includes('zoom');
 
+                let htmlDataRange = `📅 ${formatarDataBR(comp.dia)}`;
+                if (comp.diaFim) htmlDataRange += ` até ${formatarDataBR(comp.diaFim)}`;
+
                 card.innerHTML = `
                     <div class="card-titulo">${comp.titulo || 'Sem título'}</div>
+                    <div class="card-data-range">${htmlDataRange}</div>
                     <div class="card-horario">🕒 ${formatarHoraVisao(comp.hora)}</div>
                     <div class="card-local">📍 ${comp.local || 'Local não informado'}</div>
                     <div class="card-actions">
@@ -2032,10 +2093,14 @@
             compromissos.forEach(comp => {
                 const item = document.createElement('div');
                 item.className = 'item-admin';
+                
+                let strDataAdmin = formatarDataBR(comp.dia);
+                if (comp.diaFim) strDataAdmin += ` a ${formatarDataBR(comp.diaFim)}`;
+
                 item.innerHTML = `
                     <div class="info">
                         <span class="titulo">${comp.titulo || 'Sem título'}</span>
-                        <span class="data">📅 ${formatarDataVisao(comp.dia)} às ${formatarHoraVisao(comp.hora)}</span>
+                        <span class="data">📅 ${strDataAdmin} às ${formatarHoraVisao(comp.hora)}</span>
                         <span class="data">📍 ${comp.local || 'Local não informado'}</span>
                         <span class="data" style="color: #009739; font-weight: 600;">${comp.status || 'Pendente'}</span>
                     </div>
@@ -2092,6 +2157,7 @@
             adminEditId.value = comp.id;
             adminTitulo.value = comp.titulo || '';
             adminData.value = formatarDataVisao(comp.dia);
+            adminDataFim.value = formatarDataVisao(comp.diaFim); // Carrega Data Fim
             adminHora.value = formatarHoraVisao(comp.hora);
             adminLocal.value = comp.local || '';
             adminParticipantes.value = comp.participantes || '';
@@ -2108,6 +2174,7 @@
             adminEditId.value = '';
             adminTitulo.value = '';
             adminData.value = new Date().toISOString().split('T')[0];
+            adminDataFim.value = ''; // Limpa Data Fim
             adminHora.value = '';
             adminLocal.value = '';
             adminParticipantes.value = '';
@@ -2124,7 +2191,14 @@
             compromissoAtual = comp;
 
             popupTitulo.textContent = comp.titulo || 'Sem título';
-            popupDia.textContent = formatarDataVisao(comp.dia);
+            
+            // Popula Data e Data Fim visualmente
+            let dataExibicao = formatarDataBR(comp.dia);
+            if (comp.diaFim) {
+                dataExibicao += ' até ' + formatarDataBR(comp.diaFim);
+            }
+            popupDia.textContent = dataExibicao || '--/--/----';
+
             popupHora.textContent = formatarHoraVisao(comp.hora);
             popupLocal.textContent = comp.local || 'Local não informado';
             popupParticipantes.textContent = comp.participantes || 'Não informado';
@@ -2212,6 +2286,7 @@
 
             // Popula os campos do novo modal com os dados limpos
             adiarDataInput.value = formatarDataVisao(compromissoAtual.dia);
+            adiarDataFimInput.value = formatarDataVisao(compromissoAtual.diaFim);
             adiarHoraInput.value = formatarHoraVisao(compromissoAtual.hora);
             adiarLocalInput.value = compromissoAtual.local || '';
 
@@ -2231,16 +2306,18 @@
             if (!compromissoAtual) return;
 
             const novaData = adiarDataInput.value;
+            const novaDataFim = adiarDataFimInput.value;
             const novaHora = adiarHoraInput.value;
             const novoLocal = adiarLocalInput.value.trim();
 
             if (!novaData) {
-                Swal.fire('⚠️ Aviso', 'A nova data é obrigatória.', 'warning');
+                Swal.fire('⚠️ Aviso', 'A data de início é obrigatória.', 'warning');
                 return;
             }
 
             // Atualiza os dados localmente
             compromissoAtual.dia = novaData;
+            compromissoAtual.diaFim = novaDataFim;
             compromissoAtual.hora = novaHora;
             if (novoLocal) compromissoAtual.local = novoLocal;
             compromissoAtual.status = 'Adiado';
@@ -2398,6 +2475,7 @@
 
             const titulo = adminTitulo.value.trim();
             const dia = adminData.value;
+            const diaFim = adminDataFim.value; // NOVO: Captura Data Fim
             const hora = adminHora.value;
             const local = adminLocal.value.trim();
             const participantes = adminParticipantes.value.trim() || 'Não informado';
@@ -2412,7 +2490,7 @@
             if (dia < hoje) {
                 const confirm = await Swal.fire({
                     title: '⚠️ Data anterior',
-                    text: 'A data informada é anterior a hoje. Deseja continuar?',
+                    text: 'A data de início é anterior a hoje. Deseja continuar?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Sim, continuar',
@@ -2425,6 +2503,7 @@
                 id: proximoId++,
                 titulo,
                 dia,
+                diaFim, // Incluído
                 hora,
                 local,
                 participantes,
@@ -2469,6 +2548,7 @@
 
             const titulo = adminTitulo.value.trim();
             const dia = adminData.value;
+            const diaFim = adminDataFim.value; // NOVO: Captura Data Fim
             const hora = adminHora.value;
             const local = adminLocal.value.trim();
             const participantes = adminParticipantes.value.trim() || 'Não informado';
@@ -2489,6 +2569,7 @@
                 ...compromissos[index],
                 titulo,
                 dia,
+                diaFim, // Atualizado
                 hora,
                 local,
                 participantes,
