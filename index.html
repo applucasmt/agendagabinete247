@@ -725,11 +725,13 @@
             font-size: 1rem;
             transition: border-color 0.2s;
             outline: none;
+            background: #fafafa;
         }
 
         .login-modal .form-group input:focus {
             border-color: #009739;
             box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15);
+            background: white;
         }
 
         .login-modal .btn-login {
@@ -1154,6 +1156,7 @@
             cursor: pointer;
             transition: background 0.2s;
             font-size: 0.9rem;
+            white-space: nowrap;
         }
 
         .admin-chat-input-area button:hover {
@@ -1406,7 +1409,7 @@
 
     <div class="agenda-grid" id="agendaGrid"></div>
 
-    <!-- Popup -->
+    <!-- Popup Visualização de Compromisso -->
     <div class="popup-overlay" id="popupOverlay">
         <div class="popup" id="popupCard">
             <button class="popup-close" id="popupClose">&times;</button>
@@ -1424,6 +1427,30 @@
                 <button class="btn btn-adiar" id="btnAdiar">⏳ Adiar</button>
                 <button class="btn btn-concluir" id="btnConcluir">✓ Concluir</button>
                 <button class="btn btn-fechar" id="btnFechar">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOVO: Popup para Adiar Compromisso -->
+    <div class="login-overlay" id="adiarOverlay">
+        <div class="login-modal">
+            <h2>⏳ Adiar Compromisso</h2>
+            <p class="subtitle">Selecione os novos dados para o compromisso.</p>
+            <div class="form-group">
+                <label>Nova Data</label>
+                <input type="date" id="adiarDataInput">
+            </div>
+            <div class="form-group">
+                <label>Nova Hora</label>
+                <input type="time" id="adiarHoraInput">
+            </div>
+            <div class="form-group">
+                <label>Novo Local (Opcional)</label>
+                <input type="text" id="adiarLocalInput" placeholder="Ex: Sala 302">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-concluir" id="btnConfirmarAdiar" style="flex: 1;">✓ Salvar</button>
+                <button class="btn btn-cancelar" id="btnFecharAdiar" style="flex: 1; text-align: center;">✕ Cancelar</button>
             </div>
         </div>
     </div>
@@ -1488,7 +1515,7 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC3M-hTVUOn2ivp_CrU0nbyhmooX2a4Uw49P5Mrq_TfSaJPlWrsBUw5xxWQZQE8tDt6A/exec';
 
         // ==========================================
-        // SISTEMA DE SOM
+        // SISTEMA DE SOM E NOTIFICAÇÕES (MANTIDO)
         // ==========================================
         class SistemaSom {
             constructor() {
@@ -1583,9 +1610,6 @@
 
         const sistemaSom = new SistemaSom();
 
-        // ==========================================
-        // SISTEMA DE NOTIFICAÇÕES PWA
-        // ==========================================
         class SistemaNotificacao {
             constructor() {
                 this.permissoes = { notificacao: false, som: true };
@@ -1626,7 +1650,6 @@
                         console.warn('Erro na notificação:', error);
                     }
                 }
-
                 this.mostrarToast(titulo, mensagem);
             }
 
@@ -1670,18 +1693,11 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        acao: 'listar'
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'listar' })
                 });
                 const data = await response.json();
-                
-                if (data.status === 'sucesso' && data.dados) {
-                    return data.dados;
-                }
+                if (data.status === 'sucesso' && data.dados) return data.dados;
                 return [];
             } catch (error) {
                 console.error('❌ Erro ao carregar compromissos:', error);
@@ -1693,19 +1709,11 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        acao: 'adicionar',
-                        dados: dados
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'adicionar', dados: dados })
                 });
-                const result = await response.json();
-                console.log('✅ Compromisso salvo:', result);
-                return result;
+                return await response.json();
             } catch (error) {
-                console.error('❌ Erro ao salvar compromisso:', error);
                 return { status: 'erro', mensagem: error.message };
             }
         }
@@ -1714,19 +1722,11 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        acao: 'atualizar',
-                        dados: dados
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'atualizar', dados: dados })
                 });
-                const result = await response.json();
-                console.log('✅ Compromisso atualizado:', result);
-                return result;
+                return await response.json();
             } catch (error) {
-                console.error('❌ Erro ao atualizar compromisso:', error);
                 return { status: 'erro', mensagem: error.message };
             }
         }
@@ -1735,19 +1735,11 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        acao: 'excluir',
-                        dados: { id: id }
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'excluir', dados: { id: id } })
                 });
-                const result = await response.json();
-                console.log('✅ Compromisso excluído:', result);
-                return result;
+                return await response.json();
             } catch (error) {
-                console.error('❌ Erro ao excluir compromisso:', error);
                 return { status: 'erro', mensagem: error.message };
             }
         }
@@ -1756,21 +1748,13 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        acao: 'listar_chat'
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'listar_chat' })
                 });
                 const data = await response.json();
-                
-                if (data.status === 'sucesso' && data.dados) {
-                    return data.dados;
-                }
+                if (data.status === 'sucesso' && data.dados) return data.dados;
                 return [];
             } catch (error) {
-                console.error('❌ Erro ao carregar mensagens:', error);
                 return [];
             }
         }
@@ -1779,19 +1763,11 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        acao: 'adicionar_chat',
-                        dados: dados
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'adicionar_chat', dados: dados })
                 });
-                const result = await response.json();
-                console.log('✅ Mensagem salva:', result);
-                return result;
+                return await response.json();
             } catch (error) {
-                console.error('❌ Erro ao salvar mensagem:', error);
                 return { status: 'erro', mensagem: error.message };
             }
         }
@@ -1800,19 +1776,11 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        acao: 'login',
-                        dados: { usuario: usuario, senha: senha }
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'login', dados: { usuario: usuario, senha: senha } })
                 });
-                const result = await response.json();
-                console.log('🔐 Login:', result);
-                return result;
+                return await response.json();
             } catch (error) {
-                console.error('❌ Erro no login:', error);
                 return { status: 'erro', mensagem: error.message };
             }
         }
@@ -1890,12 +1858,39 @@
         const btnConcluir = document.getElementById('btnConcluir');
         const closeIcon = document.getElementById('popupClose');
 
+        // Modal de Adiar
+        const adiarOverlay = document.getElementById('adiarOverlay');
+        const adiarDataInput = document.getElementById('adiarDataInput');
+        const adiarHoraInput = document.getElementById('adiarHoraInput');
+        const adiarLocalInput = document.getElementById('adiarLocalInput');
+        const btnConfirmarAdiar = document.getElementById('btnConfirmarAdiar');
+        const btnFecharAdiar = document.getElementById('btnFecharAdiar');
+
         let compromissoAtual = null;
+
+        // ==========================================
+        // FUNÇÕES ÚTEIS PARA CORRIGIR DATAS DO GOOGLE
+        // ==========================================
+        function formatarDataVisao(dataStr) {
+            if (!dataStr) return '--/--/----';
+            // Se vier com o formato T (ex: 2026-08-05T04:00:00.000Z), corta só a data
+            if (dataStr.includes('T')) return dataStr.split('T')[0];
+            return dataStr;
+        }
+
+        function formatarHoraVisao(horaStr) {
+            if (!horaStr) return '--:--';
+            // Se vier formato T longo de tempo, tenta arrumar
+            if (horaStr.includes('T')) {
+                const d = new Date(horaStr);
+                return d.getUTCHours().toString().padStart(2, '0') + ':' + d.getUTCMinutes().toString().padStart(2, '0');
+            }
+            return horaStr;
+        }
 
         // ==========================================
         // FUNÇÕES DA AGENDA (Com Sincronização)
         // ==========================================
-        
         let isSincronizandoAgenda = false;
 
         async function sincronizarAgenda() {
@@ -1906,11 +1901,9 @@
                 const agendaServer = await carregarCompromissos();
                 if (agendaServer && agendaServer.length >= 0) {
                     
-                    // Ajusta o ID para os novos cadastros caso alguém adicione
                     const maxId = Math.max(...agendaServer.map(c => parseInt(c.id) || 0), 0);
                     proximoId = maxId + 1;
 
-                    // Se a quantidade for diferente ou algum conteúdo mudou, atualiza a tela
                     if (JSON.stringify(agendaServer) !== JSON.stringify(compromissos)) {
                         compromissos = agendaServer;
                         popularFiltros();
@@ -1936,8 +1929,9 @@
         function popularFiltros() {
             const anos = new Set();
             compromissos.forEach(c => {
-                const ano = c.dia?.split('-')[0];
-                if (ano) anos.add(ano);
+                const dataAjustada = formatarDataVisao(c.dia);
+                const ano = dataAjustada.split('-')[0];
+                if (ano && ano.length === 4) anos.add(ano);
             });
 
             const valorAtualAno = filtroAno.value;
@@ -1958,7 +1952,8 @@
             const mesSelecionado = filtroMes.value;
 
             compromissosFiltrados = compromissos.filter(comp => {
-                const partes = comp.dia?.split('-') || [];
+                const dataAjustada = formatarDataVisao(comp.dia);
+                const partes = dataAjustada.split('-') || [];
                 const ano = partes[0];
                 const mes = partes[1] ? parseInt(partes[1]) : null;
 
@@ -2004,7 +1999,7 @@
 
                 card.innerHTML = `
                     <div class="card-titulo">${comp.titulo || 'Sem título'}</div>
-                    <div class="card-horario">🕒 ${comp.hora || '--:--'}</div>
+                    <div class="card-horario">🕒 ${formatarHoraVisao(comp.hora)}</div>
                     <div class="card-local">📍 ${comp.local || 'Local não informado'}</div>
                     <div class="card-actions">
                         ${temEndereco ? `<button class="btn-mapa" data-local="${comp.local}">📍 Ver no Mapa</button>` : ''}
@@ -2040,7 +2035,7 @@
                 item.innerHTML = `
                     <div class="info">
                         <span class="titulo">${comp.titulo || 'Sem título'}</span>
-                        <span class="data">📅 ${comp.dia || '--/--/----'} às ${comp.hora || '--:--'}</span>
+                        <span class="data">📅 ${formatarDataVisao(comp.dia)} às ${formatarHoraVisao(comp.hora)}</span>
                         <span class="data">📍 ${comp.local || 'Local não informado'}</span>
                         <span class="data" style="color: #009739; font-weight: 600;">${comp.status || 'Pendente'}</span>
                     </div>
@@ -2065,6 +2060,7 @@
 
                     if (!confirm.isConfirmed) return;
 
+                    Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                     const result = await excluirCompromissoRemoto(comp.id);
                     if (result.status === 'sucesso') {
                         compromissos = compromissos.filter(c => c.id !== comp.id);
@@ -2095,8 +2091,8 @@
 
             adminEditId.value = comp.id;
             adminTitulo.value = comp.titulo || '';
-            adminData.value = comp.dia || '';
-            adminHora.value = comp.hora || '';
+            adminData.value = formatarDataVisao(comp.dia);
+            adminHora.value = formatarHoraVisao(comp.hora);
             adminLocal.value = comp.local || '';
             adminParticipantes.value = comp.participantes || '';
             adminStatus.value = comp.status || 'Pendente';
@@ -2128,8 +2124,8 @@
             compromissoAtual = comp;
 
             popupTitulo.textContent = comp.titulo || 'Sem título';
-            popupDia.textContent = comp.dia || '--/--/----';
-            popupHora.textContent = comp.hora || '--:--';
+            popupDia.textContent = formatarDataVisao(comp.dia);
+            popupHora.textContent = formatarHoraVisao(comp.hora);
             popupLocal.textContent = comp.local || 'Local não informado';
             popupParticipantes.textContent = comp.participantes || 'Não informado';
 
@@ -2171,51 +2167,98 @@
             aplicarFiltros();
         }
 
-        function acaoCancelar() {
+        // --- AÇÕES DO POPUP COM SALVAMENTO NO SERVIDOR ---
+        async function acaoCancelar() {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Cancelado') {
-                alert('Este compromisso já está cancelado.');
+                Swal.fire('Aviso', 'Este compromisso já está cancelado.', 'warning');
                 return;
             }
             compromissoAtual.status = 'Cancelado';
             atualizarCompromissoNoArray(compromissoAtual);
             fecharPopup();
+
+            Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            await atualizarCompromissoRemoto(compromissoAtual);
+            Swal.fire({ title: '✅ Cancelado!', text: 'Compromisso cancelado.', icon: 'success', timer: 1500, showConfirmButton: false });
         }
 
-        function acaoAdiar() {
-            if (!compromissoAtual) return;
-            if (compromissoAtual.status === 'Cancelado') {
-                alert('Não é possível adiar um compromisso cancelado.');
-                return;
-            }
-            const novaData = prompt('Digite a nova data (ex: 2026-08-25):', compromissoAtual.dia);
-            if (novaData !== null && novaData.trim() !== '') {
-                compromissoAtual.dia = novaData.trim();
-                compromissoAtual.status = 'Adiado';
-                atualizarCompromissoNoArray(compromissoAtual);
-                fecharPopup();
-            }
-        }
-
-        function acaoConcluir() {
+        async function acaoConcluir() {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Concluído') {
-                alert('Este compromisso já está concluído.');
+                Swal.fire('Aviso', 'Este compromisso já está concluído.', 'warning');
                 return;
             }
             if (compromissoAtual.status === 'Cancelado') {
-                alert('Não é possível concluir um compromisso cancelado.');
+                Swal.fire('Aviso', 'Não é possível concluir um compromisso cancelado.', 'warning');
                 return;
             }
             compromissoAtual.status = 'Concluído';
             atualizarCompromissoNoArray(compromissoAtual);
             fecharPopup();
+
+            Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            await atualizarCompromissoRemoto(compromissoAtual);
+            Swal.fire({ title: '✅ Concluído!', text: 'Compromisso concluído.', icon: 'success', timer: 1500, showConfirmButton: false });
         }
+
+        // NOVO MODO "ADIAR" COM MODAL
+        function acaoAdiar() {
+            if (!compromissoAtual) return;
+            if (compromissoAtual.status === 'Cancelado') {
+                Swal.fire('Aviso', 'Não é possível adiar um compromisso cancelado.', 'warning');
+                return;
+            }
+
+            // Popula os campos do novo modal com os dados limpos
+            adiarDataInput.value = formatarDataVisao(compromissoAtual.dia);
+            adiarHoraInput.value = formatarHoraVisao(compromissoAtual.hora);
+            adiarLocalInput.value = compromissoAtual.local || '';
+
+            adiarOverlay.classList.add('ativo');
+        }
+
+        btnFecharAdiar.addEventListener('click', () => {
+            adiarOverlay.classList.remove('ativo');
+        });
+
+        // Fechar clicando no fundo escuro
+        adiarOverlay.addEventListener('click', (e) => {
+            if (e.target === adiarOverlay) adiarOverlay.classList.remove('ativo');
+        });
+
+        btnConfirmarAdiar.addEventListener('click', async () => {
+            if (!compromissoAtual) return;
+
+            const novaData = adiarDataInput.value;
+            const novaHora = adiarHoraInput.value;
+            const novoLocal = adiarLocalInput.value.trim();
+
+            if (!novaData) {
+                Swal.fire('⚠️ Aviso', 'A nova data é obrigatória.', 'warning');
+                return;
+            }
+
+            // Atualiza os dados localmente
+            compromissoAtual.dia = novaData;
+            compromissoAtual.hora = novaHora;
+            if (novoLocal) compromissoAtual.local = novoLocal;
+            compromissoAtual.status = 'Adiado';
+            
+            atualizarCompromissoNoArray(compromissoAtual);
+            fecharPopup();
+            adiarOverlay.classList.remove('ativo');
+
+            // Salva no Google Sheets
+            Swal.fire({ title: 'Salvando nova data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            await atualizarCompromissoRemoto(compromissoAtual);
+            Swal.fire({ title: '✅ Adiado!', text: 'O compromisso foi adiado com sucesso.', icon: 'success', timer: 2000, showConfirmButton: false });
+        });
+
 
         // ==========================================
         // FUNÇÕES DO CHAT (Com Sincronização)
         // ==========================================
-        
         let isSincronizandoChat = false;
 
         async function sincronizarChat() {
@@ -2229,23 +2272,18 @@
                     return;
                 }
 
-                // Considerar apenas as mensagens que não são temporárias (as que já voltaram do Google Sheets)
                 const msgsLocaisReais = mensagensChat.filter(m => !String(m.id).startsWith('temp_'));
 
                 if (msgsServer.length > msgsLocaisReais.length) {
-                    // Calculando quantas mensagens novas chegaram
                     const qtdNovas = msgsServer.length - msgsLocaisReais.length;
                     const novasMensagens = msgsServer.slice(-qtdNovas);
 
-                    // Atualizar o array local substituindo tudo pelo do servidor,
-                    // mantendo as mensagens que o usuário acabou de digitar e ainda estão salvando
                     const msgsTemporarias = mensagensChat.filter(m => String(m.id).startsWith('temp_'));
                     mensagensChat = [...msgsServer, ...msgsTemporarias];
 
                     let tocarSom = false;
 
                     novasMensagens.forEach(msg => {
-                        // Se sou o USUÁRIO e chegou mensagem do ADMIN
                         if (!adminLogado && msg.remetente === 'admin') {
                             tocarSom = true;
                             if (!chatWindow.classList.contains('aberto')) {
@@ -2253,7 +2291,6 @@
                                 userChatBadge.textContent = parseInt(userChatBadge.textContent || 0) + 1;
                             }
                         } 
-                        // Se sou o ADMIN e chegou mensagem do USUÁRIO
                         else if (adminLogado && msg.remetente === 'user') {
                             tocarSom = true;
                         }
@@ -2275,7 +2312,6 @@
             const agora = new Date().toISOString();
             const tempId = 'temp_' + Date.now();
             
-            // 1. Atualização Otimista na Tela (mostra a mensagem instantaneamente)
             const mensagemTemp = {
                 id: tempId,
                 remetente: remetente,
@@ -2289,7 +2325,6 @@
             atualizarChatUsuario();
             if (adminLogado) atualizarChatAdmin();
 
-            // 2. Envia silenciosamente para o Google Sheets
             const result = await salvarMensagemChat({
                 remetente: remetente,
                 texto: texto,
@@ -2297,7 +2332,6 @@
                 lida: false
             });
 
-            // 3. Assim que o Google confirmar, limpamos o temporário e puxamos a original sincronizada
             if (result.status === 'sucesso') {
                 mensagensChat = mensagensChat.filter(m => m.id !== tempId);
                 await sincronizarChat();
@@ -2308,8 +2342,6 @@
             chatMessages.innerHTML = '';
             mensagensChat.forEach(msg => {
                 const div = document.createElement('div');
-                // Se eu sou o usuário, a minha mensagem (user) fica na direita (user CSS) 
-                // e a do admin fica na esquerda (bot CSS)
                 div.className = `message ${msg.remetente === 'user' ? 'user' : 'bot'}`;
                 const time = new Date(msg.data);
                 const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
@@ -2335,8 +2367,6 @@
 
             mensagensChat.forEach(msg => {
                 const div = document.createElement('div');
-                // Se eu sou o administrador, a mensagem do usuário fica na esquerda (user CSS)
-                // e a minha resposta (admin) fica na direita (admin CSS)
                 div.className = `message ${msg.remetente === 'user' ? 'user' : 'admin'}`;
                 const time = new Date(msg.data);
                 const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
@@ -2401,6 +2431,7 @@
                 status
             };
 
+            Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const result = await salvarCompromisso(novo);
             
             if (result.status === 'sucesso') {
@@ -2464,6 +2495,7 @@
                 status
             };
 
+            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const result = await atualizarCompromissoRemoto(dadosAtualizados);
             
             if (result.status === 'sucesso') {
@@ -2516,6 +2548,7 @@
                 return;
             }
 
+            Swal.fire({ title: 'Verificando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const result = await validarLoginRemoto(user, pass);
             
             if (result.status === 'sucesso') {
@@ -2524,10 +2557,9 @@
                 adminPanel.classList.add('ativo');
                 lockBtn.innerHTML = '🔓';
                 
-                // === ESCONDER O CHAT DO USUÁRIO QUANDO FOR ADMIN ===
+                // ESCONDER O CHAT DO USUÁRIO QUANDO FOR ADMIN
                 chatButton.style.display = 'none';
                 chatWindow.classList.remove('aberto');
-                // ====================================================
 
                 renderizarListaAdmin();
                 await atualizarChatAdmin();
@@ -2542,6 +2574,7 @@
                     showConfirmButton: false
                 });
             } else {
+                Swal.close();
                 loginErro.textContent = result.mensagem || '❌ Usuário ou senha incorretos';
                 loginErro.classList.add('visible');
                 loginPassword.value = '';
@@ -2555,9 +2588,8 @@
             adminPanel.classList.remove('ativo');
             lockBtn.innerHTML = '🔒';
             
-            // === MOSTRAR O CHAT DO USUÁRIO NOVAMENTE AO SAIR DO PAINEL ===
+            // MOSTRAR O CHAT DO USUÁRIO NOVAMENTE AO SAIR DO PAINEL
             chatButton.style.display = 'flex';
-            // =============================================================
 
             limparFormAdmin();
             tabBtns.forEach(btn => btn.classList.remove('ativo'));
@@ -2567,9 +2599,8 @@
         }
 
         // ==========================================
-        // EVENTOS
+        // EVENTOS GERAIS
         // ==========================================
-        // Popup
         btnFechar.addEventListener('click', fecharPopup);
         closeIcon.addEventListener('click', fecharPopup);
         overlay.addEventListener('click', (e) => {
@@ -2580,7 +2611,6 @@
         btnAdiar.addEventListener('click', acaoAdiar);
         btnConcluir.addEventListener('click', acaoConcluir);
 
-        // Filtros
         filtroAno.addEventListener('change', aplicarFiltros);
         filtroMes.addEventListener('change', aplicarFiltros);
         btnLimpar.addEventListener('click', () => {
@@ -2589,7 +2619,7 @@
             aplicarFiltros();
         });
 
-        // User Chat
+        // Eventos Chat
         chatButton.addEventListener('click', () => {
             chatWindow.classList.toggle('aberto');
             if (chatWindow.classList.contains('aberto')) {
@@ -2611,7 +2641,6 @@
             if (e.key === 'Enter') chatSend.click();
         });
 
-        // Admin Chat
         adminChatSend.addEventListener('click', () => {
             const texto = adminChatInput.value.trim();
             if (!texto) return;
@@ -2624,7 +2653,7 @@
             if (e.key === 'Enter') adminChatSend.click();
         });
 
-        // Admin - Login
+        // Eventos Admin
         lockBtn.addEventListener('click', () => {
             if (adminLogado) {
                 adminPanel.classList.add('ativo');
@@ -2640,13 +2669,11 @@
             if (e.target === loginOverlay) fecharLogin();
         });
 
-        // Admin - Fechar painel
         btnFecharAdmin.addEventListener('click', fecharAdmin);
         btnLimparForm.addEventListener('click', limparFormAdmin);
         formAdmin.addEventListener('submit', cadastrarCompromisso);
         btnAtualizar.addEventListener('click', atualizarCompromissoAdmin);
 
-        // Tabs
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 tabBtns.forEach(b => b.classList.remove('ativo'));
@@ -2697,19 +2724,15 @@
         // INICIALIZAÇÃO
         // ==========================================
         async function inicializar() {
-            // Mostrar loading
             Swal.fire({
                 title: '🔄 Carregando...',
                 text: 'Buscando dados do Google Sheets',
                 allowOutsideClick: false,
                 showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
+                willOpen: () => { Swal.showLoading(); }
             });
 
             try {
-                // Carregar compromissos
                 const compromissosData = await carregarCompromissos();
                 if (compromissosData && compromissosData.length > 0) {
                     compromissos = compromissosData;
@@ -2720,7 +2743,6 @@
                     proximoId = 1;
                 }
 
-                // Carregar mensagens
                 const mensagensData = await carregarMensagensChat();
                 if (mensagensData && mensagensData.length > 0) {
                     mensagensChat = mensagensData;
@@ -2731,7 +2753,6 @@
                     ultimoIdMensagem = 1;
                 }
 
-                // Configurar interfaces
                 popularFiltros();
                 aplicarFiltros();
                 atualizarChatUsuario();
@@ -2740,9 +2761,7 @@
                 Swal.close();
                 console.log('✅ Gabinete 247 PWA pronto!');
 
-                // ==================================================
-                // O SEGREDO MÁGICO: Sincronizar de 5 em 5 segundos!
-                // ==================================================
+                // SINCRONIZAÇÃO AUTOMÁTICA
                 setInterval(() => {
                     sincronizarChat();
                     sincronizarAgenda();
@@ -2756,26 +2775,19 @@
                     text: 'Não foi possível conectar ao Google Sheets. Verifique a URL do script.',
                     icon: 'error',
                     confirmButtonText: 'Tentar novamente'
-                }).then(() => {
-                    inicializar();
-                });
+                }).then(() => { inicializar(); });
             }
         }
 
-        // Função para testar notificações
         window.testarNotificacao = function() {
             sistemaNotificacao.enviar(
                 '🔔 Teste de Notificação',
                 'Esta é uma notificação de teste do Gabinete 247!',
-                {
-                    tag: 'teste',
-                    url: window.location.href
-                }
+                { tag: 'teste', url: window.location.href }
             );
             sistemaSom.tocar();
         };
 
-        // Inicializar
         document.addEventListener('DOMContentLoaded', inicializar);
     </script>
 </body>
