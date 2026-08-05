@@ -1446,12 +1446,7 @@
             <button class="close-chat" id="closeChat">✕</button>
         </div>
         <div class="chat-messages" id="chatMessages">
-            <div class="message bot">
-                Olá! 👋<br>
-                Sou o assistente do Gabinete 247.<br>
-                Como posso ajudar você hoje?
-                <span class="time">Agora</span>
-            </div>
+            <!-- As mensagens aparecerão aqui -->
         </div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="Digite sua mensagem..." />
@@ -2512,17 +2507,14 @@
             }
         });
         closeChat.addEventListener('click', () => chatWindow.classList.remove('aberto'));
+        
         chatSend.addEventListener('click', () => {
             const texto = chatInput.value.trim();
             if (!texto) return;
             adicionarMensagemChat('user', texto);
             chatInput.value = '';
-            if (mensagensChat.filter(m => m.remetente === 'user').length === 1) {
-                setTimeout(() => {
-                    adicionarMensagemChat('bot', 'Sua mensagem foi enviada para o administrador! 📬<br>Ele responderá em breve.');
-                }, 800);
-            }
         });
+        
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') chatSend.click();
         });
@@ -2645,22 +2637,8 @@
                     ultimoIdMensagem = maxIdMsg + 1;
                     console.log(`✅ ${mensagensChat.length} mensagens carregadas.`);
                 } else {
-                    mensagensChat = [{
-                        id: 1,
-                        remetente: 'bot',
-                        texto: 'Olá! 👋<br>Sou o assistente do Gabinete 247.<br>Como posso ajudar você hoje?',
-                        data: new Date().toISOString(),
-                        lida: true,
-                        lidaUser: true
-                    }];
-                    ultimoIdMensagem = 2;
-                    
-                    await salvarMensagemChat({
-                        remetente: 'bot',
-                        texto: mensagensChat[0].texto,
-                        data: mensagensChat[0].data,
-                        lida: true
-                    });
+                    mensagensChat = [];
+                    ultimoIdMensagem = 1;
                 }
 
                 // Configurar interfaces
