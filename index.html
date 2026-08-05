@@ -2307,7 +2307,7 @@
             const status = adminStatus.value;
 
             if (!titulo || !dia || !hora || !local) {
-                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcado com *', 'warning');
                 return;
             }
 
@@ -2377,7 +2377,7 @@
             const status = adminStatus.value;
 
             if (!titulo || !dia || !hora || !local) {
-                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcado com *', 'warning');
                 return;
             }
 
@@ -2456,6 +2456,12 @@
                 fecharLogin();
                 adminPanel.classList.add('ativo');
                 lockBtn.innerHTML = '🔓';
+                
+                // === ESCONDER O CHAT DO USUÁRIO ===
+                chatButton.style.display = 'none';
+                chatWindow.classList.remove('aberto');
+                // ==================================
+
                 renderizarListaAdmin();
                 await atualizarChatAdmin();
                 loginUser.value = '';
@@ -2481,6 +2487,11 @@
             adminLogado = false;
             adminPanel.classList.remove('ativo');
             lockBtn.innerHTML = '🔒';
+            
+            // === MOSTRAR O CHAT DO USUÁRIO NOVAMENTE ===
+            chatButton.style.display = 'flex';
+            // ===========================================
+
             limparFormAdmin();
             tabBtns.forEach(btn => btn.classList.remove('ativo'));
             tabContents.forEach(content => content.classList.remove('ativo'));
