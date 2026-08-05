@@ -167,6 +167,7 @@
             max-width: 1200px;
         }
 
+        /* NOVO DESIGN DO CARD COM DATA GIGANTE */
         .card {
             background: #ffffff;
             border-radius: 16px;
@@ -306,6 +307,7 @@
             font-size: 1.1rem;
         }
 
+        /* Restante do CSS mantido intacto */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -1620,7 +1622,7 @@
         // ==========================================
         // CONFIGURAÇÃO - ATUALIZE ESTA URL
         // ==========================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC3M-hTVUOn2ivp_CrU0nbyhmooX2a4Uw49P5Mrq_TfSaJPlWrsBUw5xxWQZQE8tDt6A/exec';
 
         // ==========================================
         // SISTEMA DE NOTIFICAÇÕES (NATIVO MOBILE PWA)
@@ -2066,7 +2068,6 @@
                 let diaNum = '--';
                 let mesNome = '---';
                 if (comp.dia) {
-                    // Adicionado "T12:00:00" para evitar problema de fuso horário no JS e pegar o dia errado
                     const dataObj = new Date(formatarDataVisao(comp.dia) + 'T12:00:00');
                     if(!isNaN(dataObj)) {
                         diaNum = String(dataObj.getDate()).padStart(2, '0');
@@ -2320,6 +2321,7 @@
                 return;
             }
 
+            // Popula os campos do novo modal com os dados limpos
             adiarDataInput.value = formatarDataVisao(compromissoAtual.dia);
             adiarDataFimInput.value = formatarDataVisao(compromissoAtual.diaFim);
             adiarHoraInput.value = formatarHoraVisao(compromissoAtual.hora);
@@ -2332,6 +2334,7 @@
             adiarOverlay.classList.remove('ativo');
         });
 
+        // Fechar clicando no fundo escuro
         adiarOverlay.addEventListener('click', (e) => {
             if (e.target === adiarOverlay) adiarOverlay.classList.remove('ativo');
         });
@@ -2349,6 +2352,7 @@
                 return;
             }
 
+            // Atualiza os dados localmente
             compromissoAtual.dia = novaData;
             compromissoAtual.diaFim = novaDataFim;
             compromissoAtual.hora = novaHora;
@@ -2359,6 +2363,7 @@
             fecharPopup();
             adiarOverlay.classList.remove('ativo');
 
+            // Salva no Google Sheets
             Swal.fire({ title: 'Salvando nova data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await atualizarCompromissoRemoto(compromissoAtual);
             Swal.fire({ title: '✅ Adiado!', text: 'O compromisso foi adiado com sucesso.', icon: 'success', timer: 2000, showConfirmButton: false });
