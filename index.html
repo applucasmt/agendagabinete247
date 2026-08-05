@@ -1765,7 +1765,6 @@
                     })
                 });
                 const data = await response.json();
-                console.log('💬 Mensagens carregadas:', data);
                 
                 if (data.status === 'sucesso' && data.dados) {
                     return data.dados;
@@ -2186,57 +2185,94 @@
         }
 
         // ==========================================
-        // FUNÇÕES DO CHAT
+        // FUNÇÕES DO CHAT (Com Sincronização)
         // ==========================================
+        
+        let isSincronizandoChat = false;
+
+        async function sincronizarChat() {
+            if (isSincronizandoChat) return;
+            isSincronizandoChat = true;
+            
+            try {
+                const msgsServer = await carregarMensagensChat();
+                if (!msgsServer || msgsServer.length === 0) {
+                    isSincronizandoChat = false;
+                    return;
+                }
+
+                // Considerar apenas as mensagens que não são temporárias (as que já voltaram do Google Sheets)
+                const msgsLocaisReais = mensagensChat.filter(m => !String(m.id).startsWith('temp_'));
+
+                if (msgsServer.length > msgsLocaisReais.length) {
+                    // Calculando quantas mensagens novas chegaram
+                    const qtdNovas = msgsServer.length - msgsLocaisReais.length;
+                    const novasMensagens = msgsServer.slice(-qtdNovas);
+
+                    // Atualizar o array local substituindo tudo pelo do servidor,
+                    // mantendo as mensagens que o usuário acabou de digitar e ainda estão salvando
+                    const msgsTemporarias = mensagensChat.filter(m => String(m.id).startsWith('temp_'));
+                    mensagensChat = [...msgsServer, ...msgsTemporarias];
+
+                    let tocarSom = false;
+
+                    novasMensagens.forEach(msg => {
+                        // Se sou o USUÁRIO e chegou mensagem do ADMIN
+                        if (!adminLogado && msg.remetente === 'admin') {
+                            tocarSom = true;
+                            if (!chatWindow.classList.contains('aberto')) {
+                                userChatBadge.style.display = 'flex';
+                                userChatBadge.textContent = parseInt(userChatBadge.textContent || 0) + 1;
+                            }
+                        } 
+                        // Se sou o ADMIN e chegou mensagem do USUÁRIO
+                        else if (adminLogado && msg.remetente === 'user') {
+                            tocarSom = true;
+                        }
+                    });
+
+                    if (tocarSom) sistemaSom.tocar();
+
+                    atualizarChatUsuario();
+                    if (adminLogado) atualizarChatAdmin();
+                }
+            } catch (error) {
+                console.error("Erro na sincronização:", error);
+            }
+            
+            isSincronizandoChat = false;
+        }
+
         async function adicionarMensagemChat(remetente, texto) {
-            const agora = new Date();
-            const mensagem = {
-                id: ultimoIdMensagem++,
+            const agora = new Date().toISOString();
+            const tempId = 'temp_' + Date.now();
+            
+            // 1. Atualização Otimista na Tela (mostra a mensagem instantaneamente)
+            const mensagemTemp = {
+                id: tempId,
                 remetente: remetente,
                 texto: texto,
-                data: agora.toISOString(),
+                data: agora,
                 lida: false,
                 lidaUser: false
             };
             
-            mensagensChat.push(mensagem);
-            await salvarMensagemChat({
+            mensagensChat.push(mensagemTemp);
+            atualizarChatUsuario();
+            if (adminLogado) atualizarChatAdmin();
+
+            // 2. Envia silenciosamente para o Google Sheets
+            const result = await salvarMensagemChat({
                 remetente: remetente,
                 texto: texto,
-                data: agora.toISOString(),
+                data: agora,
                 lida: false
             });
 
-            sistemaSom.tocar();
-
-            if (remetente === 'user' && adminLogado) {
-                sistemaNotificacao.enviar(
-                    '📬 Nova mensagem do usuário',
-                    texto.substring(0, 100) + (texto.length > 100 ? '...' : ''),
-                    {
-                        tag: 'user-message',
-                        url: window.location.href + '#chat'
-                    }
-                );
-                const naoLidas = mensagensChat.filter(m => m.remetente === 'user' && !m.lida).length;
-                sistemaNotificacao.atualizarBadge(naoLidas);
-            } else if (remetente === 'admin' && !chatWindow.classList.contains('aberto')) {
-                sistemaNotificacao.enviar(
-                    '📬 Nova resposta do administrador',
-                    texto.substring(0, 100) + (texto.length > 100 ? '...' : ''),
-                    {
-                        tag: 'admin-message',
-                        url: window.location.href
-                    }
-                );
-                userChatBadge.style.display = 'flex';
-                userChatBadge.textContent = mensagensChat.filter(m => m.remetente === 'admin' && !m.lidaUser).length || 1;
-            }
-
-            atualizarChatUsuario();
-            if (adminLogado) {
-                await atualizarChatAdmin();
-                contarMensagensNaoLidas();
+            // 3. Assim que o Google confirmar, limpamos o temporário e puxamos a original sincronizada
+            if (result.status === 'sucesso') {
+                mensagensChat = mensagensChat.filter(m => m.id !== tempId);
+                await sincronizarChat();
             }
         }
 
@@ -2244,6 +2280,8 @@
             chatMessages.innerHTML = '';
             mensagensChat.forEach(msg => {
                 const div = document.createElement('div');
+                // Se eu sou o usuário, a minha mensagem (user) fica na direita (user CSS) 
+                // e a do admin fica na esquerda (bot CSS)
                 div.className = `message ${msg.remetente === 'user' ? 'user' : 'bot'}`;
                 const time = new Date(msg.data);
                 const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
@@ -2256,9 +2294,8 @@
         async function atualizarChatAdmin() {
             if (!adminLogado) return;
             adminChatMessages.innerHTML = '';
-            const mensagens = mensagensChat.filter(m => m.remetente !== 'bot');
             
-            if (mensagens.length === 0) {
+            if (mensagensChat.length === 0) {
                 adminChatMessages.innerHTML = `
                     <div class="admin-chat-empty">
                         <div class="icon">💬</div>
@@ -2268,8 +2305,10 @@
                 return;
             }
 
-            mensagens.forEach(msg => {
+            mensagensChat.forEach(msg => {
                 const div = document.createElement('div');
+                // Se eu sou o administrador, a mensagem do usuário fica na esquerda (user CSS)
+                // e a minha resposta (admin) fica na direita (admin CSS)
                 div.className = `message ${msg.remetente === 'user' ? 'user' : 'admin'}`;
                 const time = new Date(msg.data);
                 const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
@@ -2307,7 +2346,7 @@
             const status = adminStatus.value;
 
             if (!titulo || !dia || !hora || !local) {
-                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcado com *', 'warning');
+                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
                 return;
             }
 
@@ -2377,7 +2416,7 @@
             const status = adminStatus.value;
 
             if (!titulo || !dia || !hora || !local) {
-                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcado com *', 'warning');
+                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
                 return;
             }
 
@@ -2457,10 +2496,10 @@
                 adminPanel.classList.add('ativo');
                 lockBtn.innerHTML = '🔓';
                 
-                // === ESCONDER O CHAT DO USUÁRIO ===
+                // === ESCONDER O CHAT DO USUÁRIO QUANDO FOR ADMIN ===
                 chatButton.style.display = 'none';
                 chatWindow.classList.remove('aberto');
-                // ==================================
+                // ====================================================
 
                 renderizarListaAdmin();
                 await atualizarChatAdmin();
@@ -2488,9 +2527,9 @@
             adminPanel.classList.remove('ativo');
             lockBtn.innerHTML = '🔒';
             
-            // === MOSTRAR O CHAT DO USUÁRIO NOVAMENTE ===
+            // === MOSTRAR O CHAT DO USUÁRIO NOVAMENTE AO SAIR DO PAINEL ===
             chatButton.style.display = 'flex';
-            // ===========================================
+            // =============================================================
 
             limparFormAdmin();
             tabBtns.forEach(btn => btn.classList.remove('ativo'));
@@ -2528,9 +2567,7 @@
             if (chatWindow.classList.contains('aberto')) {
                 chatInput.focus();
                 userChatBadge.style.display = 'none';
-                mensagensChat.forEach(m => {
-                    if (m.remetente === 'admin') m.lidaUser = true;
-                });
+                userChatBadge.textContent = '0';
             }
         });
         closeChat.addEventListener('click', () => chatWindow.classList.remove('aberto'));
@@ -2553,6 +2590,7 @@
             adicionarMensagemChat('admin', texto);
             adminChatInput.value = '';
             adminChatBadge.style.display = 'none';
+            adminChatBadge.textContent = '0';
         });
         adminChatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') adminChatSend.click();
@@ -2649,11 +2687,9 @@
                     compromissos = compromissosData;
                     const maxId = Math.max(...compromissos.map(c => parseInt(c.id) || 0), 0);
                     proximoId = maxId + 1;
-                    console.log(`✅ ${compromissos.length} compromissos carregados.`);
                 } else {
                     compromissos = [];
                     proximoId = 1;
-                    console.log('📭 Nenhum compromisso encontrado.');
                 }
 
                 // Carregar mensagens
@@ -2662,7 +2698,6 @@
                     mensagensChat = mensagensData;
                     const maxIdMsg = Math.max(...mensagensChat.map(m => parseInt(m.id) || 0), 0);
                     ultimoIdMensagem = maxIdMsg + 1;
-                    console.log(`✅ ${mensagensChat.length} mensagens carregadas.`);
                 } else {
                     mensagensChat = [];
                     ultimoIdMensagem = 1;
@@ -2675,11 +2710,12 @@
                 adminData.value = new Date().toISOString().split('T')[0];
 
                 Swal.close();
-
                 console.log('✅ Gabinete 247 PWA pronto!');
-                console.log(`📊 ${compromissos.length} compromissos carregados`);
-                console.log(`💬 ${mensagensChat.length} mensagens carregadas`);
-                console.log('📱 Para instalar, clique no botão "Instalar App"');
+
+                // ==================================================
+                // O SEGREDO MÁGICO: Sincronizar de 5 em 5 segundos!
+                // ==================================================
+                setInterval(sincronizarChat, 5000);
 
             } catch (error) {
                 Swal.close();
@@ -2706,17 +2742,10 @@
                 }
             );
             sistemaSom.tocar();
-            console.log('✅ Notificação de teste enviada!');
         };
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', inicializar);
-
-        console.log('🚀 Gabinete 247 carregado!');
-        console.log('📁 Verifique se a URL do Google Sheets está correta:');
-        console.log(`   ${SCRIPT_URL}`);
-        console.log('🔑 Login: gabinete247 / Gabinete247');
-        console.log('💡 Para testar notificações, digite: testarNotificacao()');
     </script>
 </body>
 </html>
