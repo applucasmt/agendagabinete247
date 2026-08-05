@@ -1488,7 +1488,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // CONFIGURAÇÃO
+        // CONFIGURAÇÃO - ATUALIZE ESTA URL
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC3M-hTVUOn2ivp_CrU0nbyhmooX2a4Uw49P5Mrq_TfSaJPlWrsBUw5xxWQZQE8tDt6A/exec';
 
@@ -1669,6 +1669,146 @@
         const sistemaNotificacao = new SistemaNotificacao();
 
         // ==========================================
+        // FUNÇÕES DE COMUNICAÇÃO COM GOOGLE SHEETS
+        // ==========================================
+        async function carregarCompromissos() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?acao=listar`);
+                const data = await response.json();
+                console.log('📊 Compromissos carregados:', data);
+                
+                if (data.status === 'sucesso' && data.dados) {
+                    return data.dados;
+                }
+                return [];
+            } catch (error) {
+                console.error('❌ Erro ao carregar compromissos:', error);
+                return [];
+            }
+        }
+
+        async function salvarCompromisso(dados) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        acao: 'adicionar',
+                        dados: dados
+                    })
+                });
+                const result = await response.json();
+                console.log('✅ Compromisso salvo:', result);
+                return result;
+            } catch (error) {
+                console.error('❌ Erro ao salvar compromisso:', error);
+                return { status: 'erro', mensagem: error.message };
+            }
+        }
+
+        async function atualizarCompromissoRemoto(dados) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        acao: 'atualizar',
+                        dados: dados
+                    })
+                });
+                const result = await response.json();
+                console.log('✅ Compromisso atualizado:', result);
+                return result;
+            } catch (error) {
+                console.error('❌ Erro ao atualizar compromisso:', error);
+                return { status: 'erro', mensagem: error.message };
+            }
+        }
+
+        async function excluirCompromissoRemoto(id) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        acao: 'excluir',
+                        dados: { id: id }
+                    })
+                });
+                const result = await response.json();
+                console.log('✅ Compromisso excluído:', result);
+                return result;
+            } catch (error) {
+                console.error('❌ Erro ao excluir compromisso:', error);
+                return { status: 'erro', mensagem: error.message };
+            }
+        }
+
+        async function carregarMensagensChat() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?acao=listar_chat`);
+                const data = await response.json();
+                console.log('💬 Mensagens carregadas:', data);
+                
+                if (data.status === 'sucesso' && data.dados) {
+                    return data.dados;
+                }
+                return [];
+            } catch (error) {
+                console.error('❌ Erro ao carregar mensagens:', error);
+                return [];
+            }
+        }
+
+        async function salvarMensagemChat(dados) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        acao: 'adicionar_chat',
+                        dados: dados
+                    })
+                });
+                const result = await response.json();
+                console.log('✅ Mensagem salva:', result);
+                return result;
+            } catch (error) {
+                console.error('❌ Erro ao salvar mensagem:', error);
+                return { status: 'erro', mensagem: error.message };
+            }
+        }
+
+        async function validarLoginRemoto(usuario, senha) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        acao: 'login',
+                        dados: { usuario: usuario, senha: senha }
+                    })
+                });
+                const result = await response.json();
+                console.log('🔐 Login:', result);
+                return result;
+            } catch (error) {
+                console.error('❌ Erro no login:', error);
+                return { status: 'erro', mensagem: error.message };
+            }
+        }
+
+        // ==========================================
         // DADOS E ESTADO
         // ==========================================
         let compromissos = [];
@@ -1742,109 +1882,6 @@
         const closeIcon = document.getElementById('popupClose');
 
         let compromissoAtual = null;
-
-        // ==========================================
-        // FUNÇÕES DO CHAT
-        // ==========================================
-        function adicionarMensagemChat(remetente, texto) {
-            const agora = new Date();
-            const mensagem = {
-                id: ultimoIdMensagem++,
-                remetente: remetente,
-                texto: texto,
-                data: agora.toISOString(),
-                lida: false,
-                lidaUser: false
-            };
-            mensagensChat.push(mensagem);
-
-            sistemaSom.tocar();
-
-            if (remetente === 'user' && adminLogado) {
-                sistemaNotificacao.enviar(
-                    '📬 Nova mensagem do usuário',
-                    texto.substring(0, 100) + (texto.length > 100 ? '...' : ''),
-                    {
-                        tag: 'user-message',
-                        url: window.location.href + '#chat',
-                        actions: [{ action: 'open', title: 'Responder' }, { action: 'close', title: 'Fechar' }]
-                    }
-                );
-                const naoLidas = mensagensChat.filter(m => m.remetente === 'user' && !m.lida).length;
-                sistemaNotificacao.atualizarBadge(naoLidas);
-            } else if (remetente === 'admin' && !chatWindow.classList.contains('aberto')) {
-                sistemaNotificacao.enviar(
-                    '📬 Nova resposta do administrador',
-                    texto.substring(0, 100) + (texto.length > 100 ? '...' : ''),
-                    {
-                        tag: 'admin-message',
-                        url: window.location.href,
-                        actions: [{ action: 'open', title: 'Ver mensagem' }, { action: 'close', title: 'Fechar' }]
-                    }
-                );
-                userChatBadge.style.display = 'flex';
-                userChatBadge.textContent = mensagensChat.filter(m => m.remetente === 'admin' && !m.lidaUser).length || 1;
-            }
-
-            atualizarChatUsuario();
-            if (adminLogado) {
-                atualizarChatAdmin();
-                contarMensagensNaoLidas();
-            }
-        }
-
-        function atualizarChatUsuario() {
-            chatMessages.innerHTML = '';
-            mensagensChat.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.remetente === 'user' ? 'user' : 'bot'}`;
-                const time = new Date(msg.data);
-                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                div.innerHTML = `${msg.texto} <span class="time">${timeStr}</span>`;
-                chatMessages.appendChild(div);
-            });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function atualizarChatAdmin() {
-            if (!adminLogado) return;
-            adminChatMessages.innerHTML = '';
-            const mensagens = mensagensChat.filter(m => m.remetente !== 'bot');
-            
-            if (mensagens.length === 0) {
-                adminChatMessages.innerHTML = `
-                    <div class="admin-chat-empty">
-                        <div class="icon">💬</div>
-                        <p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            mensagens.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.remetente === 'user' ? 'user' : 'admin'}`;
-                const time = new Date(msg.data);
-                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                const remetenteLabel = msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin';
-                div.innerHTML = `<strong>${remetenteLabel}:</strong> ${msg.texto} <span class="time">${timeStr}</span>`;
-                adminChatMessages.appendChild(div);
-                if (msg.remetente === 'user') msg.lida = true;
-            });
-            adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
-            contarMensagensNaoLidas();
-        }
-
-        function contarMensagensNaoLidas() {
-            if (!adminLogado) return;
-            const naoLidas = mensagensChat.filter(m => m.remetente === 'user' && !m.lida).length;
-            if (naoLidas > 0) {
-                adminChatBadge.textContent = naoLidas;
-                adminChatBadge.style.display = 'inline';
-            } else {
-                adminChatBadge.style.display = 'none';
-            }
-        }
 
         // ==========================================
         // FUNÇÕES DA AGENDA
@@ -1977,12 +2014,34 @@
                 listaAdmin.appendChild(item);
 
                 item.querySelector('.btn-editar').addEventListener('click', () => carregarParaEdicao(comp.id));
-                item.querySelector('.btn-excluir').addEventListener('click', () => {
-                    if (confirm(`Tem certeza que deseja excluir "${comp.titulo}"?`)) {
+                item.querySelector('.btn-excluir').addEventListener('click', async () => {
+                    const confirm = await Swal.fire({
+                        title: '⚠️ Confirmar exclusão',
+                        text: `Tem certeza que deseja excluir "${comp.titulo}"?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sim, excluir',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#dc2626'
+                    });
+
+                    if (!confirm.isConfirmed) return;
+
+                    const result = await excluirCompromissoRemoto(comp.id);
+                    if (result.status === 'sucesso') {
                         compromissos = compromissos.filter(c => c.id !== comp.id);
                         popularFiltros();
                         aplicarFiltros();
                         if (adminLogado) renderizarListaAdmin();
+                        Swal.fire({
+                            title: '🗑️ Excluído!',
+                            text: 'Compromisso excluído com sucesso!',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire('❌ Erro!', result.mensagem || 'Erro ao excluir', 'error');
                     }
                 });
             });
@@ -2116,13 +2175,250 @@
         }
 
         // ==========================================
+        // FUNÇÕES DO CHAT
+        // ==========================================
+        async function adicionarMensagemChat(remetente, texto) {
+            const agora = new Date();
+            const mensagem = {
+                id: ultimoIdMensagem++,
+                remetente: remetente,
+                texto: texto,
+                data: agora.toISOString(),
+                lida: false,
+                lidaUser: false
+            };
+            
+            mensagensChat.push(mensagem);
+            await salvarMensagemChat({
+                remetente: remetente,
+                texto: texto,
+                data: agora.toISOString(),
+                lida: false
+            });
+
+            sistemaSom.tocar();
+
+            if (remetente === 'user' && adminLogado) {
+                sistemaNotificacao.enviar(
+                    '📬 Nova mensagem do usuário',
+                    texto.substring(0, 100) + (texto.length > 100 ? '...' : ''),
+                    {
+                        tag: 'user-message',
+                        url: window.location.href + '#chat'
+                    }
+                );
+                const naoLidas = mensagensChat.filter(m => m.remetente === 'user' && !m.lida).length;
+                sistemaNotificacao.atualizarBadge(naoLidas);
+            } else if (remetente === 'admin' && !chatWindow.classList.contains('aberto')) {
+                sistemaNotificacao.enviar(
+                    '📬 Nova resposta do administrador',
+                    texto.substring(0, 100) + (texto.length > 100 ? '...' : ''),
+                    {
+                        tag: 'admin-message',
+                        url: window.location.href
+                    }
+                );
+                userChatBadge.style.display = 'flex';
+                userChatBadge.textContent = mensagensChat.filter(m => m.remetente === 'admin' && !m.lidaUser).length || 1;
+            }
+
+            atualizarChatUsuario();
+            if (adminLogado) {
+                await atualizarChatAdmin();
+                contarMensagensNaoLidas();
+            }
+        }
+
+        function atualizarChatUsuario() {
+            chatMessages.innerHTML = '';
+            mensagensChat.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.remetente === 'user' ? 'user' : 'bot'}`;
+                const time = new Date(msg.data);
+                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+                div.innerHTML = `${msg.texto} <span class="time">${timeStr}</span>`;
+                chatMessages.appendChild(div);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function atualizarChatAdmin() {
+            if (!adminLogado) return;
+            adminChatMessages.innerHTML = '';
+            const mensagens = mensagensChat.filter(m => m.remetente !== 'bot');
+            
+            if (mensagens.length === 0) {
+                adminChatMessages.innerHTML = `
+                    <div class="admin-chat-empty">
+                        <div class="icon">💬</div>
+                        <p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            mensagens.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.remetente === 'user' ? 'user' : 'admin'}`;
+                const time = new Date(msg.data);
+                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+                const remetenteLabel = msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin';
+                div.innerHTML = `<strong>${remetenteLabel}:</strong> ${msg.texto} <span class="time">${timeStr}</span>`;
+                adminChatMessages.appendChild(div);
+                if (msg.remetente === 'user') msg.lida = true;
+            });
+            adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
+            contarMensagensNaoLidas();
+        }
+
+        function contarMensagensNaoLidas() {
+            if (!adminLogado) return;
+            const naoLidas = mensagensChat.filter(m => m.remetente === 'user' && !m.lida).length;
+            if (naoLidas > 0) {
+                adminChatBadge.textContent = naoLidas;
+                adminChatBadge.style.display = 'inline';
+            } else {
+                adminChatBadge.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // ADMIN - CRUD
+        // ==========================================
+        async function cadastrarCompromisso(e) {
+            e.preventDefault();
+
+            const titulo = adminTitulo.value.trim();
+            const dia = adminData.value;
+            const hora = adminHora.value;
+            const local = adminLocal.value.trim();
+            const participantes = adminParticipantes.value.trim() || 'Não informado';
+            const status = adminStatus.value;
+
+            if (!titulo || !dia || !hora || !local) {
+                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                return;
+            }
+
+            const hoje = new Date().toISOString().split('T')[0];
+            if (dia < hoje) {
+                const confirm = await Swal.fire({
+                    title: '⚠️ Data anterior',
+                    text: 'A data informada é anterior a hoje. Deseja continuar?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sim, continuar',
+                    cancelButtonText: 'Cancelar'
+                });
+                if (!confirm.isConfirmed) return;
+            }
+
+            const novo = {
+                id: proximoId++,
+                titulo,
+                dia,
+                hora,
+                local,
+                participantes,
+                status
+            };
+
+            const result = await salvarCompromisso(novo);
+            
+            if (result.status === 'sucesso') {
+                compromissos.push(novo);
+                popularFiltros();
+                aplicarFiltros();
+                if (adminLogado) renderizarListaAdmin();
+                limparFormAdmin();
+                adminData.value = new Date().toISOString().split('T')[0];
+                
+                Swal.fire({
+                    title: '✅ Sucesso!',
+                    text: 'Compromisso cadastrado com sucesso!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    title: '❌ Erro!',
+                    text: result.mensagem || 'Erro ao cadastrar compromisso',
+                    icon: 'error'
+                });
+            }
+        }
+
+        async function atualizarCompromissoAdmin(e) {
+            e.preventDefault();
+
+            const id = parseInt(adminEditId.value);
+            if (!id) {
+                Swal.fire('⚠️ Erro', 'Nenhum compromisso selecionado para edição.', 'warning');
+                return;
+            }
+
+            const titulo = adminTitulo.value.trim();
+            const dia = adminData.value;
+            const hora = adminHora.value;
+            const local = adminLocal.value.trim();
+            const participantes = adminParticipantes.value.trim() || 'Não informado';
+            const status = adminStatus.value;
+
+            if (!titulo || !dia || !hora || !local) {
+                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                return;
+            }
+
+            const index = compromissos.findIndex(c => c.id === id);
+            if (index === -1) {
+                Swal.fire('❌ Erro', 'Compromisso não encontrado.', 'error');
+                return;
+            }
+
+            const dadosAtualizados = {
+                ...compromissos[index],
+                titulo,
+                dia,
+                hora,
+                local,
+                participantes,
+                status
+            };
+
+            const result = await atualizarCompromissoRemoto(dadosAtualizados);
+            
+            if (result.status === 'sucesso') {
+                compromissos[index] = dadosAtualizados;
+                popularFiltros();
+                aplicarFiltros();
+                if (adminLogado) renderizarListaAdmin();
+                limparFormAdmin();
+                
+                Swal.fire({
+                    title: '✅ Sucesso!',
+                    text: 'Compromisso atualizado com sucesso!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    title: '❌ Erro!',
+                    text: result.mensagem || 'Erro ao atualizar compromisso',
+                    icon: 'error'
+                });
+            }
+        }
+
+        // ==========================================
         // ADMIN - LOGIN
         // ==========================================
         function abrirLogin() {
             loginOverlay.classList.add('ativo');
             loginErro.classList.remove('visible');
             loginUser.value = 'gabinete247';
-            loginPassword.value = 'Gabinete247';
+            loginPassword.value = '';
             loginUser.focus();
         }
 
@@ -2131,21 +2427,38 @@
             loginErro.classList.remove('visible');
         }
 
-        function fazerLogin(e) {
+        async function fazerLogin(e) {
             e.preventDefault();
             const user = loginUser.value.trim();
             const pass = loginPassword.value.trim();
 
-            if (user === 'gabinete247' && pass === 'Gabinete247') {
+            if (!user || !pass) {
+                loginErro.textContent = '⚠️ Preencha usuário e senha';
+                loginErro.classList.add('visible');
+                return;
+            }
+
+            const result = await validarLoginRemoto(user, pass);
+            
+            if (result.status === 'sucesso') {
                 adminLogado = true;
                 fecharLogin();
                 adminPanel.classList.add('ativo');
                 lockBtn.innerHTML = '🔓';
                 renderizarListaAdmin();
-                atualizarChatAdmin();
+                await atualizarChatAdmin();
                 loginUser.value = '';
                 loginPassword.value = '';
+                
+                Swal.fire({
+                    title: '✅ Bem-vindo!',
+                    text: 'Login realizado com sucesso!',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             } else {
+                loginErro.textContent = result.mensagem || '❌ Usuário ou senha incorretos';
                 loginErro.classList.add('visible');
                 loginPassword.value = '';
                 loginPassword.focus();
@@ -2162,94 +2475,6 @@
             tabContents.forEach(content => content.classList.remove('ativo'));
             document.querySelector('[data-tab="tabAgenda"]').classList.add('ativo');
             document.getElementById('tabAgenda').classList.add('ativo');
-        }
-
-        // ==========================================
-        // ADMIN - CRUD
-        // ==========================================
-        function cadastrarCompromisso(e) {
-            e.preventDefault();
-
-            const titulo = adminTitulo.value.trim();
-            const dia = adminData.value;
-            const hora = adminHora.value;
-            const local = adminLocal.value.trim();
-            const participantes = adminParticipantes.value.trim() || 'Não informado';
-            const status = adminStatus.value;
-
-            if (!titulo || !dia || !hora || !local) {
-                alert('Por favor, preencha todos os campos obrigatórios (*)');
-                return;
-            }
-
-            const hoje = new Date().toISOString().split('T')[0];
-            if (dia < hoje && !confirm('A data informada é anterior a hoje. Deseja continuar?')) {
-                return;
-            }
-
-            const novo = {
-                id: proximoId++,
-                titulo,
-                dia,
-                hora,
-                local,
-                participantes,
-                status
-            };
-
-            compromissos.push(novo);
-            popularFiltros();
-            aplicarFiltros();
-            if (adminLogado) renderizarListaAdmin();
-
-            limparFormAdmin();
-            adminData.value = new Date().toISOString().split('T')[0];
-            Swal.fire('✅ Sucesso!', 'Compromisso cadastrado com sucesso!', 'success');
-        }
-
-        function atualizarCompromissoAdmin(e) {
-            e.preventDefault();
-
-            const id = parseInt(adminEditId.value);
-            if (!id) {
-                alert('Erro: Nenhum compromisso selecionado para edição.');
-                return;
-            }
-
-            const titulo = adminTitulo.value.trim();
-            const dia = adminData.value;
-            const hora = adminHora.value;
-            const local = adminLocal.value.trim();
-            const participantes = adminParticipantes.value.trim() || 'Não informado';
-            const status = adminStatus.value;
-
-            if (!titulo || !dia || !hora || !local) {
-                alert('Por favor, preencha todos os campos obrigatórios (*)');
-                return;
-            }
-
-            const index = compromissos.findIndex(c => c.id === id);
-            if (index === -1) {
-                alert('Erro: Compromisso não encontrado.');
-                return;
-            }
-
-            compromissos[index] = {
-                ...compromissos[index],
-                titulo,
-                dia,
-                hora,
-                local,
-                participantes,
-                status
-            };
-
-            popularFiltros();
-            aplicarFiltros();
-            if (adminLogado) renderizarListaAdmin();
-
-            limparFormAdmin();
-            Swal.fire('✅ Sucesso!', 'Compromisso atualizado com sucesso!', 'success');
         }
 
         // ==========================================
@@ -2386,32 +2611,83 @@
         // ==========================================
         // INICIALIZAÇÃO
         // ==========================================
-        function inicializar() {
-            // Dados iniciais vazios - serão carregados do Google Sheets
-            compromissos = [];
-            compromissosFiltrados = [];
-            proximoId = 1;
-            
-            popularFiltros();
-            aplicarFiltros();
-            adminData.value = new Date().toISOString().split('T')[0];
-            
-            // Mensagem inicial do bot
-            mensagensChat = [{
-                id: 1,
-                remetente: 'bot',
-                texto: 'Olá! 👋<br>Sou o assistente do Gabinete 247.<br>Como posso ajudar você hoje?',
-                data: new Date().toISOString(),
-                lida: true,
-                lidaUser: true
-            }];
-            ultimoIdMensagem = 2;
-            atualizarChatUsuario();
+        async function inicializar() {
+            // Mostrar loading
+            Swal.fire({
+                title: '🔄 Carregando...',
+                text: 'Buscando dados do Google Sheets',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-            console.log('✅ Gabinete 247 PWA pronto!');
-            console.log('📱 Para instalar, clique no botão "Instalar App"');
-            console.log('🔔 Notificações configuradas');
-            console.log('💡 Para testar notificações, digite: testarNotificacao()');
+            try {
+                // Carregar compromissos
+                const compromissosData = await carregarCompromissos();
+                if (compromissosData && compromissosData.length > 0) {
+                    compromissos = compromissosData;
+                    const maxId = Math.max(...compromissos.map(c => parseInt(c.id) || 0), 0);
+                    proximoId = maxId + 1;
+                    console.log(`✅ ${compromissos.length} compromissos carregados.`);
+                } else {
+                    compromissos = [];
+                    proximoId = 1;
+                    console.log('📭 Nenhum compromisso encontrado.');
+                }
+
+                // Carregar mensagens
+                const mensagensData = await carregarMensagensChat();
+                if (mensagensData && mensagensData.length > 0) {
+                    mensagensChat = mensagensData;
+                    const maxIdMsg = Math.max(...mensagensChat.map(m => parseInt(m.id) || 0), 0);
+                    ultimoIdMensagem = maxIdMsg + 1;
+                    console.log(`✅ ${mensagensChat.length} mensagens carregadas.`);
+                } else {
+                    mensagensChat = [{
+                        id: 1,
+                        remetente: 'bot',
+                        texto: 'Olá! 👋<br>Sou o assistente do Gabinete 247.<br>Como posso ajudar você hoje?',
+                        data: new Date().toISOString(),
+                        lida: true,
+                        lidaUser: true
+                    }];
+                    ultimoIdMensagem = 2;
+                    
+                    await salvarMensagemChat({
+                        remetente: 'bot',
+                        texto: mensagensChat[0].texto,
+                        data: mensagensChat[0].data,
+                        lida: true
+                    });
+                }
+
+                // Configurar interfaces
+                popularFiltros();
+                aplicarFiltros();
+                atualizarChatUsuario();
+                adminData.value = new Date().toISOString().split('T')[0];
+
+                Swal.close();
+
+                console.log('✅ Gabinete 247 PWA pronto!');
+                console.log(`📊 ${compromissos.length} compromissos carregados`);
+                console.log(`💬 ${mensagensChat.length} mensagens carregadas`);
+                console.log('📱 Para instalar, clique no botão "Instalar App"');
+
+            } catch (error) {
+                Swal.close();
+                console.error('❌ Erro na inicialização:', error);
+                Swal.fire({
+                    title: '⚠️ Erro ao carregar dados',
+                    text: 'Não foi possível conectar ao Google Sheets. Verifique a URL do script.',
+                    icon: 'error',
+                    confirmButtonText: 'Tentar novamente'
+                }).then(() => {
+                    inicializar();
+                });
+            }
         }
 
         // Função para testar notificações
@@ -2431,14 +2707,11 @@
         // Inicializar
         document.addEventListener('DOMContentLoaded', inicializar);
 
-        console.log('🚀 Gabinete 247 carregado com sucesso!');
-        console.log('📁 Estrutura do projeto:');
-        console.log('  ├── index.html (completo)');
-        console.log('  ├── sw.js (Service Worker)');
-        console.log('  ├── manifest.json (PWA)');
-        console.log('  ├── notificacao.mp3 (som)');
-        console.log('  ├── icons/ (ícones para PWA)');
-        console.log('  └── code.gs (Google Apps Script)');
+        console.log('🚀 Gabinete 247 carregado!');
+        console.log('📁 Verifique se a URL do Google Sheets está correta:');
+        console.log(`   ${SCRIPT_URL}`);
+        console.log('🔑 Login: gabinete247 / Gabinete247');
+        console.log('💡 Para testar notificações, digite: testarNotificacao()');
     </script>
 </body>
 </html>
