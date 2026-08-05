@@ -1,0 +1,22 @@
+# Sistemas
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Dependências
+node_modules/
+
+# Arquivos de ambiente
+.env
+.env.local
+
+# Build
+dist/
+build/
