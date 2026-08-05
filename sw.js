@@ -1,19 +1,18 @@
 // sw.js - Service Worker para PWA
-const CACHE_NAME = 'gabinete247-v1.0.0';
+const CACHE_NAME = 'gabinete247-v1.0.1'; // Versão atualizada
 const urlsToCache = [
   '/',
   '/index.html',
-  '/notificacao.mp3',
-  '/manifest.json',
-  'https://cdn.jsdelivr.net/npm/sweetalert2@11'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache aberto');
-        return cache.addAll(urlsToCache);
+        console.log('Cache aberto com sucesso');
+        // Usamos catch para evitar que um arquivo ausente quebre a instalação do PWA
+        return cache.addAll(urlsToCache).catch(err => console.warn('Aviso no cache inicial:', err));
       })
       .then(() => self.skipWaiting())
   );
@@ -26,6 +25,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (!cacheWhitelist.includes(cacheName)) {
+            console.log('Deletando cache antigo:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -35,6 +35,11 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Ignora requisições de API (como o Google Apps Script) para não cachear respostas de banco de dados
+  if (event.request.url.includes('script.google.com')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -43,6 +48,7 @@ self.addEventListener('fetch', event => {
         }
         return fetch(event.request).then(
           response => {
+            // Verifica se recebemos uma resposta válida antes de cachear
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
@@ -53,7 +59,9 @@ self.addEventListener('fetch', event => {
               });
             return response;
           }
-        );
+        ).catch(err => {
+            console.warn('Erro ao buscar recurso:', event.request.url);
+        });
       })
   );
 });
