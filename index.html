@@ -24,9 +24,6 @@
                 navigator.serviceWorker.register('/sw.js')
                     .then(registration => {
                         console.log('Service Worker registrado com sucesso:', registration);
-                        if ('Notification' in window && Notification.permission === 'default') {
-                            Notification.requestPermission();
-                        }
                     })
                     .catch(error => {
                         console.log('Falha ao registrar Service Worker:', error);
@@ -71,6 +68,28 @@
 
         h1 .destaque {
             color: #009739;
+        }
+
+        /* Botão para ativar notificações no iOS */
+        .btn-notificacoes {
+            background: #fef08a;
+            color: #854d0e;
+            border: 1px solid #fde047;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+            display: none; /* Só exibe se precisar de permissão */
+        }
+
+        .btn-notificacoes:hover {
+            background: #fde047;
+            transform: scale(1.05);
         }
 
         .filtros-container {
@@ -148,7 +167,6 @@
             max-width: 1200px;
         }
 
-        /* NOVO DESIGN DO CARD COM DATA GIGANTE */
         .card {
             background: #ffffff;
             border-radius: 16px;
@@ -288,7 +306,6 @@
             font-size: 1.1rem;
         }
 
-        /* Restante do CSS mantido intacto */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -317,6 +334,8 @@
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             animation: fadeIn 0.2s ease;
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         @keyframes fadeIn {
@@ -347,6 +366,7 @@
             margin-bottom: 1.2rem;
             border-bottom: 2px solid #f0f2f5;
             padding-bottom: 0.6rem;
+            padding-right: 2rem;
         }
 
         .popup-info {
@@ -368,6 +388,18 @@
             min-width: 90px;
             color: #555;
             font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .popup-descricao-text {
+            background: #f9fafb;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            font-size: 0.95rem;
+            color: #374151;
+            white-space: pre-wrap;
+            margin-top: 0.2rem;
         }
 
         .popup-status {
@@ -1344,6 +1376,9 @@
             <span>Agenda</span>
             <span class="destaque">Gabinete 247</span>
         </h1>
+        <button id="btnNotificacao" class="btn-notificacoes" title="Ativar Notificações no celular">
+            🔔 Ativar Notificações
+        </button>
     </div>
 
     <!-- Botão de instalação PWA -->
@@ -1428,6 +1463,10 @@
                         <input type="text" id="adminParticipantes" placeholder="Ex: Ana, Carlos, Beatriz">
                     </div>
                     <div class="form-group full-width">
+                        <label>Descrição / Observações (Opcional)</label>
+                        <textarea id="adminDescricao" placeholder="Pautas, links, detalhes adicionais..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
                         <label>Status</label>
                         <select id="adminStatus">
                             <option value="Pendente">Pendente</option>
@@ -1480,7 +1519,11 @@
                 <p><strong>⏰ Hora:</strong> <span id="popupHora">—</span></p>
                 <p><strong>📍 Local:</strong> <span id="popupLocal">—</span></p>
                 <p><strong>👥 Participantes:</strong> <span id="popupParticipantes">—</span></p>
-                <p><strong>📌 Status:</strong> <span class="popup-status" id="popupStatus">Pendente</span></p>
+                <div id="popupDescricaoContainer" style="display: none;">
+                    <strong>📝 Descrição:</strong>
+                    <div class="popup-descricao-text" id="popupDescricao">—</div>
+                </div>
+                <p style="margin-top: 0.5rem;"><strong>📌 Status:</strong> <span class="popup-status" id="popupStatus">Pendente</span></p>
             </div>
             <div class="popup-acoes">
                 <button class="btn btn-mapa-popup" id="btnMapaPopup">📍 Ver no Google Maps</button>
@@ -1592,15 +1635,27 @@
                 if ('Notification' in window) {
                     if (Notification.permission === 'granted') {
                         this.permissoes.notificacao = true;
-                    } else if (Notification.permission === 'default') {
-                        const permissao = await Notification.requestPermission();
-                        this.permissoes.notificacao = permissao === 'granted';
+                        document.getElementById('btnNotificacao').style.display = 'none';
                     }
                 }
             }
 
+            async solicitarPermissao() {
+                if (!('Notification' in window)) {
+                    Swal.fire('Aviso', 'Seu navegador não suporta notificações nativas.', 'info');
+                    return;
+                }
+                const permissao = await Notification.requestPermission();
+                if (permissao === 'granted') {
+                    this.permissoes.notificacao = true;
+                    document.getElementById('btnNotificacao').style.display = 'none';
+                    Swal.fire('✅ Sucesso!', 'As notificações estão ativadas.', 'success');
+                } else {
+                    Swal.fire('⚠️ Bloqueado', 'Você bloqueou as notificações. Libere nas configurações do celular.', 'warning');
+                }
+            }
+
             enviar(titulo, mensagem, dados = {}) {
-                // Notificação Nativa (Gera o som padrão do SO)
                 if (this.permissoes.notificacao && 'Notification' in window) {
                     try {
                         const notification = new Notification(titulo, {
@@ -1611,7 +1666,7 @@
                             data: dados,
                             requireInteraction: true,
                             vibrate: [200, 100, 200],
-                            silent: false // Garante que o som do SO toque
+                            silent: false 
                         });
 
                         notification.onclick = () => {
@@ -1624,7 +1679,6 @@
                     }
                 }
 
-                // Válvula de segurança: Tenta vibrar o celular caso a notificação falhe mas o app esteja aberto
                 if (navigator.vibrate) {
                     navigator.vibrate([200, 100, 200]);
                 }
@@ -1664,6 +1718,11 @@
         }
 
         const sistemaNotificacao = new SistemaNotificacao();
+
+        // Clique no botão de notificação para iOS
+        document.getElementById('btnNotificacao').addEventListener('click', () => {
+            sistemaNotificacao.solicitarPermissao();
+        });
 
         // ==========================================
         // FUNÇÕES DE COMUNICAÇÃO COM GOOGLE SHEETS
@@ -1782,7 +1841,7 @@
         const popup = document.getElementById('popupCard');
         const filtroAno = document.getElementById('filtroAno');
         const filtroMes = document.getElementById('filtroMes');
-        const filtroDia = document.getElementById('filtroDia'); // NOVO: Filtro Dia
+        const filtroDia = document.getElementById('filtroDia'); 
         const btnLimpar = document.getElementById('btnLimparFiltros');
         const contador = document.getElementById('contadorCompromissos');
 
@@ -1804,6 +1863,7 @@
         const adminHora = document.getElementById('adminHora');
         const adminLocal = document.getElementById('adminLocal');
         const adminParticipantes = document.getElementById('adminParticipantes');
+        const adminDescricao = document.getElementById('adminDescricao'); // NOVO: Descrição
         const adminStatus = document.getElementById('adminStatus');
         
         const listaAdmin = document.getElementById('listaAdmin');
@@ -1832,6 +1892,8 @@
         const popupHora = document.getElementById('popupHora');
         const popupLocal = document.getElementById('popupLocal');
         const popupParticipantes = document.getElementById('popupParticipantes');
+        const popupDescricaoContainer = document.getElementById('popupDescricaoContainer'); // NOVO
+        const popupDescricao = document.getElementById('popupDescricao'); // NOVO
         const popupStatus = document.getElementById('popupStatus');
         const btnMapaPopup = document.getElementById('btnMapaPopup');
 
@@ -2004,6 +2066,7 @@
                 let diaNum = '--';
                 let mesNome = '---';
                 if (comp.dia) {
+                    // Adicionado "T12:00:00" para evitar problema de fuso horário no JS e pegar o dia errado
                     const dataObj = new Date(formatarDataVisao(comp.dia) + 'T12:00:00');
                     if(!isNaN(dataObj)) {
                         diaNum = String(dataObj.getDate()).padStart(2, '0');
@@ -2011,13 +2074,16 @@
                     }
                 }
 
+                // Exibe iconezinho de descrição se existir
+                const iconeDescricao = comp.descricao ? `<span title="Contém descrição" style="font-size: 0.8rem;">📝</span>` : '';
+
                 card.innerHTML = `
                     <div class="card-date-box" style="color: ${borderColor}; border-color: ${borderColor}40; background: ${borderColor}10;">
                         <span class="dia">${diaNum}</span>
                         <span class="mes">${mesNome}</span>
                     </div>
                     <div class="card-content">
-                        <div class="card-titulo">${comp.titulo || 'Sem título'}</div>
+                        <div class="card-titulo">${comp.titulo || 'Sem título'} ${iconeDescricao}</div>
                         <div class="card-data-range">${htmlDataRange}</div>
                         <div class="card-horario">🕒 ${formatarHoraVisao(comp.hora)}</div>
                         <div class="card-local">📍 ${comp.local || 'Local não informado'}</div>
@@ -2117,10 +2183,11 @@
             adminEditId.value = comp.id;
             adminTitulo.value = comp.titulo || '';
             adminData.value = formatarDataVisao(comp.dia);
-            adminDataFim.value = formatarDataVisao(comp.diaFim);
+            adminDataFim.value = formatarDataVisao(comp.diaFim); 
             adminHora.value = formatarHoraVisao(comp.hora);
             adminLocal.value = comp.local || '';
             adminParticipantes.value = comp.participantes || '';
+            adminDescricao.value = comp.descricao || ''; // Carrega Descrição
             adminStatus.value = comp.status || 'Pendente';
 
             btnSalvar.style.display = 'none';
@@ -2138,6 +2205,7 @@
             adminHora.value = '';
             adminLocal.value = '';
             adminParticipantes.value = '';
+            adminDescricao.value = ''; // Limpa Descrição
             adminStatus.value = 'Pendente';
             btnSalvar.style.display = 'inline-block';
             btnAtualizar.style.display = 'none';
@@ -2161,6 +2229,15 @@
             popupHora.textContent = formatarHoraVisao(comp.hora);
             popupLocal.textContent = comp.local || 'Local não informado';
             popupParticipantes.textContent = comp.participantes || 'Não informado';
+
+            // Carrega e exibe a descrição se existir
+            if (comp.descricao && comp.descricao.trim() !== '') {
+                popupDescricaoContainer.style.display = 'block';
+                popupDescricao.textContent = comp.descricao;
+            } else {
+                popupDescricaoContainer.style.display = 'none';
+                popupDescricao.textContent = '';
+            }
 
             popupStatus.textContent = comp.status || 'Pendente';
             let bgColor = '#e8f5e9';
@@ -2235,6 +2312,7 @@
             Swal.fire({ title: '✅ Concluído!', text: 'Compromisso concluído.', icon: 'success', timer: 1500, showConfirmButton: false });
         }
 
+        // NOVO MODO "ADIAR" COM MODAL
         function acaoAdiar() {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Cancelado') {
@@ -2443,6 +2521,7 @@
             const hora = adminHora.value;
             const local = adminLocal.value.trim();
             const participantes = adminParticipantes.value.trim() || 'Não informado';
+            const descricao = adminDescricao.value.trim() || ''; // Captura Descrição
             const status = adminStatus.value;
 
             if (!titulo || !dia || !hora || !local) {
@@ -2471,6 +2550,7 @@
                 hora,
                 local,
                 participantes,
+                descricao, // Nova prop
                 status
             };
 
@@ -2516,6 +2596,7 @@
             const hora = adminHora.value;
             const local = adminLocal.value.trim();
             const participantes = adminParticipantes.value.trim() || 'Não informado';
+            const descricao = adminDescricao.value.trim() || ''; // Captura Descrição
             const status = adminStatus.value;
 
             if (!titulo || !dia || !hora || !local) {
@@ -2537,6 +2618,7 @@
                 hora,
                 local,
                 participantes,
+                descricao, // Atualiza prop
                 status
             };
 
@@ -2602,6 +2684,7 @@
                 adminPanel.classList.add('ativo');
                 lockBtn.innerHTML = '🔓';
                 
+                // ESCONDER O CHAT DO USUÁRIO QUANDO FOR ADMIN
                 chatButton.style.display = 'none';
                 chatWindow.classList.remove('aberto');
 
@@ -2632,6 +2715,7 @@
             adminPanel.classList.remove('ativo');
             lockBtn.innerHTML = '🔒';
             
+            // MOSTRAR O CHAT DO USUÁRIO NOVAMENTE AO SAIR DO PAINEL
             chatButton.style.display = 'flex';
 
             limparFormAdmin();
