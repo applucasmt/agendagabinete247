@@ -1515,95 +1515,120 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC3M-hTVUOn2ivp_CrU0nbyhmooX2a4Uw49P5Mrq_TfSaJPlWrsBUw5xxWQZQE8tDt6A/exec';
 
         // ==========================================
-        // SISTEMA DE SOM E NOTIFICAÇÕES (MANTIDO)
+        // SISTEMA DE SOM E NOTIFICAÇÕES
         // ==========================================
         class SistemaSom {
             constructor() {
-                this.audio = null;
+                this.audioElement = null;
+                this.audioCtx = null;
                 this.somHabilitado = true;
+                this.desbloqueado = false;
+                
                 this.inicializarAudio();
+                this.configurarDesbloqueio();
             }
 
             inicializarAudio() {
                 try {
-                    this.audio = new Audio('notificacao.mp3');
-                    this.audio.addEventListener('error', () => {
-                        console.warn('Arquivo de som não encontrado. Usando fallback.');
-                        this.criarSomFallback();
-                    });
-                    this.audio.load();
-                } catch (error) {
-                    console.warn('Erro ao carregar áudio:', error);
-                    this.criarSomFallback();
+                    this.audioElement = new Audio('notificacao.mp3');
+                    this.audioElement.load();
+                } catch (e) {
+                    console.warn('Erro ao carregar mp3', e);
+                }
+
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioCtx = new AudioContext();
+                } catch (e) {
+                    console.warn('Web Audio API não suportada');
                 }
             }
 
-            criarSomFallback() {
+            // O Desbloqueio silencioso no primeiro toque da tela (Especial Mobile)
+            configurarDesbloqueio() {
+                const desbloquear = () => {
+                    if (this.desbloqueado) return;
+
+                    if (this.audioElement) {
+                        this.audioElement.volume = 0; // Muta o áudio
+                        let p = this.audioElement.play();
+                        if (p !== undefined) {
+                            p.then(() => {
+                                this.audioElement.pause();
+                                this.audioElement.currentTime = 0;
+                                this.audioElement.volume = 1; // Restaura o volume
+                            }).catch(() => {});
+                        }
+                    }
+
+                    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                        this.audioCtx.resume();
+                    }
+
+                    this.desbloqueado = true;
+                    document.removeEventListener('touchstart', desbloquear);
+                    document.removeEventListener('click', desbloquear);
+                };
+
+                document.addEventListener('touchstart', desbloquear, { once: true });
+                document.addEventListener('click', desbloquear, { once: true });
+            }
+
+            tocarFallback() {
+                if (!this.audioCtx) return;
                 try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    const audioCtx = new AudioContext();
+                    if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
                     
-                    this.playFallback = () => {
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+                    
+                    osc.frequency.value = 880;
+                    osc.type = 'sine';
+                    
+                    gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
+                    
+                    osc.start(this.audioCtx.currentTime);
+                    osc.stop(this.audioCtx.currentTime + 0.15);
+                    
+                    setTimeout(() => {
                         try {
-                            const oscillator = audioCtx.createOscillator();
-                            const gainNode = audioCtx.createGain();
-                            oscillator.connect(gainNode);
-                            gainNode.connect(audioCtx.destination);
-                            oscillator.frequency.value = 880;
-                            oscillator.type = 'sine';
-                            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                            oscillator.start(audioCtx.currentTime);
-                            oscillator.stop(audioCtx.currentTime + 0.15);
-                            
-                            setTimeout(() => {
-                                try {
-                                    const osc2 = audioCtx.createOscillator();
-                                    const gain2 = audioCtx.createGain();
-                                    osc2.connect(gain2);
-                                    gain2.connect(audioCtx.destination);
-                                    osc2.frequency.value = 1100;
-                                    osc2.type = 'sine';
-                                    gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                                    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                                    osc2.start(audioCtx.currentTime);
-                                    osc2.stop(audioCtx.currentTime + 0.1);
-                                } catch (e) {}
-                            }, 200);
-                        } catch (error) {
-                            console.warn('Erro no som fallback:', error);
-                        }
-                    };
-                    
-                    this.audio = {
-                        play: () => {
-                            if (this.somHabilitado && audioCtx.state === 'suspended') {
-                                audioCtx.resume();
-                            }
-                            this.playFallback();
-                        }
-                    };
-                } catch (error) {
-                    console.warn('Web Audio API não disponível');
-                    this.audio = { play: () => {} };
+                            const osc2 = this.audioCtx.createOscillator();
+                            const gain2 = this.audioCtx.createGain();
+                            osc2.connect(gain2);
+                            gain2.connect(this.audioCtx.destination);
+                            osc2.frequency.value = 1100;
+                            osc2.type = 'sine';
+                            gain2.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+                            gain2.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
+                            osc2.start(this.audioCtx.currentTime);
+                            osc2.stop(this.audioCtx.currentTime + 0.1);
+                        } catch(e){}
+                    }, 200);
+                } catch (e) {
+                    console.warn('Erro no fallback', e);
                 }
             }
 
             tocar() {
                 if (!this.somHabilitado) return;
-                try {
-                    if (this.audio && this.audio.play) {
-                        if (this.audio.currentTime > 0) {
-                            this.audio.currentTime = 0;
-                        }
-                        this.audio.play().catch(() => {
-                            if (this.playFallback) this.playFallback();
+
+                if (this.audioElement) {
+                    this.audioElement.currentTime = 0;
+                    this.audioElement.volume = 1;
+                    let promise = this.audioElement.play();
+                    
+                    if (promise !== undefined) {
+                        promise.catch(error => {
+                            console.warn('Autoplay mp3 bloqueado, tentando fallback...', error);
+                            this.tocarFallback();
                         });
-                    } else if (this.playFallback) {
-                        this.playFallback();
                     }
-                } catch (error) {
-                    console.warn('Erro ao tocar som:', error);
+                } else {
+                    this.tocarFallback();
                 }
             }
         }
