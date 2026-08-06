@@ -1569,7 +1569,7 @@
         const publicVapidKey = 'BEt4YGQ19draJDlvip-CZK218tKjj03P-ugMS1MVsBT-rqxh3iaY-2ksUWRV4wfiwr_DNkB7iBbjz_TO1NNOUG4'; 
 
         // ==========================================
-        // TOGGLE FORMULÁRIO ADMIN
+        // TOGGLE FORMULÁRIO ADMIN E MÁSCARAS
         // ==========================================
         document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
             const form = document.getElementById('formAdmin');
@@ -2093,7 +2093,7 @@
 
                 card.addEventListener('click', (e) => {
                     if (e.target.classList.contains('btn-mapa')) return;
-                    abrirPopup(comp);
+                    abrirPopup(comp); // Aqui é passado o objeto inteiro da reunião!
                 });
 
                 const btnMapa = card.querySelector('.btn-mapa');
@@ -2370,20 +2370,21 @@
             isSincronizandoChat = true;
             
             try {
-                const msgsServer = await carregarMensagensChat();
-                if (!msgsServer || msgsServer.length === 0) {
+                const msgsServer = await fetchGoogle('listar_chat');
+                if (!msgsServer || msgsServer.status !== 'sucesso' || !msgsServer.dados || msgsServer.dados.length === 0) {
                     isSincronizandoChat = false;
                     return;
                 }
 
+                const dadosServidor = msgsServer.dados;
                 const msgsLocaisReais = mensagensChat.filter(m => !String(m.id).startsWith('temp_'));
 
-                if (msgsServer.length > msgsLocaisReais.length) {
-                    const qtdNovas = msgsServer.length - msgsLocaisReais.length;
-                    const novasMensagens = msgsServer.slice(-qtdNovas);
+                if (dadosServidor.length > msgsLocaisReais.length) {
+                    const qtdNovas = dadosServidor.length - msgsLocaisReais.length;
+                    const novasMensagens = dadosServidor.slice(-qtdNovas);
 
                     const msgsTemporarias = mensagensChat.filter(m => String(m.id).startsWith('temp_'));
-                    mensagensChat = [...msgsServer, ...msgsTemporarias];
+                    mensagensChat = [...dadosServidor, ...msgsTemporarias];
 
                     let dispararNotificacao = false;
                     let tituloNotif = '';
@@ -2415,7 +2416,7 @@
                     if (adminLogado) atualizarChatAdmin();
                 }
             } catch (error) {
-                console.error("Erro na sincronização:", error);
+                console.error("Erro na sincronização do chat:", error);
             }
             
             isSincronizandoChat = false;
@@ -2438,7 +2439,7 @@
             atualizarChatUsuario();
             if (adminLogado) atualizarChatAdmin();
 
-            const result = await salvarMensagemChat({
+            const result = await fetchGoogle('adicionar_chat', {
                 remetente: remetente,
                 texto: texto,
                 data: agora,
@@ -2519,7 +2520,7 @@
             const status = adminStatus.value;
 
             if (!titulo || !dia || !hora || !local) {
-                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos markedos com *', 'warning');
                 return;
             }
 
@@ -2536,7 +2537,7 @@
             };
 
             Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const result = await salvarCompromisso(novo);
+            const result = await fetchGoogle('adicionar', novo);
             
             if (result.status === 'sucesso') {
                 novo.id = result.id; 
