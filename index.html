@@ -27,40 +27,22 @@
 
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: #f0f2f5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
-            position: relative;
-            overflow-x: hidden;
+            background: #f0f2f5; min-height: 100vh; display: flex;
+            flex-direction: column; align-items: center;
+            padding: 2rem 1rem; position: relative; overflow-x: hidden;
         }
 
         .header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+            flex-wrap: wrap; justify-content: center; width: 100%;
         }
 
-        h1 {
-            color: #1a1a2e;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            font-size: 1.8rem;
-        }
-
+        h1 { color: #1a1a2e; font-weight: 700; letter-spacing: -0.5px; font-size: 1.8rem; }
         h1 .destaque { color: #009739; }
 
         .btn-notificacoes {
@@ -83,22 +65,23 @@
         .btn-toggle-ui:hover { background: #f9fafb; border-color: #009739; color: #009739; }
 
         /* ========================================= */
-        /* NOVO CALENDÁRIO HORIZONTAL (CARROSSEL)    */
+        /* NOVO CALENDÁRIO HORIZONTAL                */
         /* ========================================= */
         .calendar-nav {
             display: flex; flex-direction: column; width: 100%; max-width: 1200px;
             background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem;
             margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            animation: fadeIn 0.3s ease;
         }
 
         .month-selector-container {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
-            border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem;
+            border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;
         }
 
         .month-selector-container input[type="month"] {
-            border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #1a1a2e;
-            outline: none; cursor: pointer; color: #009739;
+            border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #009739;
+            outline: none; cursor: pointer;
         }
 
         .contador {
@@ -122,7 +105,6 @@
         }
 
         .day-tab:hover { border-color: #009739; background: #f0fdf4; }
-        
         .day-tab.active { background: #009739; border-color: #009739; color: #ffffff; box-shadow: 0 4px 10px rgba(0,151,57,0.3); }
 
         .day-tab .day-name { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
@@ -131,13 +113,6 @@
         .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
         .day-tab.active .day-num { color: #ffffff; }
 
-        /* Estilo para destacar o dia de "Hoje" */
-        .day-tab.is-today { border-color: #009739; background: #f0fdf4; }
-        .day-tab.is-today .day-name { color: #009739; }
-        .day-tab.active.is-today { background: #009739; color: #ffffff; }
-        .day-tab.active.is-today .day-name { color: #dcfce7; }
-
-        /* Bolinha indicadora de compromissos no dia */
         .day-tab .event-dot {
             width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;
             position: absolute; bottom: 6px; display: none;
@@ -156,6 +131,7 @@
             background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
             border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start;
+            animation: fadeIn 0.3s ease;
         }
 
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
@@ -177,8 +153,8 @@
             padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739;
             border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
         }
-
         .card-status-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.8rem; border-radius: 20px; align-self: flex-start; }
+        
         .sem-resultados { grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: #6b7280; font-size: 1.1rem; }
 
         .popup-overlay, .login-overlay {
@@ -267,9 +243,7 @@
         <button id="btnNotificacao" class="btn-notificacoes">🔔 Ativar Notificações</button>
     </div>
 
-    <button class="install-pwa" id="installPWA" style="display:none; position: fixed; bottom: 6rem; right: 2rem; background: #009739; color: white; border: none; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: 600; z-index: 999;">📱 Instalar App</button>
-
-    <!-- NOVO CALENDÁRIO HORIZONTAL LIMPÃO -->
+    <!-- CALENDÁRIO HORIZONTAL LIMPÃO -->
     <div class="calendar-nav">
         <div class="month-selector-container">
             <input type="month" id="monthSelector" title="Escolha o Mês e Ano">
@@ -372,7 +346,7 @@
                 <p><strong>📅 Período:</strong> <span id="popupDia">—</span></p>
                 <p><strong>⏰ Hora:</strong> <span id="popupHora">—</span></p>
                 <p><strong>📍 Local:</strong> <span id="popupLocal">—</span></p>
-                <p><strong>👥 Pessoas:</strong> <span id="popupParticipantes">—</span></p>
+                <p><strong>👥 Participantes:</strong> <span id="popupParticipantes">—</span></p>
                 <div id="popupDescricaoContainer" style="display: none;">
                     <strong>📝 Descrição:</strong>
                     <div class="popup-descricao-text" id="popupDescricao">—</div>
@@ -436,44 +410,38 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // CONFIGURAÇÕES GERAIS
+        // CONFIGURAÇÃO DA API E VAPID KEY
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
         
-        // CHAVE PÚBLICA VAPID (Substitua pela sua chave gerada pelo servidor Web Push)
+        // Coloque sua Chave Pública (Public Key) VAPID aqui
         const publicVapidKey = 'BAZb...coloque_sua_chave_aqui...'; 
 
         // ==========================================
-        // TOGGLE ADMIN FORM
+        // TOGGLE FORMULÁRIO ADMIN
         // ==========================================
         document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
             const form = document.getElementById('formAdmin');
             if (form.style.display === 'none' || form.style.display === '') {
                 form.style.display = 'block';
                 this.innerHTML = '➖ Ocultar Formulário';
-                this.style.background = '#f3f4f6';
-                this.style.color = '#555';
-                this.style.borderColor = '#d1d5db';
+                this.style.background = '#f3f4f6'; this.style.color = '#555'; this.style.borderColor = '#d1d5db';
             } else {
                 form.style.display = 'none';
                 this.innerHTML = '➕ Adicionar Novo Compromisso';
-                this.style.background = '#e8f5e9';
-                this.style.color = '#009739';
-                this.style.borderColor = '#009739';
+                this.style.background = '#e8f5e9'; this.style.color = '#009739'; this.style.borderColor = '#009739';
             }
         });
 
         // ==========================================
-        // WEB PUSH API E NOTIFICAÇÕES
+        // WEB PUSH E NOTIFICAÇÕES
         // ==========================================
         function urlBase64ToUint8Array(base64String) {
             const padding = '='.repeat((4 - base64String.length % 4) % 4);
             const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
             const rawData = window.atob(base64);
             const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
+            for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
             return outputArray;
         }
 
@@ -484,18 +452,17 @@
             }
 
             async inicializar() {
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    this.permissoes.notificacao = true;
-                    document.getElementById('btnNotificacao').style.display = 'none';
-                } else if ('Notification' in window && Notification.permission === 'default') {
-                    document.getElementById('btnNotificacao').style.display = 'flex';
+                if ('Notification' in window) {
+                    if (Notification.permission === 'granted') {
+                        this.permissoes.notificacao = true;
+                        document.getElementById('btnNotificacao').style.display = 'none';
+                    }
                 }
             }
 
             async solicitarPermissao() {
                 if (!('Notification' in window)) {
-                    Swal.fire('Aviso', 'Seu navegador não suporta notificações nativas.', 'info');
-                    return;
+                    Swal.fire('Aviso', 'Navegador não suporta notificações nativas.', 'info'); return;
                 }
                 const permissao = await Notification.requestPermission();
                 if (permissao === 'granted') {
@@ -504,36 +471,30 @@
                     await this.inscreverWebPush();
                     Swal.fire('✅ Sucesso!', 'As notificações estão ativadas.', 'success');
                 } else {
-                    Swal.fire('⚠️ Bloqueado', 'Você bloqueou as notificações. Libere nas configurações do celular.', 'warning');
+                    Swal.fire('⚠️ Bloqueado', 'Você bloqueou as notificações. Libere nas configurações.', 'warning');
                 }
             }
 
             async inscreverWebPush() {
                 if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
                 try {
+                    if (publicVapidKey.includes('coloque_sua_chave')) {
+                        console.warn("Chave VAPID não configurada. Inscrição ignorada."); return; 
+                    }
                     const registration = await navigator.serviceWorker.ready;
-                    if (publicVapidKey.includes('coloque_sua_chave')) return; 
-
                     const subscription = await registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+                        userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
                     });
-                    
                     await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ acao: 'salvar_inscricao_push', dados: subscription })
                     });
-                } catch (e) {
-                    console.warn('Erro ao inscrever no PushManager:', e);
-                }
+                } catch (e) {}
             }
 
             enviar(titulo, mensagem, dados = {}) {
                 if (this.permissoes.notificacao && 'Notification' in window) {
-                    try {
-                        new Notification(titulo, { body: mensagem, icon: '/icons/icon-192x192.png', silent: false });
-                    } catch (e) {}
+                    try { new Notification(titulo, { body: mensagem, icon: '/icons/icon-192x192.png', silent: false }); } catch (e) {}
                 }
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             }
@@ -543,14 +504,19 @@
         document.getElementById('btnNotificacao').addEventListener('click', () => sistemaNotificacao.solicitarPermissao());
 
         // ==========================================
-        // COMUNICAÇÃO GOOGLE SHEETS
+        // DADOS GLOBAIS E REQUISIÇÕES
         // ==========================================
+        let compromissos = [];
+        let compromissosFiltrados = [];
+        let mensagensChat = [];
+        let adminLogado = false;
+        let currentSelectedDate = ''; // 'ALL' ou 'YYYY-MM-DD'
+
         async function fetchGoogle(acao, dados = null) {
             try {
                 const payload = dados ? { acao, dados } : { acao };
                 const res = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
                 return await res.json();
@@ -560,16 +526,8 @@
         }
 
         // ==========================================
-        // ESTADO GLOBAL E LÓGICA DE DADOS
+        // FUNÇÕES ÚTEIS
         // ==========================================
-        let compromissos = [];
-        let compromissosFiltrados = [];
-        let mensagensChat = [];
-        let adminLogado = false;
-        let proximoId = 1;
-        
-        let currentSelectedDate = ''; // Será a data atual ao iniciar
-
         function getHojeObj() {
             const now = new Date();
             const ano = now.getFullYear();
@@ -606,12 +564,12 @@
             const h = getHojeObj();
             const monthSel = document.getElementById('monthSelector');
             monthSel.value = h.yyyymm;
-            currentSelectedDate = h.yyyymmdd; // Começa sempre no dia de HOJE
+            currentSelectedDate = h.yyyymmdd; // Começa no DIA DE HOJE
             
             monthSel.addEventListener('change', () => {
                 const val = monthSel.value;
                 const objH = getHojeObj();
-                // Se voltar pro mês atual, seleciona o dia atual de novo
+                // Se escolheu o mês atual de novo, foca no Hoje. Se for outro mês, foca em "Mês Todos"
                 if (val === objH.yyyymm) {
                     currentSelectedDate = objH.yyyymmdd;
                 } else {
@@ -633,17 +591,22 @@
             const diasNoMes = new Date(year, month, 0).getDate();
             const h = getHojeObj();
 
-            // Botão TODOS (Mês inteiro)
+            // 1. ABA: MÊS TODOS
             const btnAll = document.createElement('div');
             btnAll.className = `day-tab ${currentSelectedDate === 'ALL' ? 'active' : ''}`;
             btnAll.innerHTML = `<span class="day-name">MÊS</span><span class="day-num" style="font-size: 0.95rem; margin-top:6px;">Todos</span>`;
             btnAll.onclick = () => { currentSelectedDate = 'ALL'; renderDaysCarousel(); aplicarFiltros(); };
             carousel.appendChild(btnAll);
 
-            // Botão HOJE (Atalho Rápido)
+            // 2. ABA: HOJE (Fica fixo na 2ª posição)
+            const isHojeSelected = (currentSelectedDate === h.yyyymmdd);
             const btnHoje = document.createElement('div');
-            btnHoje.className = `day-tab ${currentSelectedDate === h.yyyymmdd ? 'active' : ''}`;
-            btnHoje.innerHTML = `<span class="day-name">IR PARA</span><span class="day-num" style="font-size: 1.1rem; margin-top:5px;">Hoje</span>`;
+            btnHoje.className = `day-tab ${isHojeSelected ? 'active' : ''}`;
+            btnHoje.style.border = '2px solid #009739'; 
+            if(!isHojeSelected) { btnHoje.style.background = '#e8f5e9'; }
+            
+            const colorHojeNum = isHojeSelected ? '#ffffff' : '#009739';
+            btnHoje.innerHTML = `<span class="day-name" style="color: ${colorHojeNum}">HOJE</span><span class="day-num" style="color: ${colorHojeNum}">${h.dia}</span>`;
             btnHoje.onclick = () => {
                 document.getElementById('monthSelector').value = h.yyyymm;
                 currentSelectedDate = h.yyyymmdd;
@@ -652,44 +615,35 @@
             };
             carousel.appendChild(btnHoje);
 
-            // Cria os botões numéricos dos dias
+            // 3. ABAS: Restante dos dias numéricos
             for(let d = 1; d <= diasNoMes; d++) {
                 const diaStr = String(d).padStart(2, '0');
                 const dataCompleta = `${year}-${month}-${diaStr}`;
                 const objData = new Date(`${dataCompleta}T12:00:00`);
                 const nomeSemana = objData.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.','');
 
-                // Verifica se tem compromisso neste dia específico
                 const temCompromisso = compromissos.some(comp => {
                     const dInicio = formatarDataVisao(comp.dia);
                     const dFim = comp.diaFim ? formatarDataVisao(comp.diaFim) : dInicio;
                     return dataCompleta >= dInicio && dataCompleta <= dFim;
                 });
 
-                const isHoje = (dataCompleta === h.yyyymmdd);
-                const displaySemana = isHoje ? "HOJE" : nomeSemana;
-
                 const btn = document.createElement('div');
-                btn.className = `day-tab day-chronological ${currentSelectedDate === dataCompleta ? 'active' : ''} ${temCompromisso ? 'has-event' : ''}`;
-                
-                // Se for hoje, destaca um pouco mais
-                if(isHoje) btn.classList.add('is-today');
-
-                btn.innerHTML = `<span class="day-name">${displaySemana}</span><span class="day-num">${d}</span><div class="event-dot"></div>`;
+                btn.className = `day-tab ${currentSelectedDate === dataCompleta ? 'active' : ''} ${temCompromisso ? 'has-event' : ''}`;
+                btn.innerHTML = `<span class="day-name">${nomeSemana}</span><span class="day-num">${d}</span><div class="event-dot"></div>`;
                 
                 btn.onclick = () => {
                     currentSelectedDate = dataCompleta;
                     renderDaysCarousel();
                     aplicarFiltros();
                 };
-                
                 carousel.appendChild(btn);
             }
 
-            // Centraliza no dia selecionado ou no atalho automaticamente
+            // Scroll suave automático para a aba ativa
             setTimeout(() => {
-                const target = carousel.querySelector('.day-chronological.active') || carousel.querySelector('.day-tab.active');
-                if(target) target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                const ativos = carousel.querySelectorAll('.day-tab.active');
+                if(ativos.length > 0) ativos[0].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }, 50);
         }
 
@@ -699,14 +653,11 @@
             compromissosFiltrados = compromissos.filter(c => {
                 const dInicio = formatarDataVisao(c.dia);
                 const dFim = c.diaFim ? formatarDataVisao(c.diaFim) : dInicio;
-                
                 if (!dInicio) return false;
 
                 if (currentSelectedDate === 'ALL') {
-                    // Pega o início ou fim que bater com o Mês/Ano selecionado
                     return dInicio.startsWith(valMes) || dFim.startsWith(valMes);
                 } else {
-                    // Clicou num dia exato no carrossel
                     return currentSelectedDate >= dInicio && currentSelectedDate <= dFim;
                 }
             });
@@ -719,7 +670,7 @@
             const grid = document.getElementById('agendaGrid');
             grid.innerHTML = '';
             if (compromissosFiltrados.length === 0) {
-                grid.innerHTML = '<div class="sem-resultados">📭 Nenhum compromisso marcado para este dia.</div>';
+                grid.innerHTML = '<div class="sem-resultados">📭 Nenhum compromisso marcado para este período.</div>';
                 document.getElementById('contadorCompromissos').textContent = '0 compromissos';
                 return;
             }
@@ -747,14 +698,14 @@
                 if (c.diaFim) rng += ` até ${formatarDataBR(c.diaFim)}`;
 
                 const temLocal = c.local && !c.local.toLowerCase().includes('online');
-                const iconeDesc = c.descricao ? '📝' : '';
+                const iconeDesc = c.descricao ? `<span title="Contém descrição" style="font-size: 0.8rem;">📝</span>` : '';
 
                 div.innerHTML = `
                     <div class="card-date-box" style="color:${bColor}; border-color:${bColor}40; background:${bColor}10;">
                         <span class="dia">${dNum}</span><span class="mes">${mNome}</span>
                     </div>
                     <div class="card-content">
-                        <div class="card-titulo">${c.titulo} <span style="font-size: 0.8rem;">${iconeDesc}</span></div>
+                        <div class="card-titulo">${c.titulo} ${iconeDesc}</div>
                         <div class="card-data-range">${rng}</div>
                         <div class="card-horario">🕒 ${formatarHoraVisao(c.hora)}</div>
                         <div class="card-local">📍 ${c.local || '-'}</div>
@@ -764,10 +715,7 @@
                         </div>
                     </div>`;
 
-                div.addEventListener('click', (e) => {
-                    if (!e.target.classList.contains('btn-mapa')) abrirPopup(c.id);
-                });
-                
+                div.addEventListener('click', (e) => { if (!e.target.classList.contains('btn-mapa')) abrirPopup(c.id); });
                 const btnM = div.querySelector('.btn-mapa');
                 if (btnM) btnM.addEventListener('click', e => { e.stopPropagation(); abrirGoogleMaps(c.local); });
                 
@@ -777,7 +725,7 @@
         }
 
         // ==========================================
-        // POPUP E AÇÕES DE COMPROMISSO
+        // POPUP E AÇÕES
         // ==========================================
         function abrirPopup(id) {
             const c = compromissos.find(x => x.id === id);
@@ -790,7 +738,7 @@
             document.getElementById('popupLocal').textContent = c.local || '-';
             document.getElementById('popupParticipantes').textContent = c.participantes || '-';
             
-            if (c.descricao) {
+            if (c.descricao && c.descricao.trim() !== '') {
                 document.getElementById('popupDescricaoContainer').style.display = 'block';
                 document.getElementById('popupDescricao').textContent = c.descricao;
             } else {
@@ -818,7 +766,7 @@
         async function alterarStatus(novoStatus) {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === novoStatus || compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Ação inválida para o status atual.', 'warning'); return;
+                Swal.fire('Aviso', 'Ação inválida.', 'warning'); return;
             }
             compromissoAtual.status = novoStatus;
             const idx = compromissos.findIndex(x => x.id === compromissoAtual.id);
@@ -830,7 +778,7 @@
             
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await fetchGoogle('atualizar', compromissoAtual);
-            Swal.fire({ title: '✅ Sucesso!', icon: 'success', timer: 1500, showConfirmButton: false });
+            Swal.fire({ title: 'Sucesso!', icon: 'success', timer: 1500, showConfirmButton: false });
         }
 
         document.getElementById('btnCancelar').addEventListener('click', () => alterarStatus('Cancelado'));
@@ -861,17 +809,16 @@
             
             renderDaysCarousel();
             aplicarFiltros();
-            
             document.getElementById('popupOverlay').classList.remove('ativo');
             document.getElementById('adiarOverlay').classList.remove('ativo');
             
-            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Salvando...', didOpen: () => Swal.showLoading() });
             await fetchGoogle('atualizar', compromissoAtual);
             Swal.fire({ title: 'Adiado!', icon: 'success', timer: 1500, showConfirmButton: false });
         });
 
         // ==========================================
-        // PAINEL ADMIN
+        // PAINEL ADMIN E CHAT
         // ==========================================
         function renderListaAdmin() {
             if (!adminLogado) return;
@@ -880,10 +827,13 @@
             compromissos.forEach(c => {
                 const item = document.createElement('div');
                 item.className = 'item-admin';
+                let strDataAdmin = formatarDataBR(c.dia);
+                if (c.diaFim) strDataAdmin += ` a ${formatarDataBR(c.diaFim)}`;
+
                 item.innerHTML = `
                     <div class="info">
                         <span class="titulo">${c.titulo}</span>
-                        <span class="data">📅 ${formatarDataBR(c.dia)} ${c.diaFim ? ' a '+formatarDataBR(c.diaFim):''} | 🕒 ${formatarHoraVisao(c.hora)}</span>
+                        <span class="data">📅 ${strDataAdmin} | 🕒 ${formatarHoraVisao(c.hora)}</span>
                     </div>
                     <div class="acoes">
                         <button class="btn-editar" data-id="${c.id}">✏️</button>
@@ -904,12 +854,8 @@
                     
                     document.getElementById('btnSalvar').style.display = 'none';
                     document.getElementById('btnAtualizar').style.display = 'inline-block';
-                    
-                    // Mostra o form caso esteja escondido
-                    const f = document.getElementById('formAdmin');
-                    f.style.display = 'block';
+                    document.getElementById('formAdmin').style.display = 'block';
                     document.getElementById('btnToggleAdminForm').textContent = '➖ Ocultar Formulário';
-                    
                     document.getElementById('adminPanel').scrollIntoView();
                 };
 
@@ -946,11 +892,8 @@
                 renderDaysCarousel();
                 aplicarFiltros();
                 document.getElementById('formAdmin').reset();
-                
-                // Oculta o formulário novamente após salvar com sucesso
                 document.getElementById('formAdmin').style.display = 'none';
                 document.getElementById('btnToggleAdminForm').textContent = '➕ Adicionar Novo Compromisso';
-                
                 Swal.fire({ title: 'Sucesso!', icon: 'success', timer: 1500 });
             }
         });
@@ -977,10 +920,8 @@
                 document.getElementById('formAdmin').reset();
                 document.getElementById('btnSalvar').style.display = 'inline-block';
                 document.getElementById('btnAtualizar').style.display = 'none';
-                
                 document.getElementById('formAdmin').style.display = 'none';
                 document.getElementById('btnToggleAdminForm').textContent = '➕ Adicionar Novo Compromisso';
-                
                 Swal.fire({ title: 'Atualizado!', icon: 'success', timer: 1500 });
             }
         });
@@ -1005,54 +946,9 @@
             }
         });
 
-        // ==========================================
-        // CHAT E POLLING GERAL
-        // ==========================================
-        async function sincronizarChat() {
-            const m = await fetchGoogle('listar_chat');
-            if (m.status === 'sucesso' && m.dados) {
-                if (m.dados.length > mensagensChat.length) {
-                    mensagensChat = m.dados;
-                    renderizarChatUI();
-                    if (!adminLogado && !document.getElementById('chatWindow').classList.contains('aberto')) {
-                        sistemaNotificacao.enviar('Gabinete 247', 'Você tem uma nova mensagem na agenda.');
-                    }
-                }
-            }
-        }
-
-        function renderizarChatUI() {
-            const cx = document.getElementById(adminLogado ? 'adminChatMessages' : 'chatMessages');
-            cx.innerHTML = '';
-            mensagensChat.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.remetente === (adminLogado ? 'admin' : 'user') ? 'user' : 'bot'}`;
-                const timeStr = new Date(msg.data).getHours().toString().padStart(2, '0') + ':' + new Date(msg.data).getMinutes().toString().padStart(2, '0');
-                div.innerHTML = `${msg.texto} <span class="time">${timeStr}</span>`;
-                cx.appendChild(div);
-            });
-            cx.scrollTop = cx.scrollHeight;
-        }
-
-        document.getElementById('chatSend').onclick = () => enviarMsg('user');
-        document.getElementById('adminChatSend').onclick = () => enviarMsg('admin');
-
-        async function enviarMsg(remetente) {
-            const input = document.getElementById(remetente === 'user' ? 'chatInput' : 'adminChatInput');
-            if (!input.value) return;
-            const nm = { remetente, texto: input.value, data: new Date().toISOString() };
-            mensagensChat.push(nm);
-            input.value = '';
-            renderizarChatUI();
-            await fetchGoogle('adicionar_chat', nm);
-        }
-
-        document.getElementById('chatButton').onclick = () => document.getElementById('chatWindow').classList.toggle('aberto');
-        document.getElementById('closeChat').onclick = () => document.getElementById('chatWindow').classList.remove('aberto');
-        
         document.getElementById('lockBtn').onclick = () => {
             if(adminLogado){
-                if (!confirm('Sair do painel administrativo?')) return;
+                if (!confirm('Sair do painel?')) return;
                 adminLogado = false;
                 document.getElementById('adminPanel').classList.remove('ativo');
                 document.getElementById('chatButton').style.display = 'flex';
@@ -1063,22 +959,55 @@
             }
         };
 
+        // CHAT SYNC
+        async function sincronizarChat() {
+            const m = await fetchGoogle('listar_chat');
+            if (m.status === 'sucesso' && m.dados && m.dados.length > mensagensChat.length) {
+                mensagensChat = m.dados;
+                renderizarChatUI();
+            }
+        }
+
+        function renderizarChatUI() {
+            const cx = document.getElementById(adminLogado ? 'adminChatMessages' : 'chatMessages');
+            cx.innerHTML = '';
+            mensagensChat.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.remetente === (adminLogado ? 'admin' : 'user') ? 'user' : 'bot'}`;
+                div.innerHTML = `${msg.texto}`;
+                cx.appendChild(div);
+            });
+            cx.scrollTop = cx.scrollHeight;
+        }
+
+        document.getElementById('chatSend').onclick = () => enviarMsg('user');
+        document.getElementById('adminChatSend').onclick = () => enviarMsg('admin');
+        async function enviarMsg(remetente) {
+            const input = document.getElementById(remetente === 'user' ? 'chatInput' : 'adminChatInput');
+            if (!input.value) return;
+            const nm = { remetente, texto: input.value, data: new Date().toISOString() };
+            mensagensChat.push(nm);
+            input.value = '';
+            renderizarChatUI();
+            await fetchGoogle('adicionar_chat', nm);
+        }
+        document.getElementById('chatButton').onclick = () => document.getElementById('chatWindow').classList.toggle('aberto');
+        document.getElementById('closeChat').onclick = () => document.getElementById('chatWindow').classList.remove('aberto');
+
         // ==========================================
         // INICIALIZAÇÃO
         // ==========================================
         async function inicializar() {
             Swal.fire({ title: 'Carregando Agenda...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             
-            initCalendar(); // Agora ele preenche 'currentSelectedDate' com o HOJE
-
             const comp = await fetchGoogle('listar');
             if (comp.status === 'sucesso') compromissos = comp.dados || [];
             
             const msg = await fetchGoogle('listar_chat');
             if (msg.status === 'sucesso') mensagensChat = msg.dados || [];
-            
-            renderDaysCarousel(); // Atualiza o carrossel (que fará o scroll automático)
-            aplicarFiltros();     // Filtra a agenda para o HOJE
+
+            // Dispara lógica de data e carrossel
+            initCalendar();
             renderizarChatUI();
 
             Swal.close();
