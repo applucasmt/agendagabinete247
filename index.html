@@ -131,6 +131,12 @@
         .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
         .day-tab.active .day-num { color: #ffffff; }
 
+        /* Estilo para destacar o dia de "Hoje" */
+        .day-tab.is-today { border-color: #009739; background: #f0fdf4; }
+        .day-tab.is-today .day-name { color: #009739; }
+        .day-tab.active.is-today { background: #009739; color: #ffffff; }
+        .day-tab.active.is-today .day-name { color: #dcfce7; }
+
         /* Bolinha indicadora de compromissos no dia */
         .day-tab .event-dot {
             width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;
@@ -263,16 +269,15 @@
 
     <button class="install-pwa" id="installPWA" style="display:none; position: fixed; bottom: 6rem; right: 2rem; background: #009739; color: white; border: none; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: 600; z-index: 999;">📱 Instalar App</button>
 
-    <!-- NOVO CALENDÁRIO HORIZONTAL -->
+    <!-- NOVO CALENDÁRIO HORIZONTAL LIMPÃO -->
     <div class="calendar-nav">
         <div class="month-selector-container">
-            <!-- INPUT NATIVO DE MÊS/ANO QUE ABRE A RODINHA NO CELULAR -->
             <input type="month" id="monthSelector" title="Escolha o Mês e Ano">
             <span class="contador" id="contadorCompromissos">0 compromissos</span>
         </div>
         
         <div class="days-carousel" id="daysCarousel">
-            <!-- Preenchido via JavaScript -->
+            <!-- Abas preenchidas pelo JavaScript -->
         </div>
     </div>
 
@@ -434,10 +439,12 @@
         // CONFIGURAÇÕES GERAIS
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
-        const publicVapidKey = 'BAZb_coloque_sua_chave_real_aqui_para_funcionar'; 
+        
+        // CHAVE PÚBLICA VAPID (Substitua pela sua chave gerada pelo servidor Web Push)
+        const publicVapidKey = 'BAZb...coloque_sua_chave_aqui...'; 
 
         // ==========================================
-        // TOGGLE FORMULÁRIO ADMIN
+        // TOGGLE ADMIN FORM
         // ==========================================
         document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
             const form = document.getElementById('formAdmin');
@@ -457,14 +464,16 @@
         });
 
         // ==========================================
-        // WEB PUSH E NOTIFICAÇÕES
+        // WEB PUSH API E NOTIFICAÇÕES
         // ==========================================
         function urlBase64ToUint8Array(base64String) {
             const padding = '='.repeat((4 - base64String.length % 4) % 4);
             const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
             const rawData = window.atob(base64);
             const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
             return outputArray;
         }
 
@@ -485,7 +494,7 @@
 
             async solicitarPermissao() {
                 if (!('Notification' in window)) {
-                    Swal.fire('Aviso', 'Navegador não suporta notificações.', 'info');
+                    Swal.fire('Aviso', 'Seu navegador não suporta notificações nativas.', 'info');
                     return;
                 }
                 const permissao = await Notification.requestPermission();
@@ -493,30 +502,38 @@
                     this.permissoes.notificacao = true;
                     document.getElementById('btnNotificacao').style.display = 'none';
                     await this.inscreverWebPush();
-                    Swal.fire('✅ Sucesso!', 'Notificações ativadas.', 'success');
+                    Swal.fire('✅ Sucesso!', 'As notificações estão ativadas.', 'success');
                 } else {
-                    Swal.fire('⚠️ Bloqueado', 'Libere nas configurações do celular.', 'warning');
+                    Swal.fire('⚠️ Bloqueado', 'Você bloqueou as notificações. Libere nas configurações do celular.', 'warning');
                 }
             }
 
             async inscreverWebPush() {
                 if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
                 try {
-                    if (publicVapidKey.includes('coloque_sua_chave')) return; 
                     const registration = await navigator.serviceWorker.ready;
+                    if (publicVapidKey.includes('coloque_sua_chave')) return; 
+
                     const subscription = await registration.pushManager.subscribe({
-                        userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
                     });
+                    
                     await fetch(SCRIPT_URL, {
-                        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ acao: 'salvar_inscricao_push', dados: subscription })
                     });
-                } catch (e) {}
+                } catch (e) {
+                    console.warn('Erro ao inscrever no PushManager:', e);
+                }
             }
 
             enviar(titulo, mensagem, dados = {}) {
                 if (this.permissoes.notificacao && 'Notification' in window) {
-                    try { new Notification(titulo, { body: mensagem, icon: '/icons/icon-192x192.png', silent: false }); } catch (e) {}
+                    try {
+                        new Notification(titulo, { body: mensagem, icon: '/icons/icon-192x192.png', silent: false });
+                    } catch (e) {}
                 }
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             }
@@ -526,13 +543,14 @@
         document.getElementById('btnNotificacao').addEventListener('click', () => sistemaNotificacao.solicitarPermissao());
 
         // ==========================================
-        // COMUNICAÇÃO GOOGLE SHEETS E ESTADO GLOBAL
+        // COMUNICAÇÃO GOOGLE SHEETS
         // ==========================================
         async function fetchGoogle(acao, dados = null) {
             try {
                 const payload = dados ? { acao, dados } : { acao };
                 const res = await fetch(SCRIPT_URL, {
-                    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
                 return await res.json();
@@ -541,12 +559,24 @@
             }
         }
 
+        // ==========================================
+        // ESTADO GLOBAL E LÓGICA DE DADOS
+        // ==========================================
         let compromissos = [];
         let compromissosFiltrados = [];
         let mensagensChat = [];
         let adminLogado = false;
+        let proximoId = 1;
         
-        let currentSelectedDate = 'ALL'; // Controla o dia selecionado no carrossel ('ALL' ou 'YYYY-MM-DD')
+        let currentSelectedDate = ''; // Será a data atual ao iniciar
+
+        function getHojeObj() {
+            const now = new Date();
+            const ano = now.getFullYear();
+            const mes = String(now.getMonth() + 1).padStart(2, '0');
+            const dia = String(now.getDate()).padStart(2, '0');
+            return { ano, mes, dia, yyyymm: `${ano}-${mes}`, yyyymmdd: `${ano}-${mes}-${dia}` };
+        }
 
         function formatarDataVisao(dataStr) {
             if (!dataStr) return '';
@@ -570,24 +600,26 @@
         }
 
         // ==========================================
-        // LÓGICA DO NOVO CALENDÁRIO HORIZONTAL
+        // LÓGICA DO CARROSSEL DE CALENDÁRIO
         // ==========================================
         function initCalendar() {
+            const h = getHojeObj();
             const monthSel = document.getElementById('monthSelector');
-            const now = new Date();
-            const anoAtual = now.getFullYear();
-            const mesAtual = String(now.getMonth() + 1).padStart(2, '0');
-            
-            monthSel.value = `${anoAtual}-${mesAtual}`;
-            currentSelectedDate = 'ALL'; // Por padrão, exibe todos do mês atual
+            monthSel.value = h.yyyymm;
+            currentSelectedDate = h.yyyymmdd; // Começa sempre no dia de HOJE
             
             monthSel.addEventListener('change', () => {
-                currentSelectedDate = 'ALL';
+                const val = monthSel.value;
+                const objH = getHojeObj();
+                // Se voltar pro mês atual, seleciona o dia atual de novo
+                if (val === objH.yyyymm) {
+                    currentSelectedDate = objH.yyyymmdd;
+                } else {
+                    currentSelectedDate = 'ALL';
+                }
                 renderDaysCarousel();
                 aplicarFiltros();
             });
-            
-            renderDaysCarousel();
         }
 
         function renderDaysCarousel() {
@@ -599,34 +631,51 @@
             
             const [year, month] = val.split('-');
             const diasNoMes = new Date(year, month, 0).getDate();
+            const h = getHojeObj();
 
             // Botão TODOS (Mês inteiro)
             const btnAll = document.createElement('div');
             btnAll.className = `day-tab ${currentSelectedDate === 'ALL' ? 'active' : ''}`;
-            btnAll.innerHTML = `<span class="day-name">MÊS</span><span class="day-num">Todos</span>`;
-            btnAll.onclick = () => { 
-                currentSelectedDate = 'ALL'; 
-                renderDaysCarousel(); 
-                aplicarFiltros(); 
-            };
+            btnAll.innerHTML = `<span class="day-name">MÊS</span><span class="day-num" style="font-size: 0.95rem; margin-top:6px;">Todos</span>`;
+            btnAll.onclick = () => { currentSelectedDate = 'ALL'; renderDaysCarousel(); aplicarFiltros(); };
             carousel.appendChild(btnAll);
 
+            // Botão HOJE (Atalho Rápido)
+            const btnHoje = document.createElement('div');
+            btnHoje.className = `day-tab ${currentSelectedDate === h.yyyymmdd ? 'active' : ''}`;
+            btnHoje.innerHTML = `<span class="day-name">IR PARA</span><span class="day-num" style="font-size: 1.1rem; margin-top:5px;">Hoje</span>`;
+            btnHoje.onclick = () => {
+                document.getElementById('monthSelector').value = h.yyyymm;
+                currentSelectedDate = h.yyyymmdd;
+                renderDaysCarousel();
+                aplicarFiltros();
+            };
+            carousel.appendChild(btnHoje);
+
+            // Cria os botões numéricos dos dias
             for(let d = 1; d <= diasNoMes; d++) {
                 const diaStr = String(d).padStart(2, '0');
                 const dataCompleta = `${year}-${month}-${diaStr}`;
                 const objData = new Date(`${dataCompleta}T12:00:00`);
                 const nomeSemana = objData.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.','');
 
-                // Verifica se tem compromisso neste dia específico (incluindo os que se estendem)
+                // Verifica se tem compromisso neste dia específico
                 const temCompromisso = compromissos.some(comp => {
                     const dInicio = formatarDataVisao(comp.dia);
                     const dFim = comp.diaFim ? formatarDataVisao(comp.diaFim) : dInicio;
                     return dataCompleta >= dInicio && dataCompleta <= dFim;
                 });
 
+                const isHoje = (dataCompleta === h.yyyymmdd);
+                const displaySemana = isHoje ? "HOJE" : nomeSemana;
+
                 const btn = document.createElement('div');
-                btn.className = `day-tab ${currentSelectedDate === dataCompleta ? 'active' : ''} ${temCompromisso ? 'has-event' : ''}`;
-                btn.innerHTML = `<span class="day-name">${nomeSemana}</span><span class="day-num">${d}</span><div class="event-dot"></div>`;
+                btn.className = `day-tab day-chronological ${currentSelectedDate === dataCompleta ? 'active' : ''} ${temCompromisso ? 'has-event' : ''}`;
+                
+                // Se for hoje, destaca um pouco mais
+                if(isHoje) btn.classList.add('is-today');
+
+                btn.innerHTML = `<span class="day-name">${displaySemana}</span><span class="day-num">${d}</span><div class="event-dot"></div>`;
                 
                 btn.onclick = () => {
                     currentSelectedDate = dataCompleta;
@@ -637,30 +686,27 @@
                 carousel.appendChild(btn);
             }
 
-            // Animação de scroll suave para focar na aba clicada
+            // Centraliza no dia selecionado ou no atalho automaticamente
             setTimeout(() => {
-                const ativo = carousel.querySelector('.day-tab.active');
-                if(ativo) ativo.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                const target = carousel.querySelector('.day-chronological.active') || carousel.querySelector('.day-tab.active');
+                if(target) target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }, 50);
         }
 
         function aplicarFiltros() {
-            const valMes = document.getElementById('monthSelector').value; // Ex: "2026-08"
+            const valMes = document.getElementById('monthSelector').value;
 
             compromissosFiltrados = compromissos.filter(c => {
                 const dInicio = formatarDataVisao(c.dia);
                 const dFim = c.diaFim ? formatarDataVisao(c.diaFim) : dInicio;
                 
-                // Se não tem data no banco de dados, ignora
                 if (!dInicio) return false;
 
-                // Se o usuário selecionou "Todos do Mês"
                 if (currentSelectedDate === 'ALL') {
                     // Pega o início ou fim que bater com o Mês/Ano selecionado
                     return dInicio.startsWith(valMes) || dFim.startsWith(valMes);
-                } 
-                // Se o usuário clicou em um dia específico no carrossel
-                else {
+                } else {
+                    // Clicou num dia exato no carrossel
                     return currentSelectedDate >= dInicio && currentSelectedDate <= dFim;
                 }
             });
@@ -673,7 +719,7 @@
             const grid = document.getElementById('agendaGrid');
             grid.innerHTML = '';
             if (compromissosFiltrados.length === 0) {
-                grid.innerHTML = '<div class="sem-resultados">Nenhum compromisso marcado para este dia.</div>';
+                grid.innerHTML = '<div class="sem-resultados">📭 Nenhum compromisso marcado para este dia.</div>';
                 document.getElementById('contadorCompromissos').textContent = '0 compromissos';
                 return;
             }
@@ -767,15 +813,17 @@
         }
 
         document.getElementById('popupClose').addEventListener('click', () => document.getElementById('popupOverlay').classList.remove('ativo'));
-        
+        document.getElementById('btnFechar').addEventListener('click', () => document.getElementById('popupOverlay').classList.remove('ativo'));
+
         async function alterarStatus(novoStatus) {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === novoStatus || compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Ação inválida.', 'warning'); return;
+                Swal.fire('Aviso', 'Ação inválida para o status atual.', 'warning'); return;
             }
             compromissoAtual.status = novoStatus;
             const idx = compromissos.findIndex(x => x.id === compromissoAtual.id);
             if (idx > -1) compromissos[idx] = compromissoAtual;
+            
             renderDaysCarousel();
             aplicarFiltros();
             document.getElementById('popupOverlay').classList.remove('ativo');
@@ -810,6 +858,7 @@
             
             const idx = compromissos.findIndex(x => x.id === compromissoAtual.id);
             if (idx > -1) compromissos[idx] = compromissoAtual;
+            
             renderDaysCarousel();
             aplicarFiltros();
             
@@ -824,7 +873,7 @@
         // ==========================================
         // PAINEL ADMIN
         // ==========================================
-        function renderizarListaAdmin() {
+        function renderListaAdmin() {
             if (!adminLogado) return;
             const listaA = document.getElementById('listaAdmin');
             listaA.innerHTML = '';
@@ -856,8 +905,11 @@
                     document.getElementById('btnSalvar').style.display = 'none';
                     document.getElementById('btnAtualizar').style.display = 'inline-block';
                     
-                    document.getElementById('formAdmin').style.display = 'block';
+                    // Mostra o form caso esteja escondido
+                    const f = document.getElementById('formAdmin');
+                    f.style.display = 'block';
                     document.getElementById('btnToggleAdminForm').textContent = '➖ Ocultar Formulário';
+                    
                     document.getElementById('adminPanel').scrollIntoView();
                 };
 
@@ -894,8 +946,11 @@
                 renderDaysCarousel();
                 aplicarFiltros();
                 document.getElementById('formAdmin').reset();
+                
+                // Oculta o formulário novamente após salvar com sucesso
                 document.getElementById('formAdmin').style.display = 'none';
                 document.getElementById('btnToggleAdminForm').textContent = '➕ Adicionar Novo Compromisso';
+                
                 Swal.fire({ title: 'Sucesso!', icon: 'success', timer: 1500 });
             }
         });
@@ -922,8 +977,10 @@
                 document.getElementById('formAdmin').reset();
                 document.getElementById('btnSalvar').style.display = 'inline-block';
                 document.getElementById('btnAtualizar').style.display = 'none';
+                
                 document.getElementById('formAdmin').style.display = 'none';
                 document.getElementById('btnToggleAdminForm').textContent = '➕ Adicionar Novo Compromisso';
+                
                 Swal.fire({ title: 'Atualizado!', icon: 'success', timer: 1500 });
             }
         });
@@ -948,20 +1005,8 @@
             }
         });
 
-        document.getElementById('lockBtn').onclick = () => {
-            if(adminLogado){
-                adminLogado = false;
-                document.getElementById('adminPanel').classList.remove('ativo');
-                document.getElementById('chatButton').style.display = 'flex';
-                renderDaysCarousel();
-                aplicarFiltros();
-            } else {
-                document.getElementById('loginOverlay').classList.add('ativo');
-            }
-        };
-
         // ==========================================
-        // CHAT
+        // CHAT E POLLING GERAL
         // ==========================================
         async function sincronizarChat() {
             const m = await fetchGoogle('listar_chat');
@@ -970,7 +1015,7 @@
                     mensagensChat = m.dados;
                     renderizarChatUI();
                     if (!adminLogado && !document.getElementById('chatWindow').classList.contains('aberto')) {
-                        sistemaNotificacao.enviar('Gabinete 247', 'Você tem uma nova mensagem.');
+                        sistemaNotificacao.enviar('Gabinete 247', 'Você tem uma nova mensagem na agenda.');
                     }
                 }
             }
@@ -982,7 +1027,8 @@
             mensagensChat.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = `message ${msg.remetente === (adminLogado ? 'admin' : 'user') ? 'user' : 'bot'}`;
-                div.innerHTML = `${msg.texto}`;
+                const timeStr = new Date(msg.data).getHours().toString().padStart(2, '0') + ':' + new Date(msg.data).getMinutes().toString().padStart(2, '0');
+                div.innerHTML = `${msg.texto} <span class="time">${timeStr}</span>`;
                 cx.appendChild(div);
             });
             cx.scrollTop = cx.scrollHeight;
@@ -1003,6 +1049,19 @@
 
         document.getElementById('chatButton').onclick = () => document.getElementById('chatWindow').classList.toggle('aberto');
         document.getElementById('closeChat').onclick = () => document.getElementById('chatWindow').classList.remove('aberto');
+        
+        document.getElementById('lockBtn').onclick = () => {
+            if(adminLogado){
+                if (!confirm('Sair do painel administrativo?')) return;
+                adminLogado = false;
+                document.getElementById('adminPanel').classList.remove('ativo');
+                document.getElementById('chatButton').style.display = 'flex';
+                renderDaysCarousel();
+                aplicarFiltros();
+            } else {
+                document.getElementById('loginOverlay').classList.add('ativo');
+            }
+        };
 
         // ==========================================
         // INICIALIZAÇÃO
@@ -1010,7 +1069,7 @@
         async function inicializar() {
             Swal.fire({ title: 'Carregando Agenda...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             
-            initCalendar(); // Setup inicial do carrossel
+            initCalendar(); // Agora ele preenche 'currentSelectedDate' com o HOJE
 
             const comp = await fetchGoogle('listar');
             if (comp.status === 'sucesso') compromissos = comp.dados || [];
@@ -1018,8 +1077,8 @@
             const msg = await fetchGoogle('listar_chat');
             if (msg.status === 'sucesso') mensagensChat = msg.dados || [];
             
-            renderDaysCarousel();
-            aplicarFiltros();
+            renderDaysCarousel(); // Atualiza o carrossel (que fará o scroll automático)
+            aplicarFiltros();     // Filtra a agenda para o HOJE
             renderizarChatUI();
 
             Swal.close();
