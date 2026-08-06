@@ -84,7 +84,7 @@
             align-items: center;
             gap: 0.4rem;
             transition: all 0.2s;
-            display: none; /* Só exibe se precisar de permissão */
+            display: none; 
         }
 
         .btn-notificacoes:hover {
@@ -168,7 +168,6 @@
         .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
         .day-tab.active .day-num { color: #ffffff; }
 
-        /* Bolinha indicadora de compromissos no dia */
         .day-tab .event-dot {
             width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;
             position: absolute; bottom: 6px; display: none;
@@ -1248,7 +1247,7 @@
         }
 
         .install-pwa.visible {
-            display: flex;
+            display: flex !important;
         }
 
         @media (max-width: 640px) {
@@ -1566,10 +1565,51 @@
         // CONFIGURAÇÃO DA API E VAPID KEY
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
-        const publicVapidKey = 'BEt4YGQ19draJDlvip-CZK218tKjj03P-ugMS1MVsBT-rqxh3iaY-2ksUWRV4wfiwr_DNkB7iBbjz_TO1NNOUG4'; 
+        const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
 
         // ==========================================
-        // TOGGLE FORMULÁRIO ADMIN E MÁSCARAS
+        // PWA - INSTALAÇÃO E ATUALIZAÇÃO
+        // ==========================================
+        let deferredPrompt;
+        const installBtn = document.getElementById('installPWA');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Previne o Chrome de exibir o mini-infobar automaticamente
+            e.preventDefault();
+            // Guarda o evento para acionar depois
+            deferredPrompt = e;
+            // Mostra o nosso botão customizado
+            installBtn.classList.add('visible'); 
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            // Exibe a tela nativa de instalação do navegador
+            deferredPrompt.prompt();
+            // Espera pela decisão do usuário (aceitou ou recusou)
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                console.log('App instalado com sucesso');
+            }
+            // Limpa o prompt guardado, pois só pode ser usado uma vez
+            deferredPrompt = null;
+            installBtn.classList.remove('visible');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            // Oculta o botão assim que for instalado
+            installBtn.classList.remove('visible');
+            Swal.fire({
+                title: '✅ Instalado!',
+                text: 'O aplicativo foi adicionado com sucesso à sua tela.',
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        });
+
+        // ==========================================
+        // TOGGLE FORMULÁRIO ADMIN
         // ==========================================
         document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
             const form = document.getElementById('formAdmin');
@@ -1589,39 +1629,8 @@
         });
 
         // ==========================================
-        // SISTEMA DE NOTIFICAÇÕES WEB PUSH E PWA
+        // SISTEMA DE NOTIFICAÇÕES WEB PUSH
         // ==========================================
-        let deferredPrompt;
-        const installBtn = document.getElementById('installPWA');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.classList.add('visible');
-        });
-
-        installBtn.addEventListener('click', async () => {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                console.log('App instalado com sucesso');
-            }
-            deferredPrompt = null;
-            installBtn.classList.remove('visible');
-        });
-
-        window.addEventListener('appinstalled', () => {
-            installBtn.classList.remove('visible');
-            Swal.fire({
-                title: '✅ Instalado!',
-                text: 'O aplicativo foi adicionado com sucesso à sua tela.',
-                icon: 'success',
-                timer: 3000,
-                showConfirmButton: false
-            });
-        });
-
         function urlBase64ToUint8Array(base64String) {
             const padding = '='.repeat((4 - base64String.length % 4) % 4);
             const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -1763,7 +1772,7 @@
         }
 
         // ==========================================
-        // REFERÊNCIAS DOM E FORMATAÇÕES
+        // REFERÊNCIAS DOM E FORMATAÇÕES (MANTIDO INTACTO)
         // ==========================================
         const grid = document.getElementById('agendaGrid');
         const overlay = document.getElementById('popupOverlay');
@@ -2093,7 +2102,7 @@
 
                 card.addEventListener('click', (e) => {
                     if (e.target.classList.contains('btn-mapa')) return;
-                    abrirPopup(comp); // Aqui é passado o objeto inteiro da reunião!
+                    abrirPopup(comp.id);
                 });
 
                 const btnMapa = card.querySelector('.btn-mapa');
@@ -2134,7 +2143,7 @@
                 `;
                 listaAdmin.appendChild(item);
 
-                item.querySelector('.btn-editar').addEventListener('click', () => carregarParaEdicao(comp));
+                item.querySelector('.btn-editar').addEventListener('click', () => carregarParaEdicao(comp.id));
                 item.querySelector('.btn-excluir').addEventListener('click', async () => {
                     const confirm = await Swal.fire({
                         title: '⚠️ Confirmar exclusão',
@@ -2151,7 +2160,7 @@
                     Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                     const result = await fetchGoogle('excluir', {id: comp.id});
                     if (result.status === 'sucesso') {
-                        compromissos = compromissos.filter(c => String(c.id) !== String(comp.id));
+                        compromissos = compromissos.filter(c => c.id !== comp.id);
                         renderDaysCarousel();
                         aplicarFiltros();
                         if (adminLogado) renderizarListaAdmin();
@@ -2173,7 +2182,8 @@
             }
         }
 
-        function carregarParaEdicao(comp) {
+        function carregarParaEdicao(id) {
+            const comp = compromissos.find(c => c.id === id);
             if (!comp) return;
 
             adminEditId.value = comp.id;
@@ -2214,7 +2224,8 @@
         // ==========================================
         // LÓGICA DE POPUPS DE COMPROMISSOS
         // ==========================================
-        function abrirPopup(comp) {
+        function abrirPopup(id) {
+            const comp = compromissos.find(c => c.id === id);
             if (!comp) return;
 
             compromissoAtual = comp;
@@ -2263,11 +2274,13 @@
             overlay.classList.add('ativo');
         }
 
-        document.getElementById('popupClose').addEventListener('click', () => document.getElementById('popupOverlay').classList.remove('ativo'));
-        document.getElementById('btnFechar').addEventListener('click', () => document.getElementById('popupOverlay').classList.remove('ativo'));
+        function fecharPopup() {
+            overlay.classList.remove('ativo');
+            compromissoAtual = null;
+        }
 
         function atualizarCompromissoNoArray(compAtualizado) {
-            const index = compromissos.findIndex(c => String(c.id) === String(compAtualizado.id));
+            const index = compromissos.findIndex(c => c.id === compAtualizado.id);
             if (index !== -1) {
                 compromissos[index] = compAtualizado;
             }
@@ -2520,7 +2533,7 @@
             const status = adminStatus.value;
 
             if (!titulo || !dia || !hora || !local) {
-                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos markedos com *', 'warning');
+                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
                 return;
             }
 
@@ -2540,7 +2553,7 @@
             const result = await fetchGoogle('adicionar', novo);
             
             if (result.status === 'sucesso') {
-                novo.id = result.id; 
+                novo.id = result.id; // Atualiza com ID real do banco
                 compromissos.push(novo);
                 renderDaysCarousel();
                 aplicarFiltros();
@@ -2589,7 +2602,7 @@
                 return;
             }
 
-            const index = compromissos.findIndex(c => String(c.id) === String(id));
+            const index = compromissos.findIndex(c => c.id === id);
             if (index === -1) {
                 Swal.fire('❌ Erro', 'Compromisso não encontrado.', 'error');
                 return;
