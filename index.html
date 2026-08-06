@@ -27,22 +27,40 @@
 
     <style>
         * {
-            margin: 0; padding: 0; box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: #f0f2f5; min-height: 100vh; display: flex;
-            flex-direction: column; align-items: center;
-            padding: 2rem 1rem; position: relative; overflow-x: hidden;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
         }
 
         .header {
-            display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
-            flex-wrap: wrap; justify-content: center; width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
         }
 
-        h1 { color: #1a1a2e; font-weight: 700; letter-spacing: -0.5px; font-size: 1.8rem; }
+        h1 {
+            color: #1a1a2e;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            font-size: 1.8rem;
+        }
+
         h1 .destaque { color: #009739; }
 
         .btn-notificacoes {
@@ -65,23 +83,22 @@
         .btn-toggle-ui:hover { background: #f9fafb; border-color: #009739; color: #009739; }
 
         /* ========================================= */
-        /* NOVO CALENDÁRIO HORIZONTAL                */
+        /* NOVO CALENDÁRIO HORIZONTAL (CARROSSEL)    */
         /* ========================================= */
         .calendar-nav {
             display: flex; flex-direction: column; width: 100%; max-width: 1200px;
             background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem;
             margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            animation: fadeIn 0.3s ease;
         }
 
         .month-selector-container {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
-            border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;
+            border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem;
         }
 
         .month-selector-container input[type="month"] {
-            border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #009739;
-            outline: none; cursor: pointer;
+            border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #1a1a2e;
+            outline: none; cursor: pointer; color: #009739;
         }
 
         .contador {
@@ -105,6 +122,7 @@
         }
 
         .day-tab:hover { border-color: #009739; background: #f0fdf4; }
+        
         .day-tab.active { background: #009739; border-color: #009739; color: #ffffff; box-shadow: 0 4px 10px rgba(0,151,57,0.3); }
 
         .day-tab .day-name { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
@@ -113,6 +131,7 @@
         .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
         .day-tab.active .day-num { color: #ffffff; }
 
+        /* Bolinha indicadora de compromissos no dia */
         .day-tab .event-dot {
             width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;
             position: absolute; bottom: 6px; display: none;
@@ -131,7 +150,6 @@
             background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
             border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start;
-            animation: fadeIn 0.3s ease;
         }
 
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
@@ -151,10 +169,13 @@
         .card-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; flex-wrap: wrap; }
         .card-actions .btn-mapa {
             padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739;
-            border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
+            border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
         }
+
+        .card-actions .btn-mapa:hover { background: #009739; color: white; transform: scale(1.05); }
+
         .card-status-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.8rem; border-radius: 20px; align-self: flex-start; }
-        
         .sem-resultados { grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: #6b7280; font-size: 1.1rem; }
 
         .popup-overlay, .login-overlay {
@@ -168,25 +189,36 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        .popup-close { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.8rem; background: none; border: none; color: #888; cursor: pointer; }
-        .popup h2, .login-modal h2 { color: #1a1a2e; font-size: 1.6rem; margin-bottom: 1.2rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 0.6rem; }
-        .popup-info p { display: flex; gap: 0.5rem; font-size: 1rem; margin-bottom: 0.7rem; }
-        .popup-info strong { min-width: 90px; color: #555; flex-shrink: 0; }
+        .popup-close { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.8rem; background: none; border: none; color: #888; cursor: pointer; transition: color 0.1s; }
+        .popup-close:hover { color: #1a1a2e; }
+
+        .popup h2, .login-modal h2 { color: #1a1a2e; font-size: 1.6rem; margin-bottom: 1.2rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 0.6rem; padding-right: 2rem; }
+        .popup-info { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.8rem; }
+        .popup-info p { display: flex; align-items: baseline; gap: 0.5rem; font-size: 1rem; color: #222; }
+        .popup-info strong { min-width: 90px; color: #555; font-weight: 500; flex-shrink: 0; }
         .popup-descricao-text { background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem; }
-        .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;}
+        .popup-status { display: inline-block; background: #e8f5e9; color: #009739; padding: 0.2rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+        .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem;}
         
-        .btn { padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; flex: 1 0 auto; }
+        .btn { padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; flex: 1 0 auto; background: #f0f2f5; color: #1a1a2e; }
+        .btn:hover { transform: scale(0.97); }
         .btn-cancelar { background: #fee2e2; color: #b91c1c; }
+        .btn-cancelar:hover { background: #fecaca; }
         .btn-adiar { background: #fef9c3; color: #92400e; }
+        .btn-adiar:hover { background: #fde68a; }
         .btn-concluir { background: #dcfce7; color: #166534; }
+        .btn-concluir:hover { background: #bbf7d0; }
         .btn-fechar { background: #e5e7eb; color: #1f2937; flex: 0.5; }
-        .btn-mapa-popup { background: #e8f5e9; color: #009739; border: 2px solid #009739; }
+        .btn-fechar:hover { background: #d1d5db; }
+        .btn-mapa-popup { background: #e8f5e9; color: #009739; border: 2px solid #009739; flex: 1; }
+        .btn-mapa-popup:hover { background: #009739; color: white; }
 
         .chat-button {
             position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%;
             background: #009739; color: white; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4);
-            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            z-index: 1000; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;
         }
+        .chat-button:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5); }
         .chat-button .badge {
             position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; border-radius: 50%;
             width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700;
@@ -195,44 +227,81 @@
         .chat-window {
             position: fixed; bottom: 5.5rem; right: 2rem; width: 380px; max-width: calc(100vw - 2rem); height: 500px;
             max-height: calc(100vh - 8rem); background: #ffffff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            display: none; flex-direction: column; z-index: 1001;
+            display: none; flex-direction: column; z-index: 1001; overflow: hidden; animation: slideUp 0.3s ease;
         }
         .chat-window.aberto { display: flex; }
-        .chat-header { background: #009739; color: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center;}
+        .chat-header { background: #009739; color: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .chat-header h3 { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .chat-header .status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 400; opacity: 0.9; }
+        .chat-header .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .chat-header .close-chat { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; padding: 0 0.3rem; }
+        .chat-header .close-chat:hover { opacity: 1; }
+
         .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; background: #f9fafb; }
-        .chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; }
-        .message.bot { background: #e8f5e9; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .message.user { background: #009739; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .chat-input-area { padding: 0.8rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; }
-        .chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; outline: none;}
-        .chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border-radius: 24px; border: none; font-weight: 600;}
+        .chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; animation: messageIn 0.3s ease; }
+        @keyframes messageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-messages .message.bot { background: #e8f5e9; color: #1a1a2e; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-messages .message.user { background: #009739; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-messages .message .time { font-size: 0.65rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
+        .chat-messages .message.bot .time { color: #555; }
+        .chat-messages .message.user .time { color: rgba(255,255,255,0.7); }
+
+        .chat-input-area { padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; flex-shrink: 0; }
+        .chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .chat-input-area input:focus { border-color: #009739; }
+        .chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap; }
+        .chat-input-area button:hover { background: #007a2f; }
 
         /* ADMIN PANEL ESTILOS */
-        .admin-panel { display: none; background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 1200px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+        .admin-panel { display: none; background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 1200px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); animation: fadeIn 0.3s ease; }
         .admin-panel.ativo { display: block; }
-        .admin-panel .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
-        .admin-panel .tab-btn { padding: 0.6rem 1.5rem; background: none; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: #6b7280;}
+        .admin-panel .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; flex-wrap: wrap; }
+        .admin-panel .tab-btn { padding: 0.6rem 1.5rem; background: none; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.5rem; }
+        .admin-panel .tab-btn:hover { background: #f3f4f6; color: #1a1a2e; }
         .admin-panel .tab-btn.ativo { background: #e8f5e9; color: #009739; }
-        .admin-panel .tab-content { display: none; }
+        .admin-panel .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .admin-panel .tab-content.ativo { display: block; }
+        .admin-panel h2 { color: #1a1a2e; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .admin-panel h2 .admin-badge { background: #009739; color: white; font-size: 0.7rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-weight: 600; }
         
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.7rem; border: 1.5px solid #d1d5db; border-radius: 10px; background: #fafafa; }
+        .form-group label { display: block; font-weight: 500; color: #333; font-size: 0.9rem; margin-bottom: 0.3rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 0.95rem; transition: border-color 0.2s; outline: none; background: #fafafa; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #009739; box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15); background: white; }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+        .form-actions { display: flex; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; align-items: center; }
         .full-width { grid-column: 1 / -1; }
 
-        .item-admin { display: flex; justify-content: space-between; padding: 0.7rem; background: #f9fafb; border-radius: 10px; margin-bottom: 0.5rem; align-items: center; flex-wrap: wrap; gap: 0.5rem;}
-        
-        .footer { margin-top: 3rem; padding: 1.5rem 0; width: 100%; border-top: 2px solid #e5e7eb; display: flex; justify-content: center; gap: 1rem; }
+        .item-admin { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 1rem; background: #f9fafb; border-radius: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;}
+        .item-admin .info { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; flex: 1; }
+        .item-admin .info .titulo { font-weight: 600; color: #1a1a2e; }
+        .item-admin .info .data { color: #6b7280; font-size: 0.85rem; }
+        .item-admin .acoes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+        .admin-panel .btn-editar { padding: 0.3rem 1rem; background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.8rem; }
+        .admin-panel .btn-editar:hover { background: #bfdbfe; }
+        .admin-panel .btn-excluir { padding: 0.3rem 1rem; background: #fee2e2; color: #b91c1c; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.8rem; }
+        .admin-panel .btn-excluir:hover { background: #fecaca; }
+
+        .footer { margin-top: 3rem; padding: 1.5rem 0 0.5rem 0; width: 100%; max-width: 1200px; border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .footer .lock-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem 0.8rem; border-radius: 8px; transition: background 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; }
+        .footer .lock-btn:hover { background: #f3f4f6; color: #1a1a2e; }
+        .footer .copyright { color: #9ca3af; font-size: 0.85rem; }
         
         @media (max-width: 640px) {
             .form-row { grid-template-columns: 1fr; }
             .card { flex-direction: column; align-items: stretch; }
             .card-date-box { flex-direction: row; height: 40px; gap: 10px; }
             .card-date-box .dia { font-size: 1.5rem; }
-            .chat-window { width: calc(100vw - 1rem); right: 0.5rem; bottom: 5rem; }
+            .chat-window { width: calc(100vw - 1rem); right: 0.5rem; bottom: 5rem; height: 70vh; }
+            .chat-button { width: 52px; height: 52px; font-size: 1.5rem; bottom: 1.2rem; right: 1.2rem; }
             .month-selector-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
+            .admin-panel { padding: 1.2rem; }
+            .login-modal { padding: 1.8rem 1.2rem; }
+            .item-admin { flex-direction: column; align-items: flex-start; }
+            .item-admin .acoes { align-self: flex-end; }
         }
     </style>
 </head>
@@ -240,24 +309,30 @@
 
     <div class="header">
         <h1><span>Agenda</span> <span class="destaque">Gabinete 247</span></h1>
-        <button id="btnNotificacao" class="btn-notificacoes">🔔 Ativar Notificações</button>
+        <button id="btnNotificacao" class="btn-notificacoes" title="Ativar Notificações no celular">
+            🔔 Ativar Notificações
+        </button>
     </div>
 
-    <!-- CALENDÁRIO HORIZONTAL LIMPÃO -->
+    <!-- Botão de instalação PWA -->
+    <button class="install-pwa" id="installPWA" style="display:none; position: fixed; bottom: 6rem; right: 2rem; background: #009739; color: white; border: none; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: 600; z-index: 999; box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4);">📱 Instalar App</button>
+
+    <!-- NOVO CALENDÁRIO HORIZONTAL -->
     <div class="calendar-nav">
         <div class="month-selector-container">
+            <!-- INPUT NATIVO DE MÊS/ANO QUE ABRE A RODINHA NO CELULAR -->
             <input type="month" id="monthSelector" title="Escolha o Mês e Ano">
             <span class="contador" id="contadorCompromissos">0 compromissos</span>
         </div>
         
         <div class="days-carousel" id="daysCarousel">
-            <!-- Abas preenchidas pelo JavaScript -->
+            <!-- Preenchido via JavaScript -->
         </div>
     </div>
 
     <!-- Painel Admin -->
     <div class="admin-panel" id="adminPanel">
-        <h2>🛠️ Painel Administrativo <span style="background: #009739; color: white; font-size: 0.7rem; padding: 0.2rem 0.8rem; border-radius: 20px;">Admin</span></h2>
+        <h2>🛠️ Painel Administrativo <span class="admin-badge">Admin</span></h2>
 
         <div class="tabs">
             <button class="tab-btn ativo" data-tab="tabAgenda">📋 Agenda</button>
@@ -312,7 +387,7 @@
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <button type="submit" class="btn" style="background:#009739; color:white;" id="btnSalvar">Salvar Compromisso</button>
                     <button type="button" class="btn" style="background:#f59e0b; color:white; display:none;" id="btnAtualizar">Atualizar</button>
-                    <button type="button" class="btn" id="btnLimparForm">Limpar Formulário</button>
+                    <button type="button" class="btn" style="background:#f3f4f6; color:#555;" id="btnLimparForm">Limpar</button>
                 </div>
             </form>
 
@@ -346,7 +421,7 @@
                 <p><strong>📅 Período:</strong> <span id="popupDia">—</span></p>
                 <p><strong>⏰ Hora:</strong> <span id="popupHora">—</span></p>
                 <p><strong>📍 Local:</strong> <span id="popupLocal">—</span></p>
-                <p><strong>👥 Participantes:</strong> <span id="popupParticipantes">—</span></p>
+                <p><strong>👥 Pessoas:</strong> <span id="popupParticipantes">—</span></p>
                 <div id="popupDescricaoContainer" style="display: none;">
                     <strong>📝 Descrição:</strong>
                     <div class="popup-descricao-text" id="popupDescricao">—</div>
@@ -371,8 +446,8 @@
             <div class="form-group"><label>Nova Hora</label><input type="time" id="adiarHoraInput"></div>
             <div class="form-group"><label>Novo Local</label><input type="text" id="adiarLocalInput"></div>
             <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                <button class="btn btn-concluir" id="btnConfirmarAdiar">✓ Salvar</button>
-                <button class="btn btn-cancelar" id="btnFecharAdiar">✕ Cancelar</button>
+                <button class="btn btn-concluir" id="btnConfirmarAdiar" style="flex: 1; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; background: #dcfce7; color: #166534; padding: 0.8rem;">✓ Salvar</button>
+                <button class="btn btn-cancelar" id="btnFecharAdiar" style="flex: 1; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; background: #fee2e2; color: #b91c1c; padding: 0.8rem;">✕ Cancelar</button>
             </div>
         </div>
     </div>
@@ -398,24 +473,23 @@
                 <div class="form-group"><label>Usuário</label><input type="text" id="loginUser"></div>
                 <div class="form-group"><label>Senha</label><input type="password" id="loginPassword"></div>
                 <div class="erro" id="loginErro">❌ Incorreto</div>
-                <button type="submit" class="btn-login">Entrar</button>
+                <button type="submit" class="btn-login" style="width: 100%; padding: 0.8rem; background: #009739; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 0.5rem;">Entrar</button>
             </form>
         </div>
     </div>
 
     <div class="footer">
-        <button class="lock-btn" id="lockBtn" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">🔒</button>
+        <button class="lock-btn" id="lockBtn">🔒</button>
+        <span class="copyright">© 2026 Gabinete 247 - Todos os direitos reservados</span>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // CONFIGURAÇÃO DA API E VAPID KEY
+        // CONFIGURAÇÕES GERAIS
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
-        
-        // Coloque sua Chave Pública (Public Key) VAPID aqui
-        const publicVapidKey = 'BAZb...coloque_sua_chave_aqui...'; 
+        const publicVapidKey = 'BAZb_coloque_sua_chave_real_aqui_para_funcionar'; 
 
         // ==========================================
         // TOGGLE FORMULÁRIO ADMIN
@@ -425,11 +499,15 @@
             if (form.style.display === 'none' || form.style.display === '') {
                 form.style.display = 'block';
                 this.innerHTML = '➖ Ocultar Formulário';
-                this.style.background = '#f3f4f6'; this.style.color = '#555'; this.style.borderColor = '#d1d5db';
+                this.style.background = '#f3f4f6';
+                this.style.color = '#555';
+                this.style.borderColor = '#d1d5db';
             } else {
                 form.style.display = 'none';
                 this.innerHTML = '➕ Adicionar Novo Compromisso';
-                this.style.background = '#e8f5e9'; this.style.color = '#009739'; this.style.borderColor = '#009739';
+                this.style.background = '#e8f5e9';
+                this.style.color = '#009739';
+                this.style.borderColor = '#009739';
             }
         });
 
@@ -441,7 +519,7 @@
             const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
             const rawData = window.atob(base64);
             const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
+            for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
             return outputArray;
         }
 
@@ -452,17 +530,18 @@
             }
 
             async inicializar() {
-                if ('Notification' in window) {
-                    if (Notification.permission === 'granted') {
-                        this.permissoes.notificacao = true;
-                        document.getElementById('btnNotificacao').style.display = 'none';
-                    }
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    this.permissoes.notificacao = true;
+                    document.getElementById('btnNotificacao').style.display = 'none';
+                } else if ('Notification' in window && Notification.permission === 'default') {
+                    document.getElementById('btnNotificacao').style.display = 'flex';
                 }
             }
 
             async solicitarPermissao() {
                 if (!('Notification' in window)) {
-                    Swal.fire('Aviso', 'Navegador não suporta notificações nativas.', 'info'); return;
+                    Swal.fire('Aviso', 'Seu navegador não suporta notificações nativas.', 'info');
+                    return;
                 }
                 const permissao = await Notification.requestPermission();
                 if (permissao === 'granted') {
@@ -471,16 +550,14 @@
                     await this.inscreverWebPush();
                     Swal.fire('✅ Sucesso!', 'As notificações estão ativadas.', 'success');
                 } else {
-                    Swal.fire('⚠️ Bloqueado', 'Você bloqueou as notificações. Libere nas configurações.', 'warning');
+                    Swal.fire('⚠️ Bloqueado', 'Você bloqueou as notificações. Libere nas configurações do celular.', 'warning');
                 }
             }
 
             async inscreverWebPush() {
                 if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
                 try {
-                    if (publicVapidKey.includes('coloque_sua_chave')) {
-                        console.warn("Chave VAPID não configurada. Inscrição ignorada."); return; 
-                    }
+                    if (publicVapidKey.includes('coloque_sua_chave')) return; 
                     const registration = await navigator.serviceWorker.ready;
                     const subscription = await registration.pushManager.subscribe({
                         userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
@@ -504,14 +581,8 @@
         document.getElementById('btnNotificacao').addEventListener('click', () => sistemaNotificacao.solicitarPermissao());
 
         // ==========================================
-        // DADOS GLOBAIS E REQUISIÇÕES
+        // COMUNICAÇÃO GOOGLE SHEETS E ESTADO GLOBAL
         // ==========================================
-        let compromissos = [];
-        let compromissosFiltrados = [];
-        let mensagensChat = [];
-        let adminLogado = false;
-        let currentSelectedDate = ''; // 'ALL' ou 'YYYY-MM-DD'
-
         async function fetchGoogle(acao, dados = null) {
             try {
                 const payload = dados ? { acao, dados } : { acao };
@@ -525,9 +596,13 @@
             }
         }
 
-        // ==========================================
-        // FUNÇÕES ÚTEIS
-        // ==========================================
+        let compromissos = [];
+        let compromissosFiltrados = [];
+        let mensagensChat = [];
+        let adminLogado = false;
+        
+        let currentSelectedDate = 'ALL'; // Controla o dia selecionado no carrossel
+
         function getHojeObj() {
             const now = new Date();
             const ano = now.getFullYear();
@@ -558,18 +633,26 @@
         }
 
         // ==========================================
-        // LÓGICA DO CARROSSEL DE CALENDÁRIO
+        // LÓGICA DO NOVO CALENDÁRIO HORIZONTAL
         // ==========================================
         function initCalendar() {
             const h = getHojeObj();
             const monthSel = document.getElementById('monthSelector');
+            
+            // Força preenchimento da input nativa
             monthSel.value = h.yyyymm;
+            
+            // Proteção em caso de navegadores antigos não definirem o valor de type="month"
+            if (!monthSel.value) {
+                monthSel.setAttribute("type", "text");
+                monthSel.value = h.yyyymm;
+            }
+
             currentSelectedDate = h.yyyymmdd; // Começa no DIA DE HOJE
             
             monthSel.addEventListener('change', () => {
                 const val = monthSel.value;
                 const objH = getHojeObj();
-                // Se escolheu o mês atual de novo, foca no Hoje. Se for outro mês, foca em "Mês Todos"
                 if (val === objH.yyyymm) {
                     currentSelectedDate = objH.yyyymmdd;
                 } else {
@@ -584,29 +667,35 @@
             const carousel = document.getElementById('daysCarousel');
             carousel.innerHTML = '';
             
-            const val = document.getElementById('monthSelector').value;
-            if(!val) return;
+            const h = getHojeObj();
+            let val = document.getElementById('monthSelector').value;
+            
+            // Segurança: Se falhou a captura do select, exibe o mês atual
+            if(!val) val = h.yyyymm; 
             
             const [year, month] = val.split('-');
             const diasNoMes = new Date(year, month, 0).getDate();
-            const h = getHojeObj();
 
-            // 1. ABA: MÊS TODOS
+            // 1. ABA TODOS
             const btnAll = document.createElement('div');
             btnAll.className = `day-tab ${currentSelectedDate === 'ALL' ? 'active' : ''}`;
             btnAll.innerHTML = `<span class="day-name">MÊS</span><span class="day-num" style="font-size: 0.95rem; margin-top:6px;">Todos</span>`;
-            btnAll.onclick = () => { currentSelectedDate = 'ALL'; renderDaysCarousel(); aplicarFiltros(); };
+            btnAll.onclick = () => { 
+                currentSelectedDate = 'ALL'; 
+                renderDaysCarousel(); 
+                aplicarFiltros(); 
+            };
             carousel.appendChild(btnAll);
 
-            // 2. ABA: HOJE (Fica fixo na 2ª posição)
+            // 2. ABA HOJE (Fica fixo na 2ª posição sempre)
             const isHojeSelected = (currentSelectedDate === h.yyyymmdd);
             const btnHoje = document.createElement('div');
             btnHoje.className = `day-tab ${isHojeSelected ? 'active' : ''}`;
             btnHoje.style.border = '2px solid #009739'; 
-            if(!isHojeSelected) { btnHoje.style.background = '#e8f5e9'; }
+            if(!isHojeSelected) btnHoje.style.background = '#e8f5e9';
             
             const colorHojeNum = isHojeSelected ? '#ffffff' : '#009739';
-            btnHoje.innerHTML = `<span class="day-name" style="color: ${colorHojeNum}">HOJE</span><span class="day-num" style="color: ${colorHojeNum}">${h.dia}</span>`;
+            btnHoje.innerHTML = `<span class="day-name" style="color: ${colorHojeNum}">HOJE</span><span class="day-num" style="color: ${colorHojeNum}; font-size: 1.1rem; margin-top:5px;">${h.dia}</span>`;
             btnHoje.onclick = () => {
                 document.getElementById('monthSelector').value = h.yyyymm;
                 currentSelectedDate = h.yyyymmdd;
@@ -615,7 +704,7 @@
             };
             carousel.appendChild(btnHoje);
 
-            // 3. ABAS: Restante dos dias numéricos
+            // 3. ABAS NORMAIS DE CADA DIA DO MÊS
             for(let d = 1; d <= diasNoMes; d++) {
                 const diaStr = String(d).padStart(2, '0');
                 const dataCompleta = `${year}-${month}-${diaStr}`;
@@ -628,49 +717,70 @@
                     return dataCompleta >= dInicio && dataCompleta <= dFim;
                 });
 
+                const isTodayLoop = (dataCompleta === h.yyyymmdd);
+                const displaySemana = isTodayLoop ? "HOJE" : nomeSemana;
+
                 const btn = document.createElement('div');
-                btn.className = `day-tab ${currentSelectedDate === dataCompleta ? 'active' : ''} ${temCompromisso ? 'has-event' : ''}`;
-                btn.innerHTML = `<span class="day-name">${nomeSemana}</span><span class="day-num">${d}</span><div class="event-dot"></div>`;
+                btn.className = `day-tab day-chronological ${currentSelectedDate === dataCompleta ? 'active' : ''} ${temCompromisso ? 'has-event' : ''}`;
+                
+                // Se esse card do loop for o dia de hoje, damos um leve destaque nas bordas
+                if (isTodayLoop) {
+                    btn.style.borderColor = '#009739';
+                    if (currentSelectedDate !== dataCompleta) {
+                        btn.style.background = '#f0fdf4';
+                    }
+                }
+
+                btn.innerHTML = `<span class="day-name">${displaySemana}</span><span class="day-num">${d}</span><div class="event-dot"></div>`;
                 
                 btn.onclick = () => {
                     currentSelectedDate = dataCompleta;
                     renderDaysCarousel();
                     aplicarFiltros();
                 };
+                
                 carousel.appendChild(btn);
             }
 
-            // Scroll suave automático para a aba ativa
+            // Animação de scroll suave para focar na aba clicada
             setTimeout(() => {
+                // Tenta puxar pela aba normal. Se não, pela aba de atalho 'Hoje' ou 'Todos'
                 const ativos = carousel.querySelectorAll('.day-tab.active');
-                if(ativos.length > 0) ativos[0].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                if(ativos.length > 0) {
+                    // Pega o último ativo (o número exato do dia invés da aba de atalho se for o caso)
+                    ativos[ativos.length - 1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
             }, 50);
         }
 
         function aplicarFiltros() {
-            const valMes = document.getElementById('monthSelector').value;
+            let valMes = document.getElementById('monthSelector').value;
+            const h = getHojeObj();
+            if (!valMes) valMes = h.yyyymm;
 
             compromissosFiltrados = compromissos.filter(c => {
                 const dInicio = formatarDataVisao(c.dia);
                 const dFim = c.diaFim ? formatarDataVisao(c.diaFim) : dInicio;
+                
                 if (!dInicio) return false;
 
                 if (currentSelectedDate === 'ALL') {
                     return dInicio.startsWith(valMes) || dFim.startsWith(valMes);
-                } else {
+                } 
+                else {
                     return currentSelectedDate >= dInicio && currentSelectedDate <= dFim;
                 }
             });
 
             renderAgenda();
-            if (adminLogado) renderListaAdmin();
+            if (adminLogado) renderizarListaAdmin();
         }
 
         function renderAgenda() {
             const grid = document.getElementById('agendaGrid');
             grid.innerHTML = '';
             if (compromissosFiltrados.length === 0) {
-                grid.innerHTML = '<div class="sem-resultados">📭 Nenhum compromisso marcado para este período.</div>';
+                grid.innerHTML = '<div class="sem-resultados">Nenhum compromisso marcado para este dia.</div>';
                 document.getElementById('contadorCompromissos').textContent = '0 compromissos';
                 return;
             }
@@ -715,7 +825,10 @@
                         </div>
                     </div>`;
 
-                div.addEventListener('click', (e) => { if (!e.target.classList.contains('btn-mapa')) abrirPopup(c.id); });
+                div.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('btn-mapa')) abrirPopup(c.id);
+                });
+                
                 const btnM = div.querySelector('.btn-mapa');
                 if (btnM) btnM.addEventListener('click', e => { e.stopPropagation(); abrirGoogleMaps(c.local); });
                 
@@ -725,7 +838,7 @@
         }
 
         // ==========================================
-        // POPUP E AÇÕES
+        // POPUP E AÇÕES DE COMPROMISSO
         // ==========================================
         function abrirPopup(id) {
             const c = compromissos.find(x => x.id === id);
@@ -738,7 +851,7 @@
             document.getElementById('popupLocal').textContent = c.local || '-';
             document.getElementById('popupParticipantes').textContent = c.participantes || '-';
             
-            if (c.descricao && c.descricao.trim() !== '') {
+            if (c.descricao) {
                 document.getElementById('popupDescricaoContainer').style.display = 'block';
                 document.getElementById('popupDescricao').textContent = c.descricao;
             } else {
@@ -766,7 +879,7 @@
         async function alterarStatus(novoStatus) {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === novoStatus || compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Ação inválida.', 'warning'); return;
+                Swal.fire('Aviso', 'Ação inválida para o status atual.', 'warning'); return;
             }
             compromissoAtual.status = novoStatus;
             const idx = compromissos.findIndex(x => x.id === compromissoAtual.id);
@@ -778,7 +891,7 @@
             
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await fetchGoogle('atualizar', compromissoAtual);
-            Swal.fire({ title: 'Sucesso!', icon: 'success', timer: 1500, showConfirmButton: false });
+            Swal.fire({ title: '✅ Sucesso!', icon: 'success', timer: 1500, showConfirmButton: false });
         }
 
         document.getElementById('btnCancelar').addEventListener('click', () => alterarStatus('Cancelado'));
@@ -809,31 +922,29 @@
             
             renderDaysCarousel();
             aplicarFiltros();
+            
             document.getElementById('popupOverlay').classList.remove('ativo');
             document.getElementById('adiarOverlay').classList.remove('ativo');
             
-            Swal.fire({ title: 'Salvando...', didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await fetchGoogle('atualizar', compromissoAtual);
             Swal.fire({ title: 'Adiado!', icon: 'success', timer: 1500, showConfirmButton: false });
         });
 
         // ==========================================
-        // PAINEL ADMIN E CHAT
+        // PAINEL ADMIN
         // ==========================================
-        function renderListaAdmin() {
+        function renderizarListaAdmin() {
             if (!adminLogado) return;
             const listaA = document.getElementById('listaAdmin');
             listaA.innerHTML = '';
             compromissos.forEach(c => {
                 const item = document.createElement('div');
                 item.className = 'item-admin';
-                let strDataAdmin = formatarDataBR(c.dia);
-                if (c.diaFim) strDataAdmin += ` a ${formatarDataBR(c.diaFim)}`;
-
                 item.innerHTML = `
                     <div class="info">
                         <span class="titulo">${c.titulo}</span>
-                        <span class="data">📅 ${strDataAdmin} | 🕒 ${formatarHoraVisao(c.hora)}</span>
+                        <span class="data">📅 ${formatarDataBR(c.dia)} ${c.diaFim ? ' a '+formatarDataBR(c.diaFim):''} | 🕒 ${formatarHoraVisao(c.hora)}</span>
                     </div>
                     <div class="acoes">
                         <button class="btn-editar" data-id="${c.id}">✏️</button>
@@ -854,8 +965,10 @@
                     
                     document.getElementById('btnSalvar').style.display = 'none';
                     document.getElementById('btnAtualizar').style.display = 'inline-block';
+                    
                     document.getElementById('formAdmin').style.display = 'block';
                     document.getElementById('btnToggleAdminForm').textContent = '➖ Ocultar Formulário';
+                    
                     document.getElementById('adminPanel').scrollIntoView();
                 };
 
@@ -938,7 +1051,7 @@
                 document.getElementById('loginOverlay').classList.remove('ativo');
                 document.getElementById('adminPanel').classList.add('ativo');
                 document.getElementById('chatButton').style.display = 'none';
-                renderListaAdmin();
+                renderizarListaAdmin();
                 Swal.close();
             } else {
                 document.getElementById('loginErro').style.display = 'block';
@@ -946,25 +1059,19 @@
             }
         });
 
-        document.getElementById('lockBtn').onclick = () => {
-            if(adminLogado){
-                if (!confirm('Sair do painel?')) return;
-                adminLogado = false;
-                document.getElementById('adminPanel').classList.remove('ativo');
-                document.getElementById('chatButton').style.display = 'flex';
-                renderDaysCarousel();
-                aplicarFiltros();
-            } else {
-                document.getElementById('loginOverlay').classList.add('ativo');
-            }
-        };
-
+        // ==========================================
         // CHAT SYNC
+        // ==========================================
         async function sincronizarChat() {
             const m = await fetchGoogle('listar_chat');
-            if (m.status === 'sucesso' && m.dados && m.dados.length > mensagensChat.length) {
-                mensagensChat = m.dados;
-                renderizarChatUI();
+            if (m.status === 'sucesso' && m.dados) {
+                if (m.dados.length > mensagensChat.length) {
+                    mensagensChat = m.dados;
+                    renderizarChatUI();
+                    if (!adminLogado && !document.getElementById('chatWindow').classList.contains('aberto')) {
+                        sistemaNotificacao.enviar('Novo Suporte', 'Você tem uma nova mensagem.');
+                    }
+                }
             }
         }
 
@@ -982,6 +1089,7 @@
 
         document.getElementById('chatSend').onclick = () => enviarMsg('user');
         document.getElementById('adminChatSend').onclick = () => enviarMsg('admin');
+
         async function enviarMsg(remetente) {
             const input = document.getElementById(remetente === 'user' ? 'chatInput' : 'adminChatInput');
             if (!input.value) return;
@@ -991,23 +1099,39 @@
             renderizarChatUI();
             await fetchGoogle('adicionar_chat', nm);
         }
+
         document.getElementById('chatButton').onclick = () => document.getElementById('chatWindow').classList.toggle('aberto');
         document.getElementById('closeChat').onclick = () => document.getElementById('chatWindow').classList.remove('aberto');
+        
+        document.getElementById('lockBtn').onclick = () => {
+            if(adminLogado){
+                adminLogado = false;
+                document.getElementById('adminPanel').classList.remove('ativo');
+                document.getElementById('chatButton').style.display = 'flex';
+                renderDaysCarousel();
+                aplicarFiltros();
+            } else {
+                document.getElementById('loginOverlay').classList.add('ativo');
+            }
+        };
 
         // ==========================================
         // INICIALIZAÇÃO
         // ==========================================
         async function inicializar() {
             Swal.fire({ title: 'Carregando Agenda...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
-            
+
+            // Configura Data Inicial antes de puxar dados (Impede tela branca)
+            initCalendar(); 
+
             const comp = await fetchGoogle('listar');
             if (comp.status === 'sucesso') compromissos = comp.dados || [];
             
             const msg = await fetchGoogle('listar_chat');
             if (msg.status === 'sucesso') mensagensChat = msg.dados || [];
-
-            // Dispara lógica de data e carrossel
-            initCalendar();
+            
+            renderDaysCarousel();
+            aplicarFiltros();
             renderizarChatUI();
 
             Swal.close();
