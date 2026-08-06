@@ -70,7 +70,6 @@
             color: #009739;
         }
 
-        /* Botão para ativar notificações no iOS */
         .btn-notificacoes {
             background: #fef08a;
             color: #854d0e;
@@ -84,7 +83,7 @@
             align-items: center;
             gap: 0.4rem;
             transition: all 0.2s;
-            display: none; /* Só exibe se precisar de permissão */
+            display: none;
         }
 
         .btn-notificacoes:hover {
@@ -92,7 +91,6 @@
             transform: scale(1.05);
         }
 
-        /* Ocultamento Inteligente (Botões Toggle) */
         .btn-toggle-ui {
             background: #ffffff;
             color: #1a1a2e;
@@ -117,80 +115,63 @@
             color: #009739;
         }
 
-        .filtros-wrapper {
-            width: 100%;
-            max-width: 1200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 1rem;
+        /* ========================================= */
+        /* NOVO CALENDÁRIO HORIZONTAL (CARROSSEL)    */
+        /* ========================================= */
+        .calendar-nav {
+            display: flex; flex-direction: column; width: 100%; max-width: 1200px;
+            background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem;
+            margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         }
 
-        .filtros-container {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 1.2rem 1.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            width: 100%;
-            display: none; /* Começa oculto */
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 1rem 1.5rem;
-            margin-bottom: 1rem;
-            animation: fadeIn 0.2s ease;
+        .month-selector-container {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+            border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem;
         }
 
-        .filtros-container label {
-            font-weight: 500;
-            color: #333;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
+        .month-selector-container input[type="month"] {
+            border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #1a1a2e;
+            outline: none; cursor: pointer; color: #009739;
         }
 
-        .filtros-container select {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1.5px solid #d1d5db;
-            background: #fafafa;
-            font-size: 0.95rem;
-            color: #1a1a2e;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            min-width: 90px;
+        .contador {
+            font-size: 0.9rem; color: #6b7280; background: #f3f4f6;
+            padding: 0.3rem 1rem; border-radius: 20px; font-weight: 600;
         }
 
-        .filtros-container select:focus {
-            outline: none;
-            border-color: #009739;
+        .days-carousel {
+            display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem;
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
 
-        .filtros-container .btn-limpar {
-            padding: 0.5rem 1.2rem;
-            border-radius: 8px;
-            border: 1.5px solid #d1d5db;
-            background: #fafafa;
-            color: #555;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-size: 0.9rem;
+        .days-carousel::-webkit-scrollbar { height: 6px; }
+        .days-carousel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+        .day-tab {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-width: 65px; height: 80px; padding: 0.5rem; border-radius: 14px;
+            border: 1.5px solid #e5e7eb; background: #ffffff; cursor: pointer;
+            transition: all 0.2s; position: relative; flex-shrink: 0;
         }
 
-        .filtros-container .btn-limpar:hover {
-            background: #f3f4f6;
-            border-color: #9ca3af;
-        }
+        .day-tab:hover { border-color: #009739; background: #f0fdf4; }
+        
+        .day-tab.active { background: #009739; border-color: #009739; color: #ffffff; box-shadow: 0 4px 10px rgba(0,151,57,0.3); }
 
-        .filtros-container .contador {
-            margin-left: auto;
-            font-size: 0.9rem;
-            color: #6b7280;
-            background: #f3f4f6;
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
+        .day-tab .day-name { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
+        .day-tab.active .day-name { color: #dcfce7; }
+
+        .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
+        .day-tab.active .day-num { color: #ffffff; }
+
+        .day-tab .event-dot {
+            width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;
+            position: absolute; bottom: 6px; display: none;
         }
+        .day-tab.has-event .event-dot { display: block; }
+        .day-tab.active.has-event .event-dot { background: #ffffff; }
+
+        /* ========================================= */
 
         .agenda-grid {
             display: grid;
@@ -234,72 +215,16 @@
             border: 1px solid #c8e6c9;
         }
 
-        .card-date-box .dia {
-            font-size: 2rem;
-            font-weight: 800;
-            line-height: 1;
-        }
+        .card-date-box .dia { font-size: 2rem; font-weight: 800; line-height: 1; }
+        .card-date-box .mes { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-top: 3px; letter-spacing: 1px; }
 
-        .card-date-box .mes {
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-top: 3px;
-            letter-spacing: 1px;
-        }
-
-        .card-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            min-width: 0;
-        }
-
-        .card-titulo {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #1a1a2e;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .card-data-range {
-            font-size: 0.85rem;
-            color: #555;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .card-horario {
-            font-size: 0.9rem;
-            color: #009739;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .card-local {
-            font-size: 0.85rem;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .card-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.2rem;
-            flex-wrap: wrap;
-        }
-
+        .card-content { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+        .card-titulo { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-data-range { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 0.3rem; }
+        .card-horario { font-size: 0.9rem; color: #009739; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+        .card-local { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; flex-wrap: wrap; }
+        
         .card-actions .btn-mapa {
             padding: 0.3rem 0.8rem;
             background: #e8f5e9;
@@ -316,11 +241,7 @@
             gap: 0.3rem;
         }
 
-        .card-actions .btn-mapa:hover {
-            background: #009739;
-            color: white;
-            transform: scale(1.05);
-        }
+        .card-actions .btn-mapa:hover { background: #009739; color: white; transform: scale(1.05); }
 
         .card-status-badge {
             display: inline-block;
@@ -332,1031 +253,99 @@
             align-self: flex-start;
         }
 
-        .sem-resultados {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 3rem 0;
-            color: #6b7280;
-            font-size: 1.1rem;
+        .sem-resultados { grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: #6b7280; font-size: 1.1rem; }
+
+        .popup-overlay, .login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999; padding: 1rem;
+        }
+        .popup-overlay.ativo, .login-overlay.ativo { display: flex; }
+
+        .popup, .login-modal {
+            background: #ffffff; border-radius: 24px; max-width: 480px; width: 100%; padding: 2rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.2s ease; position: relative; max-height: 90vh; overflow-y: auto;
         }
 
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            padding: 1rem;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        .popup-overlay.ativo {
-            display: flex;
-        }
+        .popup-close { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.8rem; line-height: 1; background: none; border: none; color: #888; cursor: pointer; }
+        .popup-close:hover { color: #1a1a2e; }
+        .popup h2, .login-modal h2 { color: #1a1a2e; font-size: 1.6rem; margin-bottom: 1.2rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 0.6rem; }
+        
+        .popup-info { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.8rem; }
+        .popup-info p { display: flex; align-items: baseline; gap: 0.5rem; font-size: 1rem; color: #222; }
+        .popup-info strong { min-width: 90px; color: #555; font-weight: 500; flex-shrink: 0; }
+        
+        .popup-descricao-text { background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem; }
+        .popup-status { display: inline-block; background: #e8f5e9; color: #009739; padding: 0.2rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+        
+        .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem; }
 
-        .popup {
-            background: #ffffff;
-            border-radius: 24px;
-            max-width: 480px;
-            width: 100%;
-            padding: 2rem 2rem 1.8rem;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.2s ease;
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .popup-close {
-            position: absolute;
-            top: 1rem;
-            right: 1.2rem;
-            font-size: 1.8rem;
-            line-height: 1;
-            background: none;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            transition: color 0.1s;
-        }
-
-        .popup-close:hover {
-            color: #1a1a2e;
-        }
-
-        .popup h2 {
-            color: #1a1a2e;
-            font-size: 1.6rem;
-            margin-bottom: 1.2rem;
-            border-bottom: 2px solid #f0f2f5;
-            padding-bottom: 0.6rem;
-            padding-right: 2rem;
-        }
-
-        .popup-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.7rem;
-            margin-bottom: 1.8rem;
-        }
-
-        .popup-info p {
-            display: flex;
-            align-items: baseline;
-            gap: 0.5rem;
-            font-size: 1rem;
-            color: #222;
-        }
-
-        .popup-info strong {
-            min-width: 90px;
-            color: #555;
-            font-weight: 500;
-            flex-shrink: 0;
-        }
-
-        .popup-descricao-text {
-            background: #f9fafb;
-            padding: 0.8rem;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            font-size: 0.95rem;
-            color: #374151;
-            white-space: pre-wrap;
-            margin-top: 0.2rem;
-        }
-
-        .popup-status {
-            display: inline-block;
-            background: #e8f5e9;
-            color: #009739;
-            padding: 0.2rem 1rem;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        .popup-acoes {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-            margin-top: 0.5rem;
-            border-top: 1px solid #eee;
-            padding-top: 1.5rem;
-        }
-
-        .btn {
-            padding: 0.6rem 1.4rem;
-            border-radius: 30px;
-            border: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.15s, transform 0.1s;
-            flex: 1 0 auto;
-            background: #f0f2f5;
-            color: #1a1a2e;
-        }
-
-        .btn:hover {
-            transform: scale(0.97);
-        }
-
-        .btn-cancelar { background: #fee2e2; color: #b91c1c; }
-        .btn-cancelar:hover { background: #fecaca; }
-        .btn-adiar { background: #fef9c3; color: #92400e; }
-        .btn-adiar:hover { background: #fde68a; }
-        .btn-concluir { background: #dcfce7; color: #166534; }
-        .btn-concluir:hover { background: #bbf7d0; }
-        .btn-fechar { background: #e5e7eb; color: #1f2937; flex: 0.5; }
-        .btn-fechar:hover { background: #d1d5db; }
+        .btn { padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; flex: 1 0 auto; background: #f0f2f5; color: #1a1a2e; }
+        .btn:hover { transform: scale(0.97); }
+        .btn-cancelar { background: #fee2e2; color: #b91c1c; } .btn-cancelar:hover { background: #fecaca; }
+        .btn-adiar { background: #fef9c3; color: #92400e; } .btn-adiar:hover { background: #fde68a; }
+        .btn-concluir { background: #dcfce7; color: #166534; } .btn-concluir:hover { background: #bbf7d0; }
+        .btn-fechar { background: #e5e7eb; color: #1f2937; flex: 0.5; } .btn-fechar:hover { background: #d1d5db; }
         .btn-mapa-popup { background: #e8f5e9; color: #009739; border: 2px solid #009739; flex: 1; }
         .btn-mapa-popup:hover { background: #009739; color: white; }
 
         .chat-button {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #009739;
-            color: white;
-            border: none;
-            font-size: 1.8rem;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4);
-            transition: all 0.3s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%;
+            background: #009739; color: white; border: none; font-size: 1.8rem; cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); z-index: 1000; display: flex; align-items: center; justify-content: center;
         }
-
-        .chat-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5);
-        }
-
+        .chat-button:hover { transform: scale(1.1); }
         .chat-button .badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
+            position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; border-radius: 50%;
+            width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700;
         }
 
         .chat-window {
-            position: fixed;
-            bottom: 5.5rem;
-            right: 2rem;
-            width: 380px;
-            max-width: calc(100vw - 2rem);
-            height: 500px;
-            max-height: calc(100vh - 8rem);
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
-            z-index: 1001;
-            overflow: hidden;
-            animation: slideUp 0.3s ease;
+            position: fixed; bottom: 5.5rem; right: 2rem; width: 380px; max-width: calc(100vw - 2rem);
+            height: 500px; max-height: calc(100vh - 8rem); background: #ffffff; border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); display: none; flex-direction: column; z-index: 1001; overflow: hidden;
         }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .chat-window.aberto {
-            display: flex;
-        }
-
-        .chat-header {
-            background: #009739;
-            color: white;
-            padding: 1rem 1.2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .chat-header h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .chat-header .status {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.75rem;
-            font-weight: 400;
-            opacity: 0.9;
-        }
-
-        .chat-header .status .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #4ade80;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        .chat-header .close-chat {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.4rem;
-            cursor: pointer;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-            padding: 0 0.3rem;
-        }
-
-        .chat-header .close-chat:hover {
-            opacity: 1;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 1rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-            background: #f9fafb;
-        }
-
-        .chat-messages .message {
-            max-width: 85%;
-            padding: 0.6rem 1rem;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            word-wrap: break-word;
-            animation: messageIn 0.3s ease;
-        }
-
-        .chat-messages .message.bot {
-            background: #e8f5e9;
-            color: #1a1a2e;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .chat-messages .message.user {
-            background: #009739;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        .chat-messages .message .time {
-            font-size: 0.65rem;
-            opacity: 0.6;
-            margin-top: 0.2rem;
-            display: block;
-        }
-
-        .chat-messages .message.bot .time {
-            color: #555;
-        }
-
-        .chat-messages .message.user .time {
-            color: rgba(255,255,255,0.7);
-        }
-
-        .chat-input-area {
-            padding: 0.8rem 1rem;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 0.6rem;
-            background: white;
-            flex-shrink: 0;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-            padding: 0.6rem 1rem;
-            border: 1.5px solid #d1d5db;
-            border-radius: 24px;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .chat-input-area input:focus {
-            border-color: #009739;
-        }
-
-        .chat-input-area button {
-            padding: 0.6rem 1.2rem;
-            background: #009739;
-            color: white;
-            border: none;
-            border-radius: 24px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-
-        .chat-input-area button:hover {
-            background: #007a2f;
-        }
-
-        .footer {
-            margin-top: 3rem;
-            padding: 1.5rem 0 0.5rem 0;
-            width: 100%;
-            max-width: 1200px;
-            border-top: 2px solid #e5e7eb;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .footer .lock-btn {
-            background: none;
-            border: none;
-            font-size: 1.6rem;
-            cursor: pointer;
-            padding: 0.3rem 0.8rem;
-            border-radius: 8px;
-            transition: background 0.2s;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .footer .lock-btn:hover {
-            background: #f3f4f6;
-            color: #1a1a2e;
-        }
-
-        .footer .copyright {
-            color: #9ca3af;
-            font-size: 0.85rem;
-        }
-
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(6px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            padding: 1rem;
-        }
-
-        .login-overlay.ativo {
-            display: flex;
-        }
-
-        .login-modal {
-            background: white;
-            border-radius: 24px;
-            padding: 2.5rem 2rem;
-            max-width: 420px;
-            width: 100%;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.3s ease;
-            position: relative;
-        }
-
-        .login-modal h2 {
-            color: #1a1a2e;
-            font-size: 1.5rem;
-            margin-bottom: 0.3rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .login-modal .subtitle {
-            color: #6b7280;
-            font-size: 0.9rem;
-            margin-bottom: 1.8rem;
-        }
-
-        .login-modal .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .login-modal .form-group label {
-            display: block;
-            font-weight: 500;
-            color: #333;
-            font-size: 0.9rem;
-            margin-bottom: 0.3rem;
-        }
-
-        .login-modal .form-group input {
-            width: 100%;
-            padding: 0.7rem 1rem;
-            border: 1.5px solid #d1d5db;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-            outline: none;
-            background: #fafafa;
-        }
-
-        .login-modal .form-group input:focus {
-            border-color: #009739;
-            box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15);
-            background: white;
-        }
-
-        .login-modal .btn-login {
-            width: 100%;
-            padding: 0.8rem;
-            background: #009739;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 0.5rem;
-        }
-
-        .login-modal .btn-login:hover {
-            background: #007a2f;
-        }
-
-        .login-modal .erro {
-            color: #dc2626;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            display: none;
-        }
-
-        .login-modal .erro.visible {
-            display: block;
-        }
+        .chat-window.aberto { display: flex; }
+        .chat-header { background: #009739; color: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; background: #f9fafb; }
+        .chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; }
+        .message.bot { background: #e8f5e9; color: #1a1a2e; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .message.user { background: #009739; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-input-area { padding: 0.8rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; }
+        .chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; outline: none; }
+        .chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border-radius: 24px; border: none; cursor: pointer; }
 
         .admin-panel {
-            display: none;
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            width: 100%;
-            max-width: 1200px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            animation: fadeIn 0.3s ease;
+            display: none; background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 1200px;
+            margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); animation: fadeIn 0.3s ease;
         }
+        .admin-panel.ativo { display: block; }
+        .admin-panel .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+        .admin-panel .tab-btn { padding: 0.6rem 1.5rem; background: none; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: #6b7280; }
+        .admin-panel .tab-btn.ativo { background: #e8f5e9; color: #009739; }
+        .admin-panel .tab-content { display: none; }
+        .admin-panel .tab-content.ativo { display: block; }
+        
+        .admin-panel .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .admin-panel .form-group { margin-bottom: 1rem; }
+        .admin-panel .form-group label { display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem; }
+        .admin-panel .form-group input, .admin-panel .form-group select, .admin-panel .form-group textarea { width: 100%; padding: 0.7rem; border: 1.5px solid #d1d5db; border-radius: 10px; background: #fafafa; }
+        .admin-panel .full-width { grid-column: 1 / -1; }
 
-        .admin-panel.ativo {
-            display: block;
-        }
-
-        .admin-panel .tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .admin-panel .tab-btn {
-            padding: 0.6rem 1.5rem;
-            background: none;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .admin-panel .tab-btn:hover {
-            background: #f3f4f6;
-            color: #1a1a2e;
-        }
-
-        .admin-panel .tab-btn.ativo {
-            background: #e8f5e9;
-            color: #009739;
-        }
-
-        .admin-panel .tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .admin-panel .tab-content.ativo {
-            display: block;
-        }
-
-        .admin-panel h2 {
-            color: #1a1a2e;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-        }
-
-        .admin-panel h2 .admin-badge {
-            background: #009739;
-            color: white;
-            font-size: 0.7rem;
-            padding: 0.2rem 0.8rem;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .admin-panel .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .admin-panel .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .admin-panel .form-group label {
-            display: block;
-            font-weight: 500;
-            color: #333;
-            font-size: 0.9rem;
-            margin-bottom: 0.3rem;
-        }
-
-        .admin-panel .form-group input,
-        .admin-panel .form-group select,
-        .admin-panel .form-group textarea {
-            width: 100%;
-            padding: 0.7rem 1rem;
-            border: 1.5px solid #d1d5db;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            transition: border-color 0.2s;
-            outline: none;
-            background: #fafafa;
-        }
-
-        .admin-panel .form-group input:focus,
-        .admin-panel .form-group select:focus,
-        .admin-panel .form-group textarea:focus {
-            border-color: #009739;
-            box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15);
-            background: white;
-        }
-
-        .admin-panel .form-group textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        .admin-panel .form-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 0.5rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .admin-panel .btn-salvar {
-            padding: 0.7rem 2rem;
-            background: #009739;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .admin-panel .btn-salvar:hover {
-            background: #007a2f;
-        }
-
-        .admin-panel .btn-atualizar {
-            padding: 0.7rem 2rem;
-            background: #f59e0b;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .admin-panel .btn-atualizar:hover {
-            background: #d97706;
-        }
-
-        .admin-panel .btn-cancelar-admin {
-            padding: 0.7rem 2rem;
-            background: #f3f4f6;
-            color: #555;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .admin-panel .btn-cancelar-admin:hover {
-            background: #e5e7eb;
-        }
-
-        .admin-panel .btn-fechar-admin {
-            padding: 0.7rem 2rem;
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.95rem;
-            margin-left: auto;
-        }
-
-        .admin-panel .btn-fechar-admin:hover {
-            background: #dc2626;
-        }
-
-        .admin-panel .btn-editar {
-            padding: 0.3rem 1rem;
-            background: #dbeafe;
-            color: #1e40af;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.8rem;
-        }
-
-        .admin-panel .btn-editar:hover {
-            background: #bfdbfe;
-        }
-
-        .admin-panel .btn-excluir {
-            padding: 0.3rem 1rem;
-            background: #fee2e2;
-            color: #b91c1c;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.8rem;
-        }
-
-        .admin-panel .btn-excluir:hover {
-            background: #fecaca;
-        }
-
-        .admin-panel .lista-compromissos-admin {
-            margin-top: 1rem;
-            border-top: 2px solid #f0f2f5;
-            padding-top: 1.5rem;
-        }
-
-        .admin-panel .lista-compromissos-admin h3 {
-            color: #1a1a2e;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-
-        .admin-panel .item-admin {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.7rem 1rem;
-            background: #f9fafb;
-            border-radius: 10px;
-            margin-bottom: 0.5rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .admin-panel .item-admin .info {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-            flex: 1;
-        }
-
-        .admin-panel .item-admin .info .titulo {
-            font-weight: 600;
-            color: #1a1a2e;
-        }
-
-        .admin-panel .item-admin .info .data {
-            color: #6b7280;
-            font-size: 0.85rem;
-        }
-
-        .admin-panel .item-admin .acoes {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .admin-panel .full-width {
-            grid-column: 1 / -1;
-        }
-
-        .admin-panel .edit-indicator {
-            background: #fef9c3;
-            color: #92400e;
-            padding: 0.2rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-left: 0.5rem;
-        }
-
-        .admin-chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 450px;
-            background: #f9fafb;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .admin-chat-messages {
-            flex: 1;
-            padding: 1rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .admin-chat-messages .message {
-            max-width: 85%;
-            padding: 0.6rem 1rem;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-
-        .admin-chat-messages .message.user {
-            background: #009739;
-            color: white;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .admin-chat-messages .message.admin {
-            background: #dbeafe;
-            color: #1a1a2e;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        .admin-chat-messages .message .time {
-            font-size: 0.65rem;
-            opacity: 0.6;
-            margin-top: 0.2rem;
-            display: block;
-        }
-
-        .admin-chat-messages .message.user .time {
-            color: rgba(255,255,255,0.7);
-        }
-
-        .admin-chat-messages .message.admin .time {
-            color: #6b7280;
-        }
-
-        .admin-chat-empty {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #9ca3af;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .admin-chat-empty .icon {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .admin-chat-input-area {
-            padding: 0.8rem 1rem;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 0.6rem;
-            background: white;
-        }
-
-        .admin-chat-input-area input {
-            flex: 1;
-            padding: 0.6rem 1rem;
-            border: 1.5px solid #d1d5db;
-            border-radius: 24px;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .admin-chat-input-area input:focus {
-            border-color: #009739;
-        }
-
-        .admin-chat-input-area button {
-            padding: 0.6rem 1.2rem;
-            background: #009739;
-            color: white;
-            border: none;
-            border-radius: 24px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-
-        .admin-chat-input-area button:hover {
-            background: #007a2f;
-        }
-
-        .install-pwa {
-            position: fixed;
-            bottom: 6rem;
-            right: 2rem;
-            background: #009739;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 0.8rem 1.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4);
-            z-index: 999;
-            display: none;
-            align-items: center;
-            gap: 0.5rem;
-            animation: slideUp 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .install-pwa:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5);
-        }
-
-        .install-pwa.visible {
-            display: flex;
-        }
+        .item-admin { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 1rem; background: #f9fafb; border-radius: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
+        
+        .footer { margin-top: 3rem; padding: 1.5rem 0 0.5rem 0; width: 100%; max-width: 1200px; border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
 
         @media (max-width: 640px) {
-            .filtros-container {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.8rem;
-            }
-            .filtros-container .contador {
-                margin-left: 0;
-                text-align: center;
-            }
-            .filtros-container label {
-                flex-wrap: wrap;
-            }
-            .filtros-container select {
-                width: 100%;
-            }
-            .popup {
-                padding: 1.5rem;
-            }
-            .popup-info p {
-                flex-wrap: wrap;
-            }
-            .popup-info strong {
-                min-width: 70px;
-            }
-            .header {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            h1 {
-                font-size: 1.4rem;
-            }
-            .chat-window {
-                width: calc(100vw - 1.5rem);
-                right: 0.75rem;
-                bottom: 5rem;
-                height: 70vh;
-            }
-            .chat-button {
-                width: 52px;
-                height: 52px;
-                font-size: 1.5rem;
-                bottom: 1.2rem;
-                right: 1.2rem;
-            }
-            .admin-panel .form-row {
-                grid-template-columns: 1fr;
-            }
-            .admin-panel {
-                padding: 1.2rem;
-            }
-            .login-modal {
-                padding: 1.8rem 1.2rem;
-            }
-            .admin-panel .item-admin {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .admin-panel .item-admin .acoes {
-                align-self: flex-end;
-            }
-            .admin-panel .form-actions {
-                flex-direction: column;
-            }
-            .admin-panel .btn-fechar-admin {
-                margin-left: 0;
-            }
-            .card-actions {
-                width: 100%;
-            }
-            .card-actions .btn-mapa {
-                flex: 1;
-                justify-content: center;
-            }
-            .admin-panel .tabs {
-                flex-direction: column;
-            }
-            .admin-panel .tab-btn {
-                justify-content: center;
-            }
-            .install-pwa {
-                bottom: 5rem;
-                right: 1rem;
-                left: 1rem;
-                justify-content: center;
-            }
-        }
-
-        .notification-toast {
-            border-radius: 12px !important;
-            border-left: 4px solid #009739 !important;
+            .form-row { grid-template-columns: 1fr !important; }
+            .card { flex-direction: column; align-items: stretch; }
+            .card-date-box { flex-direction: row; height: 40px; gap: 10px; }
+            .card-date-box .dia { font-size: 1.5rem; }
+            .chat-window { width: calc(100vw - 1.5rem); right: 0.75rem; bottom: 5rem; height: 70vh; }
+            .month-selector-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
+            .admin-panel .item-admin { flex-direction: column; align-items: flex-start; }
+            .admin-panel .item-admin .acoes { align-self: flex-end; }
         }
     </style>
 </head>
@@ -1373,45 +362,16 @@
     </div>
 
     <!-- Botão de instalação PWA -->
-    <button class="install-pwa" id="installPWA">📱 Instalar App</button>
+    <button class="install-pwa" id="installPWA" style="display:none; position: fixed; bottom: 6rem; right: 2rem; background: #009739; color: white; border: none; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: 600; z-index: 999;">📱 Instalar App</button>
 
-    <!-- ÁREA DE FILTROS OCULTÁVEL -->
-    <div class="filtros-wrapper">
-        <button id="btnToggleFiltros" class="btn-toggle-ui">🔍 Exibir Filtros</button>
-        <div class="filtros-container" id="filtrosContainer">
-            <label>
-                📆 Ano
-                <select id="filtroAno">
-                    <option value="">Todos</option>
-                </select>
-            </label>
-            <label>
-                📅 Mês
-                <select id="filtroMes">
-                    <option value="">Todos</option>
-                    <option value="1">Janeiro</option>
-                    <option value="2">Fevereiro</option>
-                    <option value="3">Março</option>
-                    <option value="4">Abril</option>
-                    <option value="5">Maio</option>
-                    <option value="6">Junho</option>
-                    <option value="7">Julho</option>
-                    <option value="8">Agosto</option>
-                    <option value="9">Setembro</option>
-                    <option value="10">Outubro</option>
-                    <option value="11">Novembro</option>
-                    <option value="12">Dezembro</option>
-                </select>
-            </label>
-            <label>
-                🔢 Dia
-                <select id="filtroDia">
-                    <option value="">Todos</option>
-                    <!-- Preenchido pelo JS -->
-                </select>
-            </label>
-            <button class="btn-limpar" id="btnLimparFiltros">✕ Limpar</button>
+    <!-- NOVO CALENDÁRIO HORIZONTAL COM CARROSSEL -->
+    <div class="calendar-nav">
+        <div class="month-selector-container">
+            <input type="month" id="monthSelector" title="Escolha o Mês e Ano">
             <span class="contador" id="contadorCompromissos">0 compromissos</span>
+        </div>
+        <div class="days-carousel" id="daysCarousel">
+            <!-- Preenchido pelo JS -->
         </div>
     </div>
 
@@ -1419,8 +379,8 @@
     <div class="admin-panel" id="adminPanel">
         <h2>
             🛠️ Painel Administrativo
-            <span class="admin-badge">Admin</span>
-            <span id="editModeIndicator" style="display:none;" class="edit-indicator">✏️ Modo Edição</span>
+            <span class="admin-badge" style="background: #009739; color: white; font-size: 0.7rem; padding: 0.2rem 0.8rem; border-radius: 20px;">Admin</span>
+            <span id="editModeIndicator" style="display:none; background: #fef9c3; color: #92400e; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;">✏️ Modo Edição</span>
         </h2>
 
         <div class="tabs">
@@ -1430,7 +390,6 @@
 
         <div class="tab-content ativo" id="tabAgenda">
             
-            <!-- BOTÃO PARA OCULTAR/EXIBIR FORMULÁRIO ADMIN -->
             <button id="btnToggleAdminForm" class="btn-toggle-ui" style="background: #e8f5e9; border-color: #009739; color: #009739;">➕ Adicionar Novo Compromisso</button>
             
             <form id="formAdmin" style="display: none; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
@@ -1474,37 +433,38 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-salvar" id="btnSalvar">➕ Adicionar Compromisso</button>
-                    <button type="button" class="btn-atualizar" id="btnAtualizar" style="display:none;">✏️ Atualizar Compromisso</button>
-                    <button type="button" class="btn-cancelar-admin" id="btnLimparForm">🔄 Limpar Formulário</button>
-                    <button type="button" class="btn-fechar-admin" id="btnFecharAdmin">🚪 Fechar Painel</button>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
+                    <button type="submit" class="btn" style="background:#009739; color:white;" id="btnSalvar">➕ Adicionar Compromisso</button>
+                    <button type="button" class="btn" style="background:#f59e0b; color:white; display:none;" id="btnAtualizar">✏️ Atualizar Compromisso</button>
+                    <button type="button" class="btn" id="btnLimparForm">🔄 Limpar Formulário</button>
+                    <button type="button" class="btn" style="background:#ef4444; color:white;" id="btnFecharAdmin">🚪 Fechar Painel</button>
                 </div>
             </form>
 
-            <div class="lista-compromissos-admin">
-                <h3>📋 Compromissos Cadastrados</h3>
+            <div class="lista-compromissos-admin" style="margin-top: 1rem; border-top: 2px solid #f0f2f5; padding-top: 1.5rem;">
+                <h3 style="margin-bottom: 1rem;">📋 Compromissos Cadastrados</h3>
                 <div id="listaAdmin"></div>
             </div>
         </div>
 
         <div class="tab-content" id="tabChat">
             <h3 style="margin-bottom: 1rem;">💬 Conversas com Usuários</h3>
-            <div class="admin-chat-container">
-                <div class="admin-chat-messages" id="adminChatMessages">
-                    <div class="admin-chat-empty">
-                        <div class="icon">💬</div>
+            <div style="display: flex; flex-direction: column; height: 450px; background: #f9fafb; border-radius: 12px; overflow: hidden;">
+                <div id="adminChatMessages" style="flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem;">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">💬</div>
                         <p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p>
                     </div>
                 </div>
-                <div class="admin-chat-input-area">
-                    <input type="text" id="adminChatInput" placeholder="Digite sua resposta..." />
-                    <button id="adminChatSend">Enviar</button>
+                <div style="padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white;">
+                    <input type="text" id="adminChatInput" placeholder="Digite sua resposta..." style="flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; outline: none;" />
+                    <button id="adminChatSend" style="padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px; font-weight: 600; cursor: pointer;">Enviar</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Lista de Cards -->
     <div class="agenda-grid" id="agendaGrid"></div>
 
     <!-- Popup Visualização de Compromisso -->
@@ -1516,7 +476,7 @@
                 <p><strong>📅 Período:</strong> <span id="popupDia">—</span></p>
                 <p><strong>⏰ Hora:</strong> <span id="popupHora">—</span></p>
                 <p><strong>📍 Local:</strong> <span id="popupLocal">—</span></p>
-                <p><strong>👥 Participantes:</strong> <span id="popupParticipantes">—</span></p>
+                <p><strong>👥 Pessoas:</strong> <span id="popupParticipantes">—</span></p>
                 <div id="popupDescricaoContainer" style="display: none;">
                     <strong>📝 Descrição:</strong>
                     <div class="popup-descricao-text" id="popupDescricao">—</div>
@@ -1524,7 +484,7 @@
                 <p style="margin-top: 0.5rem;"><strong>📌 Status:</strong> <span class="popup-status" id="popupStatus">Pendente</span></p>
             </div>
             <div class="popup-acoes">
-                <button class="btn btn-mapa-popup" id="btnMapaPopup">📍 Ver no Google Maps</button>
+                <button class="btn btn-mapa-popup" id="btnMapaPopup">📍 Ver Mapa</button>
                 <button class="btn btn-cancelar" id="btnCancelar">✕ Cancelar</button>
                 <button class="btn btn-adiar" id="btnAdiar">⏳ Adiar</button>
                 <button class="btn btn-concluir" id="btnConcluir">✓ Concluir</button>
@@ -1537,50 +497,44 @@
     <div class="login-overlay" id="adiarOverlay">
         <div class="login-modal">
             <h2>⏳ Adiar Compromisso</h2>
-            <p class="subtitle">Selecione os novos dados para o compromisso.</p>
-            <div class="form-group">
-                <label>Nova Data Início</label>
-                <input type="date" id="adiarDataInput">
+            <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.8rem;">Selecione os novos dados.</p>
+            <div class="form-group" style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem;">Nova Data Início</label>
+                <input type="date" id="adiarDataInput" style="width: 100%; padding: 0.7rem; border: 1.5px solid #d1d5db; border-radius: 10px;">
             </div>
-            <div class="form-group">
-                <label>Nova Data Fim (Opcional)</label>
-                <input type="date" id="adiarDataFimInput">
+            <div class="form-group" style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem;">Nova Data Fim</label>
+                <input type="date" id="adiarDataFimInput" style="width: 100%; padding: 0.7rem; border: 1.5px solid #d1d5db; border-radius: 10px;">
             </div>
-            <div class="form-group">
-                <label>Nova Hora</label>
-                <input type="time" id="adiarHoraInput">
+            <div class="form-group" style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem;">Nova Hora</label>
+                <input type="time" id="adiarHoraInput" style="width: 100%; padding: 0.7rem; border: 1.5px solid #d1d5db; border-radius: 10px;">
             </div>
-            <div class="form-group">
-                <label>Novo Local (Opcional)</label>
-                <input type="text" id="adiarLocalInput" placeholder="Ex: Sala 302">
+            <div class="form-group" style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem;">Novo Local</label>
+                <input type="text" id="adiarLocalInput" style="width: 100%; padding: 0.7rem; border: 1.5px solid #d1d5db; border-radius: 10px;">
             </div>
             <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                <button class="btn btn-concluir" id="btnConfirmarAdiar" style="flex: 1;">✓ Salvar</button>
-                <button class="btn btn-cancelar" id="btnFecharAdiar" style="flex: 1; text-align: center;">✕ Cancelar</button>
+                <button class="btn btn-concluir" id="btnConfirmarAdiar" style="flex: 1; padding: 0.8rem; background: #dcfce7; color: #166534; border: none; border-radius: 10px; font-weight: 600;">✓ Salvar</button>
+                <button class="btn btn-cancelar" id="btnFecharAdiar" style="flex: 1; padding: 0.8rem; background: #fee2e2; color: #b91c1c; border: none; border-radius: 10px; font-weight: 600;">✕ Cancelar</button>
             </div>
         </div>
     </div>
 
     <!-- Chat Flutuante - Usuário -->
-    <button class="chat-button" id="chatButton" aria-label="Abrir chat de suporte">
+    <button class="chat-button" id="chatButton">
         💬
         <span class="badge" id="userChatBadge" style="display:none;">1</span>
     </button>
 
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
-            <h3>
-                💬 Suporte
-                <span class="status">
-                    <span class="dot"></span>
-                    Online
-                </span>
+            <h3 style="margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                💬 Suporte <span style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 400;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4ade80;"></span> Online</span>
             </h3>
-            <button class="close-chat" id="closeChat">✕</button>
+            <button class="close-chat" id="closeChat" style="background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer;">✕</button>
         </div>
-        <div class="chat-messages" id="chatMessages">
-            <!-- As mensagens aparecerão aqui -->
-        </div>
+        <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="Digite sua mensagem..." />
             <button id="chatSend">Enviar</button>
@@ -1590,27 +544,27 @@
     <!-- Login Modal -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-modal">
-            <h2>🔐 Acesso Administrativo</h2>
-            <p class="subtitle">Digite suas credenciais para gerenciar a agenda</p>
+            <h2 style="color: #1a1a2e; font-size: 1.5rem; margin-bottom: 0.3rem;">🔐 Acesso Admin</h2>
+            <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.8rem;">Digite suas credenciais</p>
             <form id="formLogin">
-                <div class="form-group">
-                    <label>Usuário</label>
-                    <input type="text" id="loginUser" placeholder="Digite seu usuário">
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem;">Usuário</label>
+                    <input type="text" id="loginUser" style="width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px;">
                 </div>
-                <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="loginPassword" placeholder="Digite sua senha">
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.3rem;">Senha</label>
+                    <input type="password" id="loginPassword" style="width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px;">
                 </div>
-                <div class="erro" id="loginErro">❌ Usuário ou senha incorretos</div>
-                <button type="submit" class="btn-login">🔓 Entrar no Painel</button>
+                <div class="erro" id="loginErro" style="color: #dc2626; font-size: 0.85rem; display: none;">❌ Incorretos</div>
+                <button type="submit" style="width: 100%; padding: 0.8rem; background: #009739; color: white; border: none; border-radius: 10px; font-weight: 600; margin-top: 0.5rem; cursor: pointer;">🔓 Entrar</button>
             </form>
         </div>
     </div>
 
     <!-- Rodapé -->
     <div class="footer">
-        <button class="lock-btn" id="lockBtn">🔒</button>
-        <span class="copyright">© 2026 Gabinete 247 - Todos os direitos reservados</span>
+        <button class="lock-btn" id="lockBtn" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: #6b7280;">🔒</button>
+        <span class="copyright" style="color: #9ca3af; font-size: 0.85rem;">© 2026 Gabinete 247</span>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1619,24 +573,11 @@
         // CONFIGURAÇÃO DA API
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
-        
-        // CHAVE PÚBLICA VAPID (Deve vir do seu servidor Node.js. Exemplo genérico)
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
 
         // ==========================================
-        // TOGGLES UI (Filtros e Form Admin)
+        // TOGGLES UI 
         // ==========================================
-        document.getElementById('btnToggleFiltros').addEventListener('click', function() {
-            const container = document.getElementById('filtrosContainer');
-            if (container.style.display === 'none' || container.style.display === '') {
-                container.style.display = 'flex';
-                this.innerHTML = '➖ Ocultar Filtros';
-            } else {
-                container.style.display = 'none';
-                this.innerHTML = '🔍 Exibir Filtros';
-            }
-        });
-
         document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
             const form = document.getElementById('formAdmin');
             if (form.style.display === 'none' || form.style.display === '') {
@@ -1662,9 +603,7 @@
             const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
             const rawData = window.atob(base64);
             const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
+            for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
             return outputArray;
         }
 
@@ -1675,17 +614,15 @@
             }
 
             async inicializar() {
-                if ('Notification' in window) {
-                    if (Notification.permission === 'granted') {
-                        this.permissoes.notificacao = true;
-                        document.getElementById('btnNotificacao').style.display = 'none';
-                    }
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    this.permissoes.notificacao = true;
+                    document.getElementById('btnNotificacao').style.display = 'none';
                 }
             }
 
             async solicitarPermissao() {
                 if (!('Notification' in window)) {
-                    Swal.fire('Aviso', 'Seu navegador não suporta notificações nativas.', 'info');
+                    Swal.fire('Aviso', 'Navegador não suporta notificações.', 'info');
                     return;
                 }
                 const permissao = await Notification.requestPermission();
@@ -1693,201 +630,47 @@
                     this.permissoes.notificacao = true;
                     document.getElementById('btnNotificacao').style.display = 'none';
                     await this.inscreverWebPush();
-                    Swal.fire('✅ Sucesso!', 'As notificações estão ativadas.', 'success');
-                } else {
-                    Swal.fire('⚠️ Bloqueado', 'Você bloqueou as notificações. Libere nas configurações do celular.', 'warning');
+                    Swal.fire('✅ Sucesso!', 'Notificações ativadas.', 'success');
                 }
             }
 
             async inscreverWebPush() {
                 if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
                 try {
-                    // Proteção contra quebra se a chave VAPID ainda for um texto de exemplo
-                    if (publicVapidKey.includes('coloque_sua_chave')) {
-                        console.warn("Chave VAPID não configurada. Inscrição Web Push ignorada.");
-                        return; 
-                    }
-
+                    if (publicVapidKey.includes('coloque_sua_chave')) return;
                     const registration = await navigator.serviceWorker.ready;
                     const subscription = await registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+                        userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
                     });
-                    
                     await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ acao: 'salvar_inscricao_push', dados: subscription })
                     });
-                } catch (e) {
-                    console.warn('Erro ao inscrever no PushManager:', e);
-                }
+                } catch (e) {}
             }
 
             enviar(titulo, mensagem, dados = {}) {
                 if (this.permissoes.notificacao && 'Notification' in window) {
-                    try {
-                        const notification = new Notification(titulo, {
-                            body: mensagem,
-                            icon: '/icons/icon-192x192.png',
-                            badge: '/icons/icon-72x72.png',
-                            tag: dados.tag || 'notification',
-                            data: dados,
-                            requireInteraction: true,
-                            vibrate: [200, 100, 200],
-                            silent: false 
-                        });
-
-                        notification.onclick = () => {
-                            window.focus();
-                            if (dados.url) window.location.href = dados.url;
-                            notification.close();
-                        };
-                    } catch (error) {
-                        console.warn('Erro na notificação nativa:', error);
-                    }
+                    try { new Notification(titulo, { body: mensagem, icon: '/icons/icon-192x192.png' }); } catch(e){}
                 }
-
-                if (navigator.vibrate) {
-                    navigator.vibrate([200, 100, 200]);
-                }
-
-                this.mostrarToast(titulo, mensagem);
-            }
-
-            mostrarToast(titulo, mensagem) {
-                Swal.fire({
-                    title: titulo,
-                    text: mensagem,
-                    icon: 'info',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    background: '#f0fdf4',
-                    iconColor: '#009739',
-                    customClass: { popup: 'notification-toast' }
-                });
-            }
-
-            async atualizarBadge(contagem) {
-                try {
-                    if (window.navigator && window.navigator.setAppBadge) {
-                        if (contagem > 0) {
-                            await window.navigator.setAppBadge(contagem);
-                        } else {
-                            await window.navigator.clearAppBadge();
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Erro ao atualizar badge:', error);
-                }
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             }
         }
-
         const sistemaNotificacao = new SistemaNotificacao();
-        document.getElementById('btnNotificacao').addEventListener('click', () => {
-            sistemaNotificacao.solicitarPermissao();
-        });
+        document.getElementById('btnNotificacao').addEventListener('click', () => sistemaNotificacao.solicitarPermissao());
 
         // ==========================================
-        // FUNÇÕES DE COMUNICAÇÃO COM GOOGLE SHEETS
+        // COMUNICAÇÃO COM GOOGLE SHEETS
         // ==========================================
-        async function carregarCompromissos() {
+        async function fetchGoogle(acao, dados = null) {
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ acao: 'listar' })
+                const payload = dados ? { acao, dados } : { acao };
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
                 });
-                const data = await response.json();
-                if (data.status === 'sucesso' && data.dados) return data.dados;
-                return [];
-            } catch (error) {
-                console.error('❌ Erro ao carregar compromissos:', error);
-                return [];
-            }
-        }
-
-        async function salvarCompromisso(dados) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ acao: 'adicionar', dados: dados })
-                });
-                return await response.json();
-            } catch (error) {
-                return { status: 'erro', mensagem: error.message };
-            }
-        }
-
-        async function atualizarCompromissoRemoto(dados) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ acao: 'atualizar', dados: dados })
-                });
-                return await response.json();
-            } catch (error) {
-                return { status: 'erro', mensagem: error.message };
-            }
-        }
-
-        async function excluirCompromissoRemoto(id) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ acao: 'excluir', dados: { id: id } })
-                });
-                return await response.json();
-            } catch (error) {
-                return { status: 'erro', mensagem: error.message };
-            }
-        }
-
-        async function carregarMensagensChat() {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ acao: 'listar_chat' })
-                });
-                const data = await response.json();
-                if (data.status === 'sucesso' && data.dados) return data.dados;
-                return [];
-            } catch (error) {
-                return [];
-            }
-        }
-
-        async function salvarMensagemChat(dados) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ acao: 'adicionar_chat', dados: dados })
-                });
-                return await response.json();
-            } catch (error) {
-                return { status: 'erro', mensagem: error.message };
-            }
-        }
-
-        async function validarLoginRemoto(usuario, senha) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ acao: 'login', dados: { usuario: usuario, senha: senha } })
-                });
-                return await response.json();
-            } catch (error) {
-                return { status: 'erro', mensagem: error.message };
-            }
+                return await res.json();
+            } catch (error) { return { status: 'erro', mensagem: error.message }; }
         }
 
         // ==========================================
@@ -1898,105 +681,22 @@
         let mensagensChat = [];
         let adminLogado = false;
         let proximoId = 1;
-        let ultimoIdMensagem = 1;
-
-        // ==========================================
-        // REFERÊNCIAS DOM
-        // ==========================================
-        const grid = document.getElementById('agendaGrid');
-        const overlay = document.getElementById('popupOverlay');
-        const popup = document.getElementById('popupCard');
-        const filtroAno = document.getElementById('filtroAno');
-        const filtroMes = document.getElementById('filtroMes');
-        const filtroDia = document.getElementById('filtroDia'); 
-        const btnLimpar = document.getElementById('btnLimparFiltros');
-        const contador = document.getElementById('contadorCompromissos');
-
-        const adminPanel = document.getElementById('adminPanel');
-        const loginOverlay = document.getElementById('loginOverlay');
-        const lockBtn = document.getElementById('lockBtn');
-        const formLogin = document.getElementById('formLogin');
-        const loginUser = document.getElementById('loginUser');
-        const loginPassword = document.getElementById('loginPassword');
-        const loginErro = document.getElementById('loginErro');
-        const btnFecharAdmin = document.getElementById('btnFecharAdmin');
-        const btnLimparForm = document.getElementById('btnLimparForm');
-        const formAdmin = document.getElementById('formAdmin');
-        const adminEditId = document.getElementById('adminEditId');
-        
-        const adminTitulo = document.getElementById('adminTitulo');
-        const adminData = document.getElementById('adminData');
-        const adminDataFim = document.getElementById('adminDataFim');
-        const adminHora = document.getElementById('adminHora');
-        const adminLocal = document.getElementById('adminLocal');
-        const adminParticipantes = document.getElementById('adminParticipantes');
-        const adminDescricao = document.getElementById('adminDescricao');
-        const adminStatus = document.getElementById('adminStatus');
-        
-        const listaAdmin = document.getElementById('listaAdmin');
-        const btnSalvar = document.getElementById('btnSalvar');
-        const btnAtualizar = document.getElementById('btnAtualizar');
-        const editModeIndicator = document.getElementById('editModeIndicator');
-
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        const adminChatMessages = document.getElementById('adminChatMessages');
-        const adminChatInput = document.getElementById('adminChatInput');
-        const adminChatSend = document.getElementById('adminChatSend');
-        const adminChatBadge = document.getElementById('adminChatBadge');
-
-        const chatButton = document.getElementById('chatButton');
-        const chatWindow = document.getElementById('chatWindow');
-        const closeChat = document.getElementById('closeChat');
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const chatSend = document.getElementById('chatSend');
-        const userChatBadge = document.getElementById('userChatBadge');
-
-        const popupTitulo = document.getElementById('popupTitulo');
-        const popupDia = document.getElementById('popupDia');
-        const popupHora = document.getElementById('popupHora');
-        const popupLocal = document.getElementById('popupLocal');
-        const popupParticipantes = document.getElementById('popupParticipantes');
-        const popupDescricaoContainer = document.getElementById('popupDescricaoContainer');
-        const popupDescricao = document.getElementById('popupDescricao');
-        const popupStatus = document.getElementById('popupStatus');
-        const btnMapaPopup = document.getElementById('btnMapaPopup');
-
-        const btnFechar = document.getElementById('btnFechar');
-        const btnCancelar = document.getElementById('btnCancelar');
-        const btnAdiar = document.getElementById('btnAdiar');
-        const btnConcluir = document.getElementById('btnConcluir');
-        const closeIcon = document.getElementById('popupClose');
-
-        const adiarOverlay = document.getElementById('adiarOverlay');
-        const adiarDataInput = document.getElementById('adiarDataInput');
-        const adiarDataFimInput = document.getElementById('adiarDataFimInput');
-        const adiarHoraInput = document.getElementById('adiarHoraInput');
-        const adiarLocalInput = document.getElementById('adiarLocalInput');
-        const btnConfirmarAdiar = document.getElementById('btnConfirmarAdiar');
-        const btnFecharAdiar = document.getElementById('btnFecharAdiar');
-
         let compromissoAtual = null;
+        let currentSelectedDate = 'ALL'; // Controle do dia selecionado no carrossel
 
         // ==========================================
-        // FUNÇÕES ÚTEIS DE FORMATAÇÃO
+        // FORMATAÇÃO E FUNÇÕES ÚTEIS
         // ==========================================
         function formatarDataVisao(dataStr) {
             if (!dataStr) return '';
-            if (dataStr.includes('T')) return dataStr.split('T')[0];
-            return dataStr;
+            return dataStr.includes('T') ? dataStr.split('T')[0] : dataStr;
         }
 
         function formatarDataBR(dataStr) {
             const d = formatarDataVisao(dataStr);
             if (!d) return '';
-            const partes = d.split('-');
-            if (partes.length === 3) {
-                return `${partes[2]}/${partes[1]}/${partes[0]}`;
-            }
-            return d;
+            const p = d.split('-');
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
         }
 
         function formatarHoraVisao(horaStr) {
@@ -2008,109 +708,119 @@
             return horaStr;
         }
 
-        // ==========================================
-        // FUNÇÕES DA AGENDA E FILTROS
-        // ==========================================
-        let isSincronizandoAgenda = false;
-
-        async function sincronizarAgenda() {
-            if (isSincronizandoAgenda) return;
-            isSincronizandoAgenda = true;
-            
-            try {
-                const agendaServer = await carregarCompromissos();
-                if (agendaServer && agendaServer.length >= 0) {
-                    const maxId = Math.max(...agendaServer.map(c => parseInt(c.id) || 0), 0);
-                    proximoId = maxId + 1;
-
-                    if (JSON.stringify(agendaServer) !== JSON.stringify(compromissos)) {
-                        compromissos = agendaServer;
-                        popularFiltros();
-                        aplicarFiltros();
-                    }
-                }
-            } catch (error) {
-                console.error("Erro na sincronização da agenda:", error);
-            }
-            
-            isSincronizandoAgenda = false;
-        }
-
         function abrirGoogleMaps(endereco) {
-            if (!endereco || endereco.trim() === '') {
-                alert('Endereço não disponível para este compromisso.');
-                return;
-            }
-            const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
-            window.open(url, '_blank');
+            if (!endereco || endereco.trim() === '') return;
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`, '_blank');
         }
 
-        function inicializarDiasNoFiltro() {
-            filtroDia.innerHTML = '<option value="">Todos</option>';
-            for(let i=1; i<=31; i++) {
-                const val = i.toString().padStart(2, '0');
-                filtroDia.innerHTML += `<option value="${val}">${val}</option>`;
-            }
+        // ==========================================
+        // LÓGICA DO CARROSSEL DE DIAS E FILTROS
+        // ==========================================
+        function initCalendar() {
+            const monthSel = document.getElementById('monthSelector');
+            const now = new Date();
+            const anoAtual = now.getFullYear();
+            const mesAtual = String(now.getMonth() + 1).padStart(2, '0');
+            const diaAtual = String(now.getDate()).padStart(2, '0');
+            
+            monthSel.value = `${anoAtual}-${mesAtual}`;
+            // Força a seleção do dia de hoje automaticamente
+            currentSelectedDate = `${anoAtual}-${mesAtual}-${diaAtual}`; 
+            
+            monthSel.addEventListener('change', () => {
+                currentSelectedDate = 'ALL';
+                renderDaysCarousel();
+                aplicarFiltros();
+            });
         }
 
-        function popularFiltros() {
-            const anos = new Set();
-            compromissos.forEach(c => {
-                const dataAjustada = formatarDataVisao(c.dia);
-                const ano = dataAjustada.split('-')[0];
-                if (ano && ano.length === 4) anos.add(ano);
-            });
+        function renderDaysCarousel() {
+            const carousel = document.getElementById('daysCarousel');
+            carousel.innerHTML = '';
+            
+            const val = document.getElementById('monthSelector').value;
+            if(!val) return;
+            
+            const [year, month] = val.split('-');
+            const diasNoMes = new Date(year, month, 0).getDate();
 
-            const valorAtualAno = filtroAno.value;
-            filtroAno.innerHTML = '<option value="">Todos</option>';
-            [...anos].sort().forEach(ano => {
-                const opt = document.createElement('option');
-                opt.value = ano;
-                opt.textContent = ano;
-                filtroAno.appendChild(opt);
-            });
-            if ([...anos].includes(valorAtualAno)) {
-                filtroAno.value = valorAtualAno;
+            const btnAll = document.createElement('div');
+            btnAll.className = `day-tab ${currentSelectedDate === 'ALL' ? 'active' : ''}`;
+            btnAll.innerHTML = `<span class="day-name">MÊS</span><span class="day-num">Todos</span>`;
+            btnAll.onclick = () => { currentSelectedDate = 'ALL'; renderDaysCarousel(); aplicarFiltros(); };
+            carousel.appendChild(btnAll);
+
+            for(let d = 1; d <= diasNoMes; d++) {
+                const diaStr = String(d).padStart(2, '0');
+                const dataCompleta = `${year}-${month}-${diaStr}`;
+                const objData = new Date(`${dataCompleta}T12:00:00`);
+                const nomeSemana = objData.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.','');
+
+                // Verifica se tem compromisso (pontinho laranja)
+                const temCompromisso = compromissos.some(c => {
+                    const dInicio = formatarDataVisao(c.dia);
+                    const dFim = c.diaFim ? formatarDataVisao(c.diaFim) : dInicio;
+                    return dataCompleta >= dInicio && dataCompleta <= dFim;
+                });
+
+                const btn = document.createElement('div');
+                btn.className = `day-tab ${currentSelectedDate === dataCompleta ? 'active' : ''} ${temCompromisso ? 'has-event' : ''}`;
+                btn.innerHTML = `<span class="day-name">${nomeSemana}</span><span class="day-num">${d}</span><div class="event-dot"></div>`;
+                
+                btn.onclick = () => {
+                    currentSelectedDate = dataCompleta;
+                    renderDaysCarousel();
+                    aplicarFiltros();
+                };
+                
+                carousel.appendChild(btn);
             }
+
+            // Scroll suave para o dia ativo
+            setTimeout(() => {
+                const ativo = carousel.querySelector('.day-tab.active');
+                if(ativo) ativo.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }, 50);
         }
 
         function aplicarFiltros() {
-            const anoSelecionado = filtroAno.value;
-            const mesSelecionado = filtroMes.value;
-            const diaSelecionado = filtroDia.value;
+            const valMes = document.getElementById('monthSelector').value;
 
-            compromissosFiltrados = compromissos.filter(comp => {
-                const dataAjustada = formatarDataVisao(comp.dia);
-                const partes = dataAjustada.split('-') || [];
-                const ano = partes[0];
-                const mes = partes[1] ? parseInt(partes[1]) : null;
-                const dia = partes[2] ? partes[2].substring(0, 2) : null;
+            compromissosFiltrados = compromissos.filter(c => {
+                const dInicio = formatarDataVisao(c.dia);
+                const dFim = c.diaFim ? formatarDataVisao(c.diaFim) : dInicio;
+                if (!dInicio) return false;
 
-                let passou = true;
-                if (anoSelecionado && ano !== anoSelecionado) passou = false;
-                if (mesSelecionado && mes !== parseInt(mesSelecionado)) passou = false;
-                if (diaSelecionado && dia !== diaSelecionado) passou = false;
-                
-                return passou;
+                if (currentSelectedDate === 'ALL') {
+                    return dInicio.startsWith(valMes) || dFim.startsWith(valMes);
+                } else {
+                    return currentSelectedDate >= dInicio && currentSelectedDate <= dFim;
+                }
             });
 
             renderizarAgenda();
             if (adminLogado) renderizarListaAdmin();
         }
 
+        // ==========================================
+        // RENDERIZAÇÃO DA AGENDA
+        // ==========================================
+        const grid = document.getElementById('agendaGrid');
+        const contador = document.getElementById('contadorCompromissos');
+
         function renderizarAgenda() {
             grid.innerHTML = '';
-            const lista = compromissosFiltrados;
-
-            if (lista.length === 0) {
+            
+            if (compromissosFiltrados.length === 0) {
                 grid.innerHTML = '<div class="sem-resultados">📭 Nenhum compromisso encontrado para este período.</div>';
                 contador.textContent = '0 compromissos';
                 return;
             }
 
-            lista.forEach(comp => {
+            compromissosFiltrados.forEach(comp => {
                 const card = document.createElement('div');
                 card.className = 'card';
+                
                 let borderColor = '#009739';
                 if (comp.status === 'Concluído') borderColor = '#16a34a';
                 else if (comp.status === 'Cancelado') borderColor = '#dc2626';
@@ -2119,18 +829,12 @@
 
                 const statusBadge = `<div class="card-status-badge" style="background: ${borderColor}15; color: ${borderColor}">${comp.status || 'Pendente'}</div>`;
 
-                const temEndereco = comp.local && 
-                    !comp.local.toLowerCase().includes('online') && 
-                    !comp.local.toLowerCase().includes('virtual') &&
-                    !comp.local.toLowerCase().includes('discord') &&
-                    !comp.local.toLowerCase().includes('meet') &&
-                    !comp.local.toLowerCase().includes('zoom');
+                const temEndereco = comp.local && !comp.local.toLowerCase().includes('online');
 
                 let htmlDataRange = `📅 ${formatarDataBR(comp.dia)}`;
                 if (comp.diaFim) htmlDataRange += ` até ${formatarDataBR(comp.diaFim)}`;
 
-                let diaNum = '--';
-                let mesNome = '---';
+                let diaNum = '--', mesNome = '---';
                 if (comp.dia) {
                     const dataObj = new Date(formatarDataVisao(comp.dia) + 'T12:00:00');
                     if(!isNaN(dataObj)) {
@@ -2143,8 +847,7 @@
 
                 card.innerHTML = `
                     <div class="card-date-box" style="color: ${borderColor}; border-color: ${borderColor}40; background: ${borderColor}10;">
-                        <span class="dia">${diaNum}</span>
-                        <span class="mes">${mesNome}</span>
+                        <span class="dia">${diaNum}</span><span class="mes">${mesNome}</span>
                     </div>
                     <div class="card-content">
                         <div class="card-titulo">${comp.titulo || 'Sem título'} ${iconeDescricao}</div>
@@ -2155,8 +858,7 @@
                         <div class="card-actions">
                             ${temEndereco ? `<button class="btn-mapa" data-local="${comp.local}">📍 Ver no Mapa</button>` : ''}
                         </div>
-                    </div>
-                `;
+                    </div>`;
 
                 card.addEventListener('click', (e) => {
                     if (e.target.classList.contains('btn-mapa')) return;
@@ -2164,788 +866,406 @@
                 });
 
                 const btnMapa = card.querySelector('.btn-mapa');
-                if (btnMapa) {
-                    btnMapa.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        abrirGoogleMaps(btnMapa.getAttribute('data-local'));
-                    });
-                }
+                if (btnMapa) btnMapa.addEventListener('click', (e) => { e.stopPropagation(); abrirGoogleMaps(comp.local); });
 
                 grid.appendChild(card);
             });
 
-            contador.textContent = `${lista.length} compromisso${lista.length !== 1 ? 's' : ''}`;
+            contador.textContent = `${compromissosFiltrados.length} compromisso${compromissosFiltrados.length !== 1 ? 's' : ''}`;
         }
 
+        // ==========================================
+        // RENDERIZAÇÃO E LÓGICA DO ADMIN
+        // ==========================================
+        const listaAdmin = document.getElementById('listaAdmin');
+        
         function renderizarListaAdmin() {
             if (!adminLogado) return;
             listaAdmin.innerHTML = '';
+            
+            if (compromissos.length === 0) {
+                listaAdmin.innerHTML = '<p style="color: #6b7280;">Nenhum compromisso cadastrado.</p>';
+                return;
+            }
+
             compromissos.forEach(comp => {
                 const item = document.createElement('div');
                 item.className = 'item-admin';
-                
                 let strDataAdmin = formatarDataBR(comp.dia);
                 if (comp.diaFim) strDataAdmin += ` a ${formatarDataBR(comp.diaFim)}`;
 
                 item.innerHTML = `
                     <div class="info">
-                        <span class="titulo">${comp.titulo || 'Sem título'}</span>
+                        <span class="titulo">${comp.titulo}</span>
                         <span class="data">📅 ${strDataAdmin} às ${formatarHoraVisao(comp.hora)}</span>
-                        <span class="data">📍 ${comp.local || 'Local não informado'}</span>
-                        <span class="data" style="color: #009739; font-weight: 600;">${comp.status || 'Pendente'}</span>
+                        <span class="data" style="color: #009739; font-weight: 600;">${comp.status}</span>
                     </div>
                     <div class="acoes">
-                        <button class="btn-editar" data-id="${comp.id}">✏️ Editar</button>
-                        <button class="btn-excluir" data-id="${comp.id}">🗑️ Excluir</button>
-                    </div>
-                `;
+                        <button class="btn-editar" data-id="${comp.id}" style="padding: 0.4rem 1rem; border-radius:8px; border:none; background:#dbeafe; color:#1e40af; cursor:pointer; font-weight:600;">✏️ Editar</button>
+                        <button class="btn-excluir" data-id="${comp.id}" style="padding: 0.4rem 1rem; border-radius:8px; border:none; background:#fee2e2; color:#b91c1c; cursor:pointer; font-weight:600;">🗑️ Excluir</button>
+                    </div>`;
                 listaAdmin.appendChild(item);
 
-                item.querySelector('.btn-editar').addEventListener('click', () => carregarParaEdicao(comp.id));
-                item.querySelector('.btn-excluir').addEventListener('click', async () => {
-                    const confirm = await Swal.fire({
-                        title: '⚠️ Confirmar exclusão',
-                        text: `Tem certeza que deseja excluir "${comp.titulo}"?`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Sim, excluir',
-                        cancelButtonText: 'Cancelar',
-                        confirmButtonColor: '#dc2626'
-                    });
-
+                item.querySelector('.btn-editar').onclick = () => carregarParaEdicao(comp.id);
+                item.querySelector('.btn-excluir').onclick = async () => {
+                    const confirm = await Swal.fire({ title: '⚠️ Confirmar exclusão', text: `Excluir "${comp.titulo}"?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626' });
                     if (!confirm.isConfirmed) return;
 
-                    Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                    const result = await excluirCompromissoRemoto(comp.id);
+                    Swal.fire({ title: 'Excluindo...', didOpen: () => Swal.showLoading() });
+                    const result = await fetchGoogle('excluir', {id: comp.id});
                     if (result.status === 'sucesso') {
                         compromissos = compromissos.filter(c => c.id !== comp.id);
-                        popularFiltros();
+                        renderDaysCarousel();
                         aplicarFiltros();
-                        if (adminLogado) renderizarListaAdmin();
-                        Swal.fire({
-                            title: '🗑️ Excluído!',
-                            text: 'Compromisso excluído com sucesso!',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                    } else {
-                        Swal.fire('❌ Erro!', result.mensagem || 'Erro ao excluir', 'error');
+                        Swal.fire('Excluído!', '', 'success');
                     }
-                });
+                };
             });
+        }
 
-            if (compromissos.length === 0) {
-                listaAdmin.innerHTML = '<p style="color: #6b7280;">Nenhum compromisso cadastrado ainda.</p>';
-            }
+        const formAdmin = document.getElementById('formAdmin');
+        function limparFormAdmin() {
+            document.getElementById('adminEditId').value = '';
+            document.getElementById('adminTitulo').value = '';
+            document.getElementById('adminData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('adminDataFim').value = ''; 
+            document.getElementById('adminHora').value = '';
+            document.getElementById('adminLocal').value = '';
+            document.getElementById('adminParticipantes').value = '';
+            document.getElementById('adminDescricao').value = ''; 
+            document.getElementById('adminStatus').value = 'Pendente';
+            
+            document.getElementById('btnSalvar').style.display = 'inline-block';
+            document.getElementById('btnAtualizar').style.display = 'none';
+            document.getElementById('editModeIndicator').style.display = 'none';
         }
 
         function carregarParaEdicao(id) {
             const comp = compromissos.find(c => c.id === id);
             if (!comp) return;
 
-            adminEditId.value = comp.id;
-            adminTitulo.value = comp.titulo || '';
-            adminData.value = formatarDataVisao(comp.dia);
-            adminDataFim.value = formatarDataVisao(comp.diaFim); 
-            adminHora.value = formatarHoraVisao(comp.hora);
-            adminLocal.value = comp.local || '';
-            adminParticipantes.value = comp.participantes || '';
-            adminDescricao.value = comp.descricao || ''; 
-            adminStatus.value = comp.status || 'Pendente';
+            document.getElementById('adminEditId').value = comp.id;
+            document.getElementById('adminTitulo').value = comp.titulo;
+            document.getElementById('adminData').value = formatarDataVisao(comp.dia);
+            document.getElementById('adminDataFim').value = formatarDataVisao(comp.diaFim); 
+            document.getElementById('adminHora').value = formatarHoraVisao(comp.hora);
+            document.getElementById('adminLocal').value = comp.local;
+            document.getElementById('adminParticipantes').value = comp.participantes;
+            document.getElementById('adminDescricao').value = comp.descricao; 
+            document.getElementById('adminStatus').value = comp.status;
 
-            btnSalvar.style.display = 'none';
-            btnAtualizar.style.display = 'inline-block';
-            editModeIndicator.style.display = 'inline-block';
+            document.getElementById('btnSalvar').style.display = 'none';
+            document.getElementById('btnAtualizar').style.display = 'inline-block';
+            document.getElementById('editModeIndicator').style.display = 'inline-block';
             
-            // Abre o formulário se estiver oculto
             document.getElementById('formAdmin').style.display = 'block';
             document.getElementById('btnToggleAdminForm').innerHTML = '➖ Ocultar Formulário';
-            
-            adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('adminPanel').scrollIntoView();
         }
 
-        function limparFormAdmin() {
-            adminEditId.value = '';
-            adminTitulo.value = '';
-            adminData.value = new Date().toISOString().split('T')[0];
-            adminDataFim.value = ''; 
-            adminHora.value = '';
-            adminLocal.value = '';
-            adminParticipantes.value = '';
-            adminDescricao.value = ''; 
-            adminStatus.value = 'Pendente';
-            btnSalvar.style.display = 'inline-block';
-            btnAtualizar.style.display = 'none';
-            editModeIndicator.style.display = 'none';
-        }
+        document.getElementById('btnSalvar').onclick = async (e) => {
+            e.preventDefault();
+            const novo = {
+                id: proximoId++,
+                titulo: document.getElementById('adminTitulo').value,
+                dia: document.getElementById('adminData').value,
+                diaFim: document.getElementById('adminDataFim').value,
+                hora: document.getElementById('adminHora').value,
+                local: document.getElementById('adminLocal').value,
+                participantes: document.getElementById('adminParticipantes').value,
+                descricao: document.getElementById('adminDescricao').value,
+                status: document.getElementById('adminStatus').value
+            };
+            if(!novo.titulo || !novo.dia || !novo.hora || !novo.local) return Swal.fire('Aviso', 'Preencha os campos com *', 'warning');
 
+            Swal.fire({ title: 'Salvando...', didOpen: () => Swal.showLoading() });
+            const result = await fetchGoogle('adicionar', novo);
+            if(result.status === 'sucesso'){
+                novo.id = result.id || novo.id; // se o server retornar o ID real
+                compromissos.push(novo);
+                renderDaysCarousel();
+                aplicarFiltros();
+                limparFormAdmin();
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                Swal.fire('Sucesso', '', 'success');
+            }
+        };
+
+        document.getElementById('btnAtualizar').onclick = async () => {
+            const id = parseInt(document.getElementById('adminEditId').value);
+            const atu = {
+                id: id,
+                titulo: document.getElementById('adminTitulo').value,
+                dia: document.getElementById('adminData').value,
+                diaFim: document.getElementById('adminDataFim').value,
+                hora: document.getElementById('adminHora').value,
+                local: document.getElementById('adminLocal').value,
+                participantes: document.getElementById('adminParticipantes').value,
+                descricao: document.getElementById('adminDescricao').value,
+                status: document.getElementById('adminStatus').value
+            };
+
+            Swal.fire({ title: 'Atualizando...', didOpen: () => Swal.showLoading() });
+            const result = await fetchGoogle('atualizar', atu);
+            if(result.status === 'sucesso'){
+                const idx = compromissos.findIndex(c => c.id === id);
+                if(idx > -1) compromissos[idx] = atu;
+                renderDaysCarousel();
+                aplicarFiltros();
+                limparFormAdmin();
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                Swal.fire('Atualizado!', '', 'success');
+            }
+        };
+        
+        document.getElementById('btnLimparForm').onclick = limparFormAdmin;
+        document.getElementById('btnFecharAdmin').onclick = () => {
+            adminLogado = false; 
+            document.getElementById('adminPanel').classList.remove('ativo'); 
+            document.getElementById('lockBtn').innerHTML = '🔒';
+            document.getElementById('chatButton').style.display = 'flex';
+        };
+
+        // ==========================================
+        // POPUP COMPROMISSO
+        // ==========================================
+        const overlay = document.getElementById('popupOverlay');
+        
         function abrirPopup(id) {
             const comp = compromissos.find(c => c.id === id);
             if (!comp) return;
-
             compromissoAtual = comp;
 
-            popupTitulo.textContent = comp.titulo || 'Sem título';
-            
-            let dataExibicao = formatarDataBR(comp.dia);
-            if (comp.diaFim) {
-                dataExibicao += ' até ' + formatarDataBR(comp.diaFim);
-            }
-            popupDia.textContent = dataExibicao || '--/--/----';
+            document.getElementById('popupTitulo').textContent = comp.titulo;
+            document.getElementById('popupDia').textContent = formatarDataBR(comp.dia) + (comp.diaFim ? ' até ' + formatarDataBR(comp.diaFim) : '');
+            document.getElementById('popupHora').textContent = formatarHoraVisao(comp.hora);
+            document.getElementById('popupLocal').textContent = comp.local || '-';
+            document.getElementById('popupParticipantes').textContent = comp.participantes || '-';
 
-            popupHora.textContent = formatarHoraVisao(comp.hora);
-            popupLocal.textContent = comp.local || 'Local não informado';
-            popupParticipantes.textContent = comp.participantes || 'Não informado';
-
-            if (comp.descricao && comp.descricao.trim() !== '') {
-                popupDescricaoContainer.style.display = 'block';
-                popupDescricao.textContent = comp.descricao;
+            if (comp.descricao) {
+                document.getElementById('popupDescricaoContainer').style.display = 'block';
+                document.getElementById('popupDescricao').textContent = comp.descricao;
             } else {
-                popupDescricaoContainer.style.display = 'none';
-                popupDescricao.textContent = '';
+                document.getElementById('popupDescricaoContainer').style.display = 'none';
             }
 
-            popupStatus.textContent = comp.status || 'Pendente';
-            let bgColor = '#e8f5e9';
-            let textColor = '#009739';
-            if (comp.status === 'Concluído') { bgColor = '#dcfce7'; textColor = '#166534'; }
-            else if (comp.status === 'Cancelado') { bgColor = '#fee2e2'; textColor = '#b91c1c'; }
-            else if (comp.status === 'Adiado') { bgColor = '#fef9c3'; textColor = '#92400e'; }
-            popupStatus.style.backgroundColor = bgColor;
-            popupStatus.style.color = textColor;
+            const ps = document.getElementById('popupStatus');
+            ps.textContent = comp.status;
+            let bg = '#e8f5e9', tc = '#009739';
+            if (comp.status === 'Concluído') { bg = '#dcfce7'; tc = '#166534'; }
+            if (comp.status === 'Cancelado') { bg = '#fee2e2'; tc = '#b91c1c'; }
+            if (comp.status === 'Adiado') { bg = '#fef9c3'; tc = '#92400e'; }
+            ps.style.background = bg; ps.style.color = tc;
 
-            const temEndereco = comp.local && 
-                !comp.local.toLowerCase().includes('online') && 
-                !comp.local.toLowerCase().includes('virtual') &&
-                !comp.local.toLowerCase().includes('discord') &&
-                !comp.local.toLowerCase().includes('meet') &&
-                !comp.local.toLowerCase().includes('zoom');
-            
-            btnMapaPopup.style.display = temEndereco ? 'inline-block' : 'none';
-            if (temEndereco) {
-                btnMapaPopup.onclick = () => abrirGoogleMaps(comp.local);
-            }
+            const temEnd = comp.local && !comp.local.toLowerCase().includes('online');
+            document.getElementById('btnMapaPopup').style.display = temEnd ? 'inline-block' : 'none';
+            if(temEnd) document.getElementById('btnMapaPopup').onclick = () => abrirGoogleMaps(comp.local);
 
             overlay.classList.add('ativo');
         }
 
-        function fecharPopup() {
-            overlay.classList.remove('ativo');
-            compromissoAtual = null;
-        }
+        function fecharPopup() { overlay.classList.remove('ativo'); }
+        document.getElementById('popupClose').onclick = fecharPopup;
+        document.getElementById('btnFechar').onclick = fecharPopup;
+        overlay.onclick = (e) => { if(e.target === overlay) fecharPopup(); };
 
-        function atualizarCompromissoNoArray(compAtualizado) {
-            const index = compromissos.findIndex(c => c.id === compAtualizado.id);
-            if (index !== -1) {
-                compromissos[index] = compAtualizado;
-            }
-            popularFiltros();
+        async function alterarStatus(st) {
+            if(!compromissoAtual || compromissoAtual.status === st || compromissoAtual.status === 'Cancelado') return;
+            compromissoAtual.status = st;
+            
+            fecharPopup();
+            Swal.fire({ title: 'Salvando...', didOpen: () => Swal.showLoading() });
+            await fetchGoogle('atualizar', compromissoAtual);
+            
+            const idx = compromissos.findIndex(c => c.id === compromissoAtual.id);
+            if(idx > -1) compromissos[idx] = compromissoAtual;
+            
+            renderDaysCarousel();
             aplicarFiltros();
+            Swal.fire('Salvo!', '', 'success');
         }
 
-        // --- AÇÕES DO POPUP COM SALVAMENTO NO SERVIDOR ---
-        async function acaoCancelar() {
-            if (!compromissoAtual) return;
-            if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Este compromisso já está cancelado.', 'warning');
-                return;
-            }
-            compromissoAtual.status = 'Cancelado';
-            atualizarCompromissoNoArray(compromissoAtual);
-            fecharPopup();
+        document.getElementById('btnCancelar').onclick = () => alterarStatus('Cancelado');
+        document.getElementById('btnConcluir').onclick = () => alterarStatus('Concluído');
 
-            Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            await atualizarCompromissoRemoto(compromissoAtual);
-            Swal.fire({ title: '✅ Cancelado!', text: 'Compromisso cancelado.', icon: 'success', timer: 1500, showConfirmButton: false });
-        }
+        document.getElementById('btnAdiar').onclick = () => {
+            if(!compromissoAtual || compromissoAtual.status === 'Cancelado') return;
+            document.getElementById('adiarDataInput').value = formatarDataVisao(compromissoAtual.dia);
+            document.getElementById('adiarDataFimInput').value = formatarDataVisao(compromissoAtual.diaFim);
+            document.getElementById('adiarHoraInput').value = formatarHoraVisao(compromissoAtual.hora);
+            document.getElementById('adiarLocalInput').value = compromissoAtual.local;
+            document.getElementById('adiarOverlay').classList.add('ativo');
+        };
 
-        async function acaoConcluir() {
-            if (!compromissoAtual) return;
-            if (compromissoAtual.status === 'Concluído') {
-                Swal.fire('Aviso', 'Este compromisso já está concluído.', 'warning');
-                return;
-            }
-            if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Não é possível concluir um compromisso cancelado.', 'warning');
-                return;
-            }
-            compromissoAtual.status = 'Concluído';
-            atualizarCompromissoNoArray(compromissoAtual);
-            fecharPopup();
-
-            Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            await atualizarCompromissoRemoto(compromissoAtual);
-            Swal.fire({ title: '✅ Concluído!', text: 'Compromisso concluído.', icon: 'success', timer: 1500, showConfirmButton: false });
-        }
-
-        // NOVO MODO "ADIAR" COM MODAL
-        function acaoAdiar() {
-            if (!compromissoAtual) return;
-            if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Não é possível adiar um compromisso cancelado.', 'warning');
-                return;
-            }
-
-            adiarDataInput.value = formatarDataVisao(compromissoAtual.dia);
-            adiarDataFimInput.value = formatarDataVisao(compromissoAtual.diaFim);
-            adiarHoraInput.value = formatarHoraVisao(compromissoAtual.hora);
-            adiarLocalInput.value = compromissoAtual.local || '';
-
-            adiarOverlay.classList.add('ativo');
-        }
-
-        btnFecharAdiar.addEventListener('click', () => {
-            adiarOverlay.classList.remove('ativo');
-        });
-
-        adiarOverlay.addEventListener('click', (e) => {
-            if (e.target === adiarOverlay) adiarOverlay.classList.remove('ativo');
-        });
-
-        btnConfirmarAdiar.addEventListener('click', async () => {
-            if (!compromissoAtual) return;
-
-            const novaData = adiarDataInput.value;
-            const novaDataFim = adiarDataFimInput.value;
-            const novaHora = adiarHoraInput.value;
-            const novoLocal = adiarLocalInput.value.trim();
-
-            if (!novaData) {
-                Swal.fire('⚠️ Aviso', 'A data de início é obrigatória.', 'warning');
-                return;
-            }
-
-            compromissoAtual.dia = novaData;
-            compromissoAtual.diaFim = novaDataFim;
-            compromissoAtual.hora = novaHora;
-            if (novoLocal) compromissoAtual.local = novoLocal;
+        document.getElementById('btnFecharAdiar').onclick = () => document.getElementById('adiarOverlay').classList.remove('ativo');
+        document.getElementById('btnConfirmarAdiar').onclick = async () => {
+            const nD = document.getElementById('adiarDataInput').value;
+            if(!nD) return Swal.fire('Aviso', 'Data obrigatória', 'warning');
+            
+            compromissoAtual.dia = nD;
+            compromissoAtual.diaFim = document.getElementById('adiarDataFimInput').value;
+            compromissoAtual.hora = document.getElementById('adiarHoraInput').value;
+            compromissoAtual.local = document.getElementById('adiarLocalInput').value;
             compromissoAtual.status = 'Adiado';
-            
-            atualizarCompromissoNoArray(compromissoAtual);
+
+            document.getElementById('adiarOverlay').classList.remove('ativo');
             fecharPopup();
-            adiarOverlay.classList.remove('ativo');
-
-            Swal.fire({ title: 'Salvando nova data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            await atualizarCompromissoRemoto(compromissoAtual);
-            Swal.fire({ title: '✅ Adiado!', text: 'O compromisso foi adiado com sucesso.', icon: 'success', timer: 2000, showConfirmButton: false });
-        });
+            
+            Swal.fire({ title: 'Adiando...', didOpen: () => Swal.showLoading() });
+            await fetchGoogle('atualizar', compromissoAtual);
+            
+            const idx = compromissos.findIndex(c => c.id === compromissoAtual.id);
+            if(idx > -1) compromissos[idx] = compromissoAtual;
+            
+            renderDaysCarousel();
+            aplicarFiltros();
+            Swal.fire('Adiado!', '', 'success');
+        };
 
         // ==========================================
-        // FUNÇÕES DO CHAT (Com Sincronização)
+        // CHAT
         // ==========================================
-        let isSincronizandoChat = false;
-
         async function sincronizarChat() {
-            if (isSincronizandoChat) return;
-            isSincronizandoChat = true;
-            
-            try {
-                const msgsServer = await carregarMensagensChat();
-                if (!msgsServer || msgsServer.length === 0) {
-                    isSincronizandoChat = false;
-                    return;
-                }
-
-                const msgsLocaisReais = mensagensChat.filter(m => !String(m.id).startsWith('temp_'));
-
-                if (msgsServer.length > msgsLocaisReais.length) {
-                    const qtdNovas = msgsServer.length - msgsLocaisReais.length;
-                    const novasMensagens = msgsServer.slice(-qtdNovas);
-
-                    const msgsTemporarias = mensagensChat.filter(m => String(m.id).startsWith('temp_'));
-                    mensagensChat = [...msgsServer, ...msgsTemporarias];
-
-                    let dispararNotificacao = false;
-                    let tituloNotif = '';
-                    let bodyNotif = '';
-
-                    novasMensagens.forEach(msg => {
-                        if (!adminLogado && msg.remetente === 'admin') {
-                            dispararNotificacao = true;
-                            tituloNotif = '📬 Nova resposta do administrador';
-                            bodyNotif = msg.texto.substring(0, 100);
-                            
-                            if (!chatWindow.classList.contains('aberto')) {
-                                userChatBadge.style.display = 'flex';
-                                userChatBadge.textContent = parseInt(userChatBadge.textContent || 0) + 1;
-                            }
-                        } 
-                        else if (adminLogado && msg.remetente === 'user') {
-                            dispararNotificacao = true;
-                            tituloNotif = '📬 Nova mensagem de um usuário';
-                            bodyNotif = msg.texto.substring(0, 100);
-                        }
-                    });
-
-                    if (dispararNotificacao) {
-                        sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
-                    }
-
-                    atualizarChatUsuario();
-                    if (adminLogado) atualizarChatAdmin();
-                }
-            } catch (error) {
-                console.error("Erro na sincronização:", error);
-            }
-            
-            isSincronizandoChat = false;
-        }
-
-        async function adicionarMensagemChat(remetente, texto) {
-            const agora = new Date().toISOString();
-            const tempId = 'temp_' + Date.now();
-            
-            const mensagemTemp = {
-                id: tempId,
-                remetente: remetente,
-                texto: texto,
-                data: agora,
-                lida: false,
-                lidaUser: false
-            };
-            
-            mensagensChat.push(mensagemTemp);
-            atualizarChatUsuario();
-            if (adminLogado) atualizarChatAdmin();
-
-            const result = await salvarMensagemChat({
-                remetente: remetente,
-                texto: texto,
-                data: agora,
-                lida: false
-            });
-
-            if (result.status === 'sucesso') {
-                mensagensChat = mensagensChat.filter(m => m.id !== tempId);
-                await sincronizarChat();
+            const m = await fetchGoogle('listar_chat');
+            if(m.status === 'sucesso' && m.dados && m.dados.length > mensagensChat.length) {
+                mensagensChat = m.dados;
+                atualizarChatUsuario();
+                if(adminLogado) atualizarChatAdmin();
             }
         }
 
         function atualizarChatUsuario() {
-            chatMessages.innerHTML = '';
+            const cm = document.getElementById('chatMessages');
+            cm.innerHTML = '';
             mensagensChat.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.remetente === 'user' ? 'user' : 'bot'}`;
-                const time = new Date(msg.data);
-                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                div.innerHTML = `${msg.texto} <span class="time">${timeStr}</span>`;
-                chatMessages.appendChild(div);
+                const d = document.createElement('div');
+                d.className = `message ${msg.remetente === 'user' ? 'user' : 'bot'}`;
+                const t = new Date(msg.data);
+                d.innerHTML = `${msg.texto} <span class="time" style="font-size:0.65rem; opacity:0.6;">${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}</span>`;
+                cm.appendChild(d);
             });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            cm.scrollTop = cm.scrollHeight;
         }
 
-        async function atualizarChatAdmin() {
-            if (!adminLogado) return;
-            adminChatMessages.innerHTML = '';
-            
-            if (mensagensChat.length === 0) {
-                adminChatMessages.innerHTML = `
-                    <div class="admin-chat-empty">
-                        <div class="icon">💬</div>
-                        <p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p>
-                    </div>
-                `;
-                return;
-            }
-
+        function atualizarChatAdmin() {
+            const am = document.getElementById('adminChatMessages');
+            am.innerHTML = '';
             mensagensChat.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.remetente === 'user' ? 'user' : 'admin'}`;
-                const time = new Date(msg.data);
-                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                const remetenteLabel = msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin';
-                div.innerHTML = `<strong>${remetenteLabel}:</strong> ${msg.texto} <span class="time">${timeStr}</span>`;
-                adminChatMessages.appendChild(div);
-                if (msg.remetente === 'user') msg.lida = true;
+                const d = document.createElement('div');
+                const t = new Date(msg.data);
+                d.style.marginBottom = '10px';
+                d.innerHTML = `<strong style="color: ${msg.remetente === 'admin' ? '#009739' : '#1a1a2e'}">${msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin'}:</strong> ${msg.texto} <span style="font-size:0.65rem; color:#888;">${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}</span>`;
+                am.appendChild(d);
             });
-            adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
-            contarMensagensNaoLidas();
+            am.scrollTop = am.scrollHeight;
         }
 
-        function contarMensagensNaoLidas() {
-            if (!adminLogado) return;
-            const naoLidas = mensagensChat.filter(m => m.remetente === 'user' && !m.lida).length;
-            if (naoLidas > 0) {
-                adminChatBadge.textContent = naoLidas;
-                adminChatBadge.style.display = 'inline';
-            } else {
-                adminChatBadge.style.display = 'none';
-            }
+        async function enviarMsg(remetente) {
+            const inp = document.getElementById(remetente === 'user' ? 'chatInput' : 'adminChatInput');
+            if(!inp.value.trim()) return;
+            const msg = { remetente, texto: inp.value.trim(), data: new Date().toISOString() };
+            mensagensChat.push(msg);
+            inp.value = '';
+            atualizarChatUsuario();
+            if(adminLogado) atualizarChatAdmin();
+            await fetchGoogle('adicionar_chat', msg);
         }
 
+        document.getElementById('chatButton').onclick = () => document.getElementById('chatWindow').classList.toggle('aberto');
+        document.getElementById('closeChat').onclick = () => document.getElementById('chatWindow').classList.remove('aberto');
+        document.getElementById('chatSend').onclick = () => enviarMsg('user');
+        document.getElementById('chatInput').onkeypress = (e) => { if(e.key==='Enter') enviarMsg('user') };
+        document.getElementById('adminChatSend').onclick = () => enviarMsg('admin');
+        document.getElementById('adminChatInput').onkeypress = (e) => { if(e.key==='Enter') enviarMsg('admin') };
+
         // ==========================================
-        // ADMIN - CRUD
+        // LOGIN ADMIN
         // ==========================================
-        async function cadastrarCompromisso(e) {
+        document.getElementById('lockBtn').onclick = () => {
+            if(adminLogado) { document.getElementById('adminPanel').classList.add('ativo'); } 
+            else { document.getElementById('loginOverlay').classList.add('ativo'); }
+        };
+        
+        document.getElementById('formLogin').onsubmit = async (e) => {
             e.preventDefault();
-
-            const titulo = adminTitulo.value.trim();
-            const dia = adminData.value;
-            const diaFim = adminDataFim.value; 
-            const hora = adminHora.value;
-            const local = adminLocal.value.trim();
-            const participantes = adminParticipantes.value.trim() || 'Não informado';
-            const descricao = adminDescricao.value.trim() || ''; 
-            const status = adminStatus.value;
-
-            if (!titulo || !dia || !hora || !local) {
-                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
-                return;
-            }
-
-            const novo = {
-                id: proximoId++,
-                titulo,
-                dia,
-                diaFim, 
-                hora,
-                local,
-                participantes,
-                descricao, 
-                status
-            };
-
-            Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const result = await salvarCompromisso(novo);
-            
-            if (result.status === 'sucesso') {
-                compromissos.push(novo);
-                popularFiltros();
-                aplicarFiltros();
-                if (adminLogado) renderizarListaAdmin();
-                limparFormAdmin();
-                
-                // Oculta o formulário de cadastro após salvar
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
-                
-                Swal.fire({
-                    title: '✅ Sucesso!',
-                    text: 'Compromisso cadastrado com sucesso!',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    title: '❌ Erro!',
-                    text: result.mensagem || 'Erro ao cadastrar compromisso',
-                    icon: 'error'
-                });
-            }
-        }
-
-        async function atualizarCompromissoAdmin(e) {
-            e.preventDefault();
-
-            const id = parseInt(adminEditId.value);
-            if (!id) {
-                Swal.fire('⚠️ Erro', 'Nenhum compromisso selecionado para edição.', 'warning');
-                return;
-            }
-
-            const titulo = adminTitulo.value.trim();
-            const dia = adminData.value;
-            const diaFim = adminDataFim.value; 
-            const hora = adminHora.value;
-            const local = adminLocal.value.trim();
-            const participantes = adminParticipantes.value.trim() || 'Não informado';
-            const descricao = adminDescricao.value.trim() || ''; 
-            const status = adminStatus.value;
-
-            if (!titulo || !dia || !hora || !local) {
-                Swal.fire('⚠️ Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
-                return;
-            }
-
-            const index = compromissos.findIndex(c => c.id === id);
-            if (index === -1) {
-                Swal.fire('❌ Erro', 'Compromisso não encontrado.', 'error');
-                return;
-            }
-
-            const dadosAtualizados = {
-                ...compromissos[index],
-                titulo,
-                dia,
-                diaFim, 
-                hora,
-                local,
-                participantes,
-                descricao, 
-                status
-            };
-
-            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const result = await atualizarCompromissoRemoto(dadosAtualizados);
-            
-            if (result.status === 'sucesso') {
-                compromissos[index] = dadosAtualizados;
-                popularFiltros();
-                aplicarFiltros();
-                if (adminLogado) renderizarListaAdmin();
-                limparFormAdmin();
-                
-                // Oculta o formulário após a edição
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
-                
-                Swal.fire({
-                    title: '✅ Sucesso!',
-                    text: 'Compromisso atualizado com sucesso!',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    title: '❌ Erro!',
-                    text: result.mensagem || 'Erro ao atualizar compromisso',
-                    icon: 'error'
-                });
-            }
-        }
-
-        // ==========================================
-        // ADMIN - LOGIN
-        // ==========================================
-        function abrirLogin() {
-            loginOverlay.classList.add('ativo');
-            loginErro.classList.remove('visible');
-            loginUser.value = 'gabinete247';
-            loginPassword.value = '';
-            loginUser.focus();
-        }
-
-        function fecharLogin() {
-            loginOverlay.classList.remove('ativo');
-            loginErro.classList.remove('visible');
-        }
-
-        async function fazerLogin(e) {
-            e.preventDefault();
-            const user = loginUser.value.trim();
-            const pass = loginPassword.value.trim();
-
-            if (!user || !pass) {
-                loginErro.textContent = '⚠️ Preencha usuário e senha';
-                loginErro.classList.add('visible');
-                return;
-            }
-
-            Swal.fire({ title: 'Verificando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const result = await validarLoginRemoto(user, pass);
-            
-            if (result.status === 'sucesso') {
+            Swal.fire({ title: 'Entrando...', didOpen:()=>Swal.showLoading()});
+            const res = await fetchGoogle('login', { usuario: document.getElementById('loginUser').value, senha: document.getElementById('loginPassword').value });
+            if(res.status === 'sucesso') {
                 adminLogado = true;
-                fecharLogin();
-                adminPanel.classList.add('ativo');
-                lockBtn.innerHTML = '🔓';
-                
-                chatButton.style.display = 'none';
-                chatWindow.classList.remove('aberto');
-
-                renderizarListaAdmin();
-                await atualizarChatAdmin();
-                loginUser.value = '';
-                loginPassword.value = '';
-                
-                Swal.fire({
-                    title: '✅ Bem-vindo!',
-                    text: 'Login realizado com sucesso!',
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.close();
-                loginErro.textContent = result.mensagem || '❌ Usuário ou senha incorretos';
-                loginErro.classList.add('visible');
-                loginPassword.value = '';
-                loginPassword.focus();
-            }
-        }
-
-        function fecharAdmin() {
-            if (!confirm('Tem certeza que deseja sair do painel administrativo?')) return;
-            adminLogado = false;
-            adminPanel.classList.remove('ativo');
-            lockBtn.innerHTML = '🔒';
-            
-            chatButton.style.display = 'flex';
-
-            limparFormAdmin();
-            tabBtns.forEach(btn => btn.classList.remove('ativo'));
-            tabContents.forEach(content => content.classList.remove('ativo'));
-            document.querySelector('[data-tab="tabAgenda"]').classList.add('ativo');
-            document.getElementById('tabAgenda').classList.add('ativo');
-        }
-
-        // ==========================================
-        // EVENTOS GERAIS
-        // ==========================================
-        btnFechar.addEventListener('click', fecharPopup);
-        closeIcon.addEventListener('click', fecharPopup);
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) fecharPopup();
-        });
-
-        btnCancelar.addEventListener('click', acaoCancelar);
-        btnAdiar.addEventListener('click', acaoAdiar);
-        btnConcluir.addEventListener('click', acaoConcluir);
-
-        filtroAno.addEventListener('change', aplicarFiltros);
-        filtroMes.addEventListener('change', aplicarFiltros);
-        filtroDia.addEventListener('change', aplicarFiltros);
-        
-        btnLimpar.addEventListener('click', () => {
-            filtroAno.value = '';
-            filtroMes.value = '';
-            filtroDia.value = '';
-            aplicarFiltros();
-        });
-
-        // Eventos Chat
-        chatButton.addEventListener('click', () => {
-            chatWindow.classList.toggle('aberto');
-            if (chatWindow.classList.contains('aberto')) {
-                chatInput.focus();
-                userChatBadge.style.display = 'none';
-                userChatBadge.textContent = '0';
-            }
-        });
-        closeChat.addEventListener('click', () => chatWindow.classList.remove('aberto'));
-        
-        chatSend.addEventListener('click', () => {
-            const texto = chatInput.value.trim();
-            if (!texto) return;
-            adicionarMensagemChat('user', texto);
-            chatInput.value = '';
-        });
-        
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') chatSend.click();
-        });
-
-        adminChatSend.addEventListener('click', () => {
-            const texto = adminChatInput.value.trim();
-            if (!texto) return;
-            adicionarMensagemChat('admin', texto);
-            adminChatInput.value = '';
-            adminChatBadge.style.display = 'none';
-            adminChatBadge.textContent = '0';
-        });
-        adminChatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') adminChatSend.click();
-        });
-
-        // Eventos Admin
-        lockBtn.addEventListener('click', () => {
-            if (adminLogado) {
-                adminPanel.classList.add('ativo');
+                document.getElementById('loginOverlay').classList.remove('ativo');
+                document.getElementById('adminPanel').classList.add('ativo');
+                document.getElementById('lockBtn').innerHTML = '🔓';
+                document.getElementById('chatButton').style.display = 'none';
                 renderizarListaAdmin();
                 atualizarChatAdmin();
+                Swal.close();
             } else {
-                abrirLogin();
+                Swal.close();
+                document.getElementById('loginErro').style.display = 'block';
             }
-        });
+        };
+        
+        document.getElementById('loginOverlay').onclick = (e) => { if(e.target.id === 'loginOverlay') document.getElementById('loginOverlay').classList.remove('ativo'); };
 
-        formLogin.addEventListener('submit', fazerLogin);
-        loginOverlay.addEventListener('click', (e) => {
-            if (e.target === loginOverlay) fecharLogin();
-        });
-
-        btnFecharAdmin.addEventListener('click', fecharAdmin);
-        btnLimparForm.addEventListener('click', limparFormAdmin);
-        formAdmin.addEventListener('submit', cadastrarCompromisso);
-        btnAtualizar.addEventListener('click', atualizarCompromissoAdmin);
-
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                tabBtns.forEach(b => b.classList.remove('ativo'));
-                tabContents.forEach(c => c.classList.remove('ativo'));
+        // ==========================================
+        // TABS DO ADMIN
+        // ==========================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('ativo'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('ativo'));
                 btn.classList.add('ativo');
                 document.getElementById(btn.dataset.tab).classList.add('ativo');
-                if (btn.dataset.tab === 'tabChat' && adminLogado) {
-                    atualizarChatAdmin();
-                }
-            });
+            };
         });
 
         // ==========================================
         // INICIALIZAÇÃO
         // ==========================================
-        async function inicializar() {
-            Swal.fire({
-                title: '🔄 Carregando Agenda...',
-                text: 'Conectando ao servidor, por favor aguarde...',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => { Swal.showLoading(); }
-            });
-
-            inicializarDiasNoFiltro();
-
-            try {
-                const compromissosData = await carregarCompromissos();
-                if (compromissosData && compromissosData.length > 0) {
-                    compromissos = compromissosData;
-                    const maxId = Math.max(...compromissos.map(c => parseInt(c.id) || 0), 0);
-                    proximoId = maxId + 1;
-                } else {
-                    compromissos = [];
-                    proximoId = 1;
-                }
-
-                const mensagensData = await carregarMensagensChat();
-                if (mensagensData && mensagensData.length > 0) {
-                    mensagensChat = mensagensData;
-                    const maxIdMsg = Math.max(...mensagensChat.map(m => parseInt(m.id) || 0), 0);
-                    ultimoIdMensagem = maxIdMsg + 1;
-                } else {
-                    mensagensChat = [];
-                    ultimoIdMensagem = 1;
-                }
-
-                popularFiltros();
-
-                // ---> INÍCIO DA MODIFICAÇÃO: Selecionar o dia atual automaticamente <---
-                const dataAtual = new Date();
-                const anoAtualStr = dataAtual.getFullYear().toString();
-                const mesAtualStr = (dataAtual.getMonth() + 1).toString();
-                const diaAtualStr = dataAtual.getDate().toString().padStart(2, '0');
-
-                const anosDisponiveis = Array.from(filtroAno.options).map(opt => opt.value);
-                if (anosDisponiveis.includes(anoAtualStr)) {
-                    filtroAno.value = anoAtualStr;
-                }
-                filtroMes.value = mesAtualStr;
-                filtroDia.value = diaAtualStr;
-                // ---> FIM DA MODIFICAÇÃO <---
-
+        let isSincronizandoAgendaGlobal = false;
+        async function sincronizarAgenda() {
+            if (isSincronizandoAgendaGlobal) return;
+            isSincronizandoAgendaGlobal = true;
+            const res = await fetchGoogle('listar');
+            if(res.status === 'sucesso' && JSON.stringify(res.dados) !== JSON.stringify(compromissos)){
+                compromissos = res.dados;
+                proximoId = Math.max(...compromissos.map(c=>c.id), 0) + 1;
+                renderDaysCarousel();
                 aplicarFiltros();
-                atualizarChatUsuario();
-
-                Swal.close();
-                console.log('✅ Gabinete 247 PWA pronto!');
-
-                // SINCRONIZAÇÃO AUTOMÁTICA
-                setInterval(() => {
-                    sincronizarChat();
-                    sincronizarAgenda();
-                }, 5000);
-
-            } catch (error) {
-                Swal.close();
-                console.error('❌ Erro na inicialização:', error);
-                Swal.fire({
-                    title: '⚠️ Erro ao carregar dados',
-                    text: 'Não foi possível conectar ao Google Sheets. Tente recarregar a página.',
-                    icon: 'error',
-                    confirmButtonText: 'Recarregar'
-                }).then(() => { location.reload(); });
             }
+            isSincronizandoAgendaGlobal = false;
+        }
+
+        async function inicializar() {
+            Swal.fire({ title: 'Carregando...', didOpen:()=>Swal.showLoading()});
+            
+            initCalendar();
+
+            const [agendaRes, chatRes] = await Promise.all([
+                fetchGoogle('listar'),
+                fetchGoogle('listar_chat')
+            ]);
+            
+            if(agendaRes.status === 'sucesso') {
+                compromissos = agendaRes.dados || [];
+                proximoId = Math.max(...compromissos.map(c=>c.id), 0) + 1;
+            }
+            if(chatRes.status === 'sucesso') {
+                mensagensChat = chatRes.dados || [];
+            }
+
+            renderDaysCarousel();
+            aplicarFiltros();
+            atualizarChatUsuario();
+            
+            Swal.close();
+            
+            setInterval(() => {
+                sincronizarAgenda();
+                sincronizarChat();
+            }, 5000);
         }
 
         document.addEventListener('DOMContentLoaded', inicializar);
