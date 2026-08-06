@@ -16,6 +16,10 @@
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+
+    <!-- Bibliotecas para Geração de PDF (jsPDF + AutoTable) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <!-- Registro do Service Worker -->
     <script>
@@ -70,6 +74,7 @@
             color: #009739;
         }
 
+        /* Botão para ativar notificações no iOS */
         .btn-notificacoes {
             background: #fef08a;
             color: #854d0e;
@@ -91,6 +96,7 @@
             transform: scale(1.05);
         }
 
+        /* Ocultamento Inteligente (Botões Toggle) */
         .btn-toggle-ui {
             background: #ffffff;
             color: #1a1a2e;
@@ -117,6 +123,9 @@
             color: #009739;
         }
 
+        /* ========================================= */
+        /* NOVO CALENDÁRIO HORIZONTAL (CARROSSEL)    */
+        /* ========================================= */
         .calendar-nav {
             display: flex; flex-direction: column; width: 100%; max-width: 1200px;
             background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem;
@@ -154,9 +163,12 @@
         }
 
         .day-tab:hover { border-color: #009739; background: #f0fdf4; }
+        
         .day-tab.active { background: #009739; border-color: #009739; color: #ffffff; box-shadow: 0 4px 10px rgba(0,151,57,0.3); }
+
         .day-tab .day-name { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
         .day-tab.active .day-name { color: #dcfce7; }
+
         .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
         .day-tab.active .day-num { color: #ffffff; }
 
@@ -166,6 +178,8 @@
         }
         .day-tab.has-event .event-dot { display: block; }
         .day-tab.active.has-event .event-dot { background: #ffffff; }
+
+        /* ========================================= */
 
         .agenda-grid {
             display: grid;
@@ -280,8 +294,7 @@
         }
 
         .popup-acoes {
-            display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem;
-            border-top: 1px solid #eee; padding-top: 1.5rem;
+            display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem;
         }
 
         .btn {
@@ -370,8 +383,7 @@
         .chat-messages .message.user .time { color: rgba(255,255,255,0.7); }
 
         .chat-input-area {
-            padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex;
-            gap: 0.6rem; background: white; flex-shrink: 0;
+            padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; flex-shrink: 0;
         }
 
         .chat-input-area input {
@@ -383,32 +395,27 @@
 
         .chat-input-area button {
             padding: 0.6rem 1.2rem; background: #009739; color: white; border: none;
-            border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s;
-            font-size: 0.9rem; white-space: nowrap;
+            border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap;
         }
 
         .chat-input-area button:hover { background: #007a2f; }
 
         .footer {
             margin-top: 3rem; padding: 1.5rem 0 0.5rem 0; width: 100%; max-width: 1200px;
-            border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center;
-            gap: 1rem; flex-wrap: wrap;
+            border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap;
         }
 
         .footer .lock-btn {
-            background: none; border: none; font-size: 1.6rem; cursor: pointer;
-            padding: 0.3rem 0.8rem; border-radius: 8px; transition: background 0.2s;
-            color: #6b7280; display: flex; align-items: center; gap: 0.3rem;
+            background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem 0.8rem;
+            border-radius: 8px; transition: background 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.3rem;
         }
 
         .footer .lock-btn:hover { background: #f3f4f6; color: #1a1a2e; }
-
         .footer .copyright { color: #9ca3af; font-size: 0.85rem; }
 
         .login-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center;
-            z-index: 2000; padding: 1rem;
+            backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 1rem;
         }
 
         .login-overlay.ativo { display: flex; }
@@ -447,11 +454,8 @@
 
         .admin-panel.ativo { display: block; }
 
-        .admin-panel .tabs {
-            display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem; flex-wrap: wrap;
-        }
-
+        .admin-panel .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; flex-wrap: wrap; }
+        
         .admin-panel .tab-btn {
             padding: 0.6rem 1.5rem; background: none; border: none; border-radius: 8px; font-weight: 600;
             font-size: 0.95rem; cursor: pointer; transition: all 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.5rem;
@@ -462,13 +466,8 @@
         .admin-panel .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .admin-panel .tab-content.ativo { display: block; }
 
-        .admin-panel h2 {
-            color: #1a1a2e; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
-        }
-
-        .admin-panel h2 .admin-badge {
-            background: #009739; color: white; font-size: 0.7rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-weight: 600;
-        }
+        .admin-panel h2 { color: #1a1a2e; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .admin-panel h2 .admin-badge { background: #009739; color: white; font-size: 0.7rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-weight: 600; }
 
         .admin-panel .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .admin-panel .form-group { margin-bottom: 1rem; }
@@ -630,10 +629,6 @@
 
         .notification-toast { border-radius: 12px !important; border-left: 4px solid #009739 !important; }
     </style>
-    
-    <!-- Bibliotecas para Geração de PDF (jsPDF + AutoTable) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -877,7 +872,6 @@
 
             Swal.fire({ title: 'Gerando PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            // Tempo curto para o loading renderizar antes de travar a thread gerando o PDF
             setTimeout(() => {
                 try {
                     const { jsPDF } = window.jspdf;
@@ -888,14 +882,13 @@
                     doc.setFontSize(10);
                     doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 22);
 
-                    // Ordena por data
                     const ordenados = [...compromissos].sort((a, b) => {
                         const da = new Date(a.dia || '9999-12-31').getTime();
                         const db = new Date(b.dia || '9999-12-31').getTime();
                         return da - db;
                     });
 
-                    const colunas = ["Data Início", "Hora", "Título", "Local", "Participantes", "Status", "Data Fim", "Descrição", "Data Criação"];
+                    const colunas = ["Título", "Data Início", "Hora", "Local", "Participantes", "Status", "Data Criação", "Data Fim", "Descrição"];
                     const linhas = ordenados.map(c => {
                         let dataC = '';
                         if(c.dataCriacao) {
@@ -903,15 +896,15 @@
                             catch(e) { dataC = c.dataCriacao; }
                         }
                         return [
+                            c.titulo || '',
                             formatarDataBR(c.dia),
                             formatarHoraVisao(c.hora),
-                            c.titulo || '',
                             c.local || '',
                             c.participantes || '',
                             c.status || '',
+                            dataC,
                             formatarDataBR(c.diaFim),
-                            c.descricao || '',
-                            dataC
+                            c.descricao || ''
                         ];
                     });
 
@@ -923,9 +916,9 @@
                         headStyles: { fillColor: [0, 151, 57] },
                         styles: { fontSize: 8, cellPadding: 2 },
                         columnStyles: { 
-                            2: { cellWidth: 30 }, // Título
-                            3: { cellWidth: 30 }, // Local
-                            7: { cellWidth: 40 }  // Descrição
+                            0: { cellWidth: 35 }, 
+                            3: { cellWidth: 35 }, 
+                            8: { cellWidth: 40 }  
                         }
                     });
 
@@ -1142,79 +1135,8 @@
         }
 
         // ==========================================
-        // REFERÊNCIAS DOM E FORMATAÇÕES
+        // FUNÇÕES ÚTEIS DE FORMATAÇÃO
         // ==========================================
-        const grid = document.getElementById('agendaGrid');
-        const overlay = document.getElementById('popupOverlay');
-        const popup = document.getElementById('popupCard');
-        const contador = document.getElementById('contadorCompromissos');
-
-        const adminPanel = document.getElementById('adminPanel');
-        const loginOverlay = document.getElementById('loginOverlay');
-        const lockBtn = document.getElementById('lockBtn');
-        const formLogin = document.getElementById('formLogin');
-        const loginUser = document.getElementById('loginUser');
-        const loginPassword = document.getElementById('loginPassword');
-        const loginErro = document.getElementById('loginErro');
-        const btnFecharAdmin = document.getElementById('btnFecharAdmin');
-        const btnLimparForm = document.getElementById('btnLimparForm');
-        const formAdmin = document.getElementById('formAdmin');
-        const adminEditId = document.getElementById('adminEditId');
-        
-        const adminTitulo = document.getElementById('adminTitulo');
-        const adminData = document.getElementById('adminData');
-        const adminDataFim = document.getElementById('adminDataFim');
-        const adminHora = document.getElementById('adminHora');
-        const adminLocal = document.getElementById('adminLocal');
-        const adminParticipantes = document.getElementById('adminParticipantes');
-        const adminDescricao = document.getElementById('adminDescricao');
-        const adminStatus = document.getElementById('adminStatus');
-        
-        const listaAdmin = document.getElementById('listaAdmin');
-        const btnSalvar = document.getElementById('btnSalvar');
-        const btnAtualizar = document.getElementById('btnAtualizar');
-        const editModeIndicator = document.getElementById('editModeIndicator');
-
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        const adminChatMessages = document.getElementById('adminChatMessages');
-        const adminChatInput = document.getElementById('adminChatInput');
-        const adminChatSend = document.getElementById('adminChatSend');
-        const adminChatBadge = document.getElementById('adminChatBadge');
-
-        const chatButton = document.getElementById('chatButton');
-        const chatWindow = document.getElementById('chatWindow');
-        const closeChat = document.getElementById('closeChat');
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const chatSend = document.getElementById('chatSend');
-        const userChatBadge = document.getElementById('userChatBadge');
-
-        const popupTitulo = document.getElementById('popupTitulo');
-        const popupDia = document.getElementById('popupDia');
-        const popupHora = document.getElementById('popupHora');
-        const popupLocal = document.getElementById('popupLocal');
-        const popupParticipantes = document.getElementById('popupParticipantes');
-        const popupDescricaoContainer = document.getElementById('popupDescricaoContainer');
-        const popupDescricao = document.getElementById('popupDescricao');
-        const popupStatus = document.getElementById('popupStatus');
-        const btnMapaPopup = document.getElementById('btnMapaPopup');
-
-        const btnFechar = document.getElementById('btnFechar');
-        const btnCancelar = document.getElementById('btnCancelar');
-        const btnAdiar = document.getElementById('btnAdiar');
-        const btnConcluir = document.getElementById('btnConcluir');
-        const closeIcon = document.getElementById('popupClose');
-
-        const adiarOverlay = document.getElementById('adiarOverlay');
-        const adiarDataInput = document.getElementById('adiarDataInput');
-        const adiarDataFimInput = document.getElementById('adiarDataFimInput');
-        const adiarHoraInput = document.getElementById('adiarHoraInput');
-        const adiarLocalInput = document.getElementById('adiarLocalInput');
-        const btnConfirmarAdiar = document.getElementById('btnConfirmarAdiar');
-        const btnFecharAdiar = document.getElementById('btnFecharAdiar');
-
         function formatarDataVisao(dataStr) {
             if (!dataStr) return '';
             if (dataStr.includes('T')) return dataStr.split('T')[0];
@@ -1282,12 +1204,16 @@
             const carousel = document.getElementById('daysCarousel');
             carousel.innerHTML = '';
             
-            const val = document.getElementById('monthSelector').value;
-            if(!val) return;
+            let val = document.getElementById('monthSelector').value;
+            const h = getHojeObj();
+
+            // FALLBACK DE SEGURANÇA: Impede que o calendário fique vazio se o navegador falhar em ler o valor
+            if (!val) {
+                val = h.yyyymm;
+            }
             
             const [year, month] = val.split('-');
             const diasNoMes = new Date(year, month, 0).getDate();
-            const h = getHojeObj();
 
             // Botão MÊS
             const btnAll = document.createElement('div');
@@ -1361,7 +1287,12 @@
         }
 
         function aplicarFiltros() {
-            const valMes = document.getElementById('monthSelector').value;
+            let valMes = document.getElementById('monthSelector').value;
+            const h = getHojeObj();
+
+            if (!valMes) {
+                valMes = h.yyyymm;
+            }
 
             compromissosFiltrados = compromissos.filter(comp => {
                 const dInicio = formatarDataVisao(comp.dia);
@@ -1410,12 +1341,13 @@
         }
 
         function renderizarAgenda() {
+            const grid = document.getElementById('agendaGrid');
             grid.innerHTML = '';
             const lista = compromissosFiltrados;
 
             if (lista.length === 0) {
                 grid.innerHTML = '<div class="sem-resultados">📭 Nenhum compromisso encontrado para este período.</div>';
-                contador.textContent = '0 compromissos';
+                document.getElementById('contadorCompromissos').textContent = '0 compromissos';
                 return;
             }
 
@@ -1471,7 +1403,7 @@
 
                 card.addEventListener('click', (e) => {
                     if (e.target.classList.contains('btn-mapa')) return;
-                    abrirPopup(comp); // Aqui é passado o objeto inteiro da reunião!
+                    abrirPopup(comp); 
                 });
 
                 const btnMapa = card.querySelector('.btn-mapa');
@@ -1485,11 +1417,12 @@
                 grid.appendChild(card);
             });
 
-            contador.textContent = `${lista.length} compromisso${lista.length !== 1 ? 's' : ''}`;
+            document.getElementById('contadorCompromissos').textContent = `${lista.length} compromisso${lista.length !== 1 ? 's' : ''}`;
         }
 
         function renderizarListaAdmin() {
             if (!adminLogado) return;
+            const listaAdmin = document.getElementById('listaAdmin');
             listaAdmin.innerHTML = '';
             compromissos.forEach(comp => {
                 const item = document.createElement('div');
@@ -1554,39 +1487,39 @@
         function carregarParaEdicao(comp) {
             if (!comp) return;
 
-            adminEditId.value = comp.id;
-            adminTitulo.value = comp.titulo || '';
-            adminData.value = formatarDataVisao(comp.dia);
-            adminDataFim.value = formatarDataVisao(comp.diaFim); 
-            adminHora.value = formatarHoraVisao(comp.hora);
-            adminLocal.value = comp.local || '';
-            adminParticipantes.value = comp.participantes || '';
-            adminDescricao.value = comp.descricao || ''; 
-            adminStatus.value = comp.status || 'Pendente';
+            document.getElementById('adminEditId').value = comp.id;
+            document.getElementById('adminTitulo').value = comp.titulo || '';
+            document.getElementById('adminData').value = formatarDataVisao(comp.dia);
+            document.getElementById('adminDataFim').value = formatarDataVisao(comp.diaFim); 
+            document.getElementById('adminHora').value = formatarHoraVisao(comp.hora);
+            document.getElementById('adminLocal').value = comp.local || '';
+            document.getElementById('adminParticipantes').value = comp.participantes || '';
+            document.getElementById('adminDescricao').value = comp.descricao || ''; 
+            document.getElementById('adminStatus').value = comp.status || 'Pendente';
 
-            btnSalvar.style.display = 'none';
-            btnAtualizar.style.display = 'inline-block';
-            editModeIndicator.style.display = 'inline-block';
+            document.getElementById('btnSalvar').style.display = 'none';
+            document.getElementById('btnAtualizar').style.display = 'inline-block';
+            document.getElementById('editModeIndicator').style.display = 'inline-block';
             
             document.getElementById('formAdmin').style.display = 'block';
             document.getElementById('btnToggleAdminForm').innerHTML = '➖ Ocultar Formulário';
             
-            adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function limparFormAdmin() {
-            adminEditId.value = '';
-            adminTitulo.value = '';
-            adminData.value = new Date().toISOString().split('T')[0];
-            adminDataFim.value = ''; 
-            adminHora.value = '';
-            adminLocal.value = '';
-            adminParticipantes.value = '';
-            adminDescricao.value = ''; 
-            adminStatus.value = 'Pendente';
-            btnSalvar.style.display = 'inline-block';
-            btnAtualizar.style.display = 'none';
-            editModeIndicator.style.display = 'none';
+            document.getElementById('adminEditId').value = '';
+            document.getElementById('adminTitulo').value = '';
+            document.getElementById('adminData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('adminDataFim').value = ''; 
+            document.getElementById('adminHora').value = '';
+            document.getElementById('adminLocal').value = '';
+            document.getElementById('adminParticipantes').value = '';
+            document.getElementById('adminDescricao').value = ''; 
+            document.getElementById('adminStatus').value = 'Pendente';
+            document.getElementById('btnSalvar').style.display = 'inline-block';
+            document.getElementById('btnAtualizar').style.display = 'none';
+            document.getElementById('editModeIndicator').style.display = 'none';
         }
 
         // ==========================================
@@ -1709,9 +1642,7 @@
         });
 
         document.getElementById('adiarOverlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('adiarOverlay')) {
-                document.getElementById('adiarOverlay').classList.remove('ativo');
-            }
+            if (e.target === document.getElementById('adiarOverlay')) document.getElementById('adiarOverlay').classList.remove('ativo');
         });
 
         document.getElementById('btnConfirmarAdiar').addEventListener('click', async () => {
@@ -1778,11 +1709,10 @@
                             tituloNotif = '📬 Nova resposta do administrador';
                             bodyNotif = msg.texto.substring(0, 100);
                             
-                            const cw = document.getElementById('chatWindow');
-                            const cb = document.getElementById('userChatBadge');
-                            if (!cw.classList.contains('aberto')) {
-                                cb.style.display = 'flex';
-                                cb.textContent = parseInt(cb.textContent || 0) + 1;
+                            if (!document.getElementById('chatWindow').classList.contains('aberto')) {
+                                const badge = document.getElementById('userChatBadge');
+                                badge.style.display = 'flex';
+                                badge.textContent = parseInt(badge.textContent || 0) + 1;
                             }
                         } 
                         else if (adminLogado && msg.remetente === 'user') {
@@ -1892,7 +1822,7 @@
         }
 
         // ==========================================
-        // ADMIN - CRUD
+        // ADMIN - CRUD E EVENTOS GERAIS
         // ==========================================
         async function cadastrarCompromisso(e) {
             e.preventDefault();
@@ -2024,7 +1954,7 @@
         }
 
         // ==========================================
-        // ADMIN - LOGIN E AÇÕES GERAIS
+        // ADMIN - LOGIN
         // ==========================================
         function abrirLogin() {
             document.getElementById('loginOverlay').classList.add('ativo');
@@ -2103,19 +2033,8 @@
         }
 
         // ==========================================
-        // EVENTOS GERAIS E INICIALIZAÇÃO
+        // EVENTOS GERAIS
         // ==========================================
-        document.getElementById('btnFechar').addEventListener('click', fecharPopup);
-        document.getElementById('popupClose').addEventListener('click', fecharPopup);
-        document.getElementById('popupOverlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('popupOverlay')) fecharPopup();
-        });
-
-        document.getElementById('btnCancelar').addEventListener('click', acaoCancelar);
-        document.getElementById('btnAdiar').addEventListener('click', acaoAdiar);
-        document.getElementById('btnConcluir').addEventListener('click', acaoConcluir);
-
-        // Eventos Chat
         document.getElementById('chatButton').addEventListener('click', () => {
             const cw = document.getElementById('chatWindow');
             cw.classList.toggle('aberto');
@@ -2154,7 +2073,6 @@
             if (e.key === 'Enter') document.getElementById('adminChatSend').click();
         });
 
-        // Eventos Admin
         document.getElementById('lockBtn').addEventListener('click', () => {
             if (adminLogado) {
                 document.getElementById('adminPanel').classList.add('ativo');
@@ -2224,7 +2142,6 @@
                 atualizarChatUsuario();
 
                 Swal.close();
-                console.log('✅ Gabinete 247 PWA pronto!');
 
                 // SINCRONIZAÇÃO AUTOMÁTICA
                 setInterval(() => {
