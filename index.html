@@ -37,274 +37,63 @@
     </script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: #f0f2f5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
-            position: relative;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        h1 {
-            color: #1a1a2e;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            font-size: 1.8rem;
-        }
-
-        h1 .destaque {
-            color: #009739;
-        }
-
-        /* Botão para ativar notificações no iOS */
-        .btn-notificacoes {
-            background: #fef08a;
-            color: #854d0e;
-            border: 1px solid #fde047;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: all 0.2s;
-            display: none; 
-        }
-
-        .btn-notificacoes:hover {
-            background: #fde047;
-            transform: scale(1.05);
-        }
-
-        /* Ocultamento Inteligente (Botões Toggle) */
-        .btn-toggle-ui {
-            background: #ffffff;
-            color: #1a1a2e;
-            border: 1.5px solid #d1d5db;
-            padding: 0.7rem 1.5rem;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 1rem;
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        .btn-toggle-ui:hover {
-            background: #f9fafb;
-            border-color: #009739;
-            color: #009739;
-        }
-
-        /* ========================================= */
-        /* NOVO CALENDÁRIO HORIZONTAL (CARROSSEL)    */
-        /* ========================================= */
-        .calendar-nav {
-            display: flex; flex-direction: column; width: 100%; max-width: 1200px;
-            background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem;
-            margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-        }
-
-        .month-selector-container {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
-            border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem;
-        }
-
-        .month-selector-container input[type="month"] {
-            border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #1a1a2e;
-            outline: none; cursor: pointer; color: #009739;
-        }
-
-        .contador {
-            font-size: 0.9rem; color: #6b7280; background: #f3f4f6;
-            padding: 0.3rem 1rem; border-radius: 20px; font-weight: 600;
-        }
-
-        .days-carousel {
-            display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem;
-            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; position: relative; }
+        .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
+        h1 { color: #1a1a2e; font-weight: 700; letter-spacing: -0.5px; font-size: 1.8rem; }
+        h1 .destaque { color: #009739; }
+        .btn-notificacoes { background: #fef08a; color: #854d0e; border: 1px solid #fde047; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; display: none; }
+        .btn-notificacoes:hover { background: #fde047; transform: scale(1.05); }
+        .btn-toggle-ui { background: #ffffff; color: #1a1a2e; border: 1.5px solid #d1d5db; padding: 0.7rem 1.5rem; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 1rem; width: 100%; max-width: 1200px; }
+        .btn-toggle-ui:hover { background: #f9fafb; border-color: #009739; color: #009739; }
+        .calendar-nav { display: flex; flex-direction: column; width: 100%; max-width: 1200px; background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+        .month-selector-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem; }
+        .month-selector-container input[type="month"] { border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #1a1a2e; outline: none; cursor: pointer; color: #009739; }
+        .contador { font-size: 0.9rem; color: #6b7280; background: #f3f4f6; padding: 0.3rem 1rem; border-radius: 20px; font-weight: 600; }
+        .days-carousel { display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         .days-carousel::-webkit-scrollbar { height: 6px; }
         .days-carousel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-
-        .day-tab {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-width: 65px; height: 80px; padding: 0.5rem; border-radius: 14px;
-            border: 1.5px solid #e5e7eb; background: #ffffff; cursor: pointer;
-            transition: all 0.2s; position: relative; flex-shrink: 0;
-        }
-
+        .day-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 65px; height: 80px; padding: 0.5rem; border-radius: 14px; border: 1.5px solid #e5e7eb; background: #ffffff; cursor: pointer; transition: all 0.2s; position: relative; flex-shrink: 0; }
         .day-tab:hover { border-color: #009739; background: #f0fdf4; }
-        
         .day-tab.active { background: #009739; border-color: #009739; color: #ffffff; box-shadow: 0 4px 10px rgba(0,151,57,0.3); }
-
         .day-tab .day-name { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
         .day-tab.active .day-name { color: #dcfce7; }
-
         .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
         .day-tab.active .day-num { color: #ffffff; }
-
-        .day-tab .event-dot {
-            width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;
-            position: absolute; bottom: 6px; display: none;
-        }
+        .day-tab .event-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; position: absolute; bottom: 6px; display: none; }
         .day-tab.has-event .event-dot { display: block; }
         .day-tab.active.has-event .event-dot { background: #ffffff; }
-
-        /* ========================================= */
-
-        .agenda-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-            width: 100%;
-            max-width: 1200px;
-            margin-top: 1rem;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 1.2rem;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            border-left: 6px solid #009739;
-            display: flex;
-            gap: 1.2rem;
-            align-items: flex-start;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-        }
-
-        .card-date-box {
-            background: #e8f5e9;
-            color: #009739;
-            min-width: 70px;
-            height: 75px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 1px solid #c8e6c9;
-        }
-
+        .agenda-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1200px; margin-top: 1rem; }
+        .card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
+        .card-date-box { background: #e8f5e9; color: #009739; min-width: 70px; height: 75px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #c8e6c9; }
         .card-date-box .dia { font-size: 2rem; font-weight: 800; line-height: 1; }
         .card-date-box .mes { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-top: 3px; letter-spacing: 1px; }
-
         .card-content { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
         .card-titulo { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-data-range { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 0.3rem; }
         .card-horario { font-size: 0.9rem; color: #009739; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
         .card-local { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
         .card-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; flex-wrap: wrap; }
-        .card-actions .btn-mapa {
-            padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739;
-            border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
-            text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
-        }
-
+        .card-actions .btn-mapa { padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739; border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
         .card-actions .btn-mapa:hover { background: #009739; color: white; transform: scale(1.05); }
-
-        .card-status-badge {
-            display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-            padding: 0.2rem 0.8rem; border-radius: 20px; align-self: flex-start;
-        }
-
+        .card-status-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.8rem; border-radius: 20px; align-self: flex-start; }
         .sem-resultados { grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: #6b7280; font-size: 1.1rem; }
-
-        .popup-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
-            display: none; justify-content: center; align-items: center; z-index: 999; padding: 1rem;
-        }
-
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999; padding: 1rem; }
         .popup-overlay.ativo { display: flex; }
-
-        .popup {
-            background: #ffffff; border-radius: 24px; max-width: 480px; width: 100%;
-            padding: 2rem 2rem 1.8rem; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.2s ease; position: relative; max-height: 90vh; overflow-y: auto;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .popup-close {
-            position: absolute; top: 1rem; right: 1.2rem; font-size: 1.8rem; line-height: 1;
-            background: none; border: none; color: #888; cursor: pointer; transition: color 0.1s;
-        }
-
+        .popup { background: #ffffff; border-radius: 24px; max-width: 480px; width: 100%; padding: 2rem 2rem 1.8rem; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.2s ease; position: relative; max-height: 90vh; overflow-y: auto; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .popup-close { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.8rem; line-height: 1; background: none; border: none; color: #888; cursor: pointer; transition: color 0.1s; }
         .popup-close:hover { color: #1a1a2e; }
-
-        .popup h2 {
-            color: #1a1a2e; font-size: 1.6rem; margin-bottom: 1.2rem; border-bottom: 2px solid #f0f2f5;
-            padding-bottom: 0.6rem; padding-right: 2rem;
-        }
-
+        .popup h2 { color: #1a1a2e; font-size: 1.6rem; margin-bottom: 1.2rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 0.6rem; padding-right: 2rem; }
         .popup-info { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.8rem; }
         .popup-info p { display: flex; align-items: baseline; gap: 0.5rem; font-size: 1rem; color: #222; }
         .popup-info strong { min-width: 90px; color: #555; font-weight: 500; flex-shrink: 0; }
-
-        .popup-descricao-text {
-            background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb;
-            font-size: 0.95rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem;
-        }
-
-        .popup-status {
-            display: inline-block; background: #e8f5e9; color: #009739; padding: 0.2rem 1rem;
-            border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase;
-        }
-
-        .popup-acoes {
-            display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem;
-        }
-
-        .btn {
-            padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem;
-            cursor: pointer; transition: background 0.15s, transform 0.1s; flex: 1 0 auto;
-            background: #f0f2f5; color: #1a1a2e;
-        }
-
+        .popup-descricao-text { background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem; }
+        .popup-status { display: inline-block; background: #e8f5e9; color: #009739; padding: 0.2rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+        .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem; }
+        .btn { padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; flex: 1 0 auto; background: #f0f2f5; color: #1a1a2e; }
         .btn:hover { transform: scale(0.97); }
-
         .btn-cancelar { background: #fee2e2; color: #b91c1c; }
         .btn-cancelar:hover { background: #fecaca; }
         .btn-adiar { background: #fef9c3; color: #92400e; }
@@ -315,295 +104,104 @@
         .btn-fechar:hover { background: #d1d5db; }
         .btn-mapa-popup { background: #e8f5e9; color: #009739; border: 2px solid #009739; flex: 1; }
         .btn-mapa-popup:hover { background: #009739; color: white; }
-
-        .chat-button {
-            position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%;
-            background: #009739; color: white; border: none; font-size: 1.8rem; cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); transition: all 0.3s ease; z-index: 1000;
-            display: flex; align-items: center; justify-content: center;
-        }
-
+        .chat-button { position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%; background: #009739; color: white; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); transition: all 0.3s ease; z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .chat-button:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5); }
-
-        .chat-button .badge {
-            position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; border-radius: 50%;
-            width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700;
-        }
-
-        .chat-window {
-            position: fixed; bottom: 5.5rem; right: 2rem; width: 380px; max-width: calc(100vw - 2rem);
-            height: 500px; max-height: calc(100vh - 8rem); background: #ffffff; border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); display: none; flex-direction: column; z-index: 1001;
-            overflow: hidden; animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
+        .chat-button .badge { position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .chat-window { position: fixed; bottom: 5.5rem; right: 2rem; width: 380px; max-width: calc(100vw - 2rem); height: 500px; max-height: calc(100vh - 8rem); background: #ffffff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); display: none; flex-direction: column; z-index: 1001; overflow: hidden; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .chat-window.aberto { display: flex; }
-
-        .chat-header {
-            background: #009739; color: white; padding: 1rem 1.2rem; display: flex;
-            justify-content: space-between; align-items: center; flex-shrink: 0;
-        }
-
+        .chat-header { background: #009739; color: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .chat-header h3 { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
-
-        .chat-header .status {
-            display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 400; opacity: 0.9;
-        }
-
+        .chat-header .status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 400; opacity: 0.9; }
         .chat-header .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }
-
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-        .chat-header .close-chat {
-            background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer;
-            opacity: 0.8; transition: opacity 0.2s; padding: 0 0.3rem;
-        }
-
+        .chat-header .close-chat { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; padding: 0 0.3rem; }
         .chat-header .close-chat:hover { opacity: 1; }
-
-        .chat-messages {
-            flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column;
-            gap: 0.6rem; background: #f9fafb;
-        }
-
-        .chat-messages .message {
-            max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem;
-            line-height: 1.4; word-wrap: break-word; animation: messageIn 0.3s ease;
-        }
-
+        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; background: #f9fafb; }
+        .chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; animation: messageIn 0.3s ease; }
         .chat-messages .message.bot { background: #e8f5e9; color: #1a1a2e; align-self: flex-start; border-bottom-left-radius: 4px; }
         .chat-messages .message.user { background: #009739; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .chat-messages .message .time { font-size: 0.65rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
         .chat-messages .message.bot .time { color: #555; }
         .chat-messages .message.user .time { color: rgba(255,255,255,0.7); }
-
-        .chat-input-area {
-            padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; flex-shrink: 0;
-        }
-
-        .chat-input-area input {
-            flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px;
-            font-size: 0.9rem; outline: none; transition: border-color 0.2s;
-        }
-
+        .chat-input-area { padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; flex-shrink: 0; }
+        .chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
         .chat-input-area input:focus { border-color: #009739; }
-
-        .chat-input-area button {
-            padding: 0.6rem 1.2rem; background: #009739; color: white; border: none;
-            border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap;
-        }
-
+        .chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap; }
         .chat-input-area button:hover { background: #007a2f; }
-
-        .footer {
-            margin-top: 3rem; padding: 1.5rem 0 0.5rem 0; width: 100%; max-width: 1200px;
-            border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap;
-        }
-
-        .footer .lock-btn {
-            background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem 0.8rem;
-            border-radius: 8px; transition: background 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.3rem;
-        }
-
+        .footer { margin-top: 3rem; padding: 1.5rem 0 0.5rem 0; width: 100%; max-width: 1200px; border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .footer .lock-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem 0.8rem; border-radius: 8px; transition: background 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; }
         .footer .lock-btn:hover { background: #f3f4f6; color: #1a1a2e; }
         .footer .copyright { color: #9ca3af; font-size: 0.85rem; }
-
-        .login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 1rem;
-        }
-
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 1rem; }
         .login-overlay.ativo { display: flex; }
-
-        .login-modal {
-            background: white; border-radius: 24px; padding: 2.5rem 2rem; max-width: 420px;
-            width: 100%; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.3s ease; position: relative;
-        }
-
+        .login-modal { background: white; border-radius: 24px; padding: 2.5rem 2rem; max-width: 420px; width: 100%; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.3s ease; position: relative; }
         .login-modal h2 { color: #1a1a2e; font-size: 1.5rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
         .login-modal .subtitle { color: #6b7280; font-size: 0.9rem; margin-bottom: 1.8rem; }
         .login-modal .form-group { margin-bottom: 1.2rem; }
         .login-modal .form-group label { display: block; font-weight: 500; color: #333; font-size: 0.9rem; margin-bottom: 0.3rem; }
-        
-        .login-modal .form-group input {
-            width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px;
-            font-size: 1rem; transition: border-color 0.2s; outline: none; background: #fafafa;
-        }
-
+        .login-modal .form-group input { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none; background: #fafafa; }
         .login-modal .form-group input:focus { border-color: #009739; box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15); background: white; }
-
-        .login-modal .btn-login {
-            width: 100%; padding: 0.8rem; background: #009739; color: white; border: none;
-            border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem;
-        }
-
+        .login-modal .btn-login { width: 100%; padding: 0.8rem; background: #009739; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem; }
         .login-modal .btn-login:hover { background: #007a2f; }
-
         .login-modal .erro { color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
         .login-modal .erro.visible { display: block; }
-
-        .admin-panel {
-            display: none; background: white; border-radius: 16px; padding: 2rem; width: 100%;
-            max-width: 1200px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); animation: fadeIn 0.3s ease;
-        }
-
+        .admin-panel { display: none; background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 1200px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); animation: fadeIn 0.3s ease; }
         .admin-panel.ativo { display: block; }
-
         .admin-panel .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; flex-wrap: wrap; }
-        
-        .admin-panel .tab-btn {
-            padding: 0.6rem 1.5rem; background: none; border: none; border-radius: 8px; font-weight: 600;
-            font-size: 0.95rem; cursor: pointer; transition: all 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.5rem;
-        }
-
+        .admin-panel .tab-btn { padding: 0.6rem 1.5rem; background: none; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.5rem; }
         .admin-panel .tab-btn:hover { background: #f3f4f6; color: #1a1a2e; }
         .admin-panel .tab-btn.ativo { background: #e8f5e9; color: #009739; }
         .admin-panel .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .admin-panel .tab-content.ativo { display: block; }
-
         .admin-panel h2 { color: #1a1a2e; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
         .admin-panel h2 .admin-badge { background: #009739; color: white; font-size: 0.7rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-weight: 600; }
-
         .admin-panel .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .admin-panel .form-group { margin-bottom: 1rem; }
         .admin-panel .form-group label { display: block; font-weight: 500; color: #333; font-size: 0.9rem; margin-bottom: 0.3rem; }
-
-        .admin-panel .form-group input,
-        .admin-panel .form-group select,
-        .admin-panel .form-group textarea {
-            width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px;
-            font-size: 0.95rem; transition: border-color 0.2s; outline: none; background: #fafafa;
-        }
-
-        .admin-panel .form-group input:focus,
-        .admin-panel .form-group select:focus,
-        .admin-panel .form-group textarea:focus {
-            border-color: #009739; box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15); background: white;
-        }
-
+        .admin-panel .form-group input, .admin-panel .form-group select, .admin-panel .form-group textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 0.95rem; transition: border-color 0.2s; outline: none; background: #fafafa; }
+        .admin-panel .form-group input:focus, .admin-panel .form-group select:focus, .admin-panel .form-group textarea:focus { border-color: #009739; box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15); background: white; }
         .admin-panel .form-group textarea { resize: vertical; min-height: 60px; }
         .admin-panel .form-actions { display: flex; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; align-items: center; }
-
-        .admin-panel .btn-salvar {
-            padding: 0.7rem 2rem; background: #009739; color: white; border: none; border-radius: 10px;
-            font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem;
-        }
-
+        .admin-panel .btn-salvar { padding: 0.7rem 2rem; background: #009739; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
         .admin-panel .btn-salvar:hover { background: #007a2f; }
-
-        .admin-panel .btn-atualizar {
-            padding: 0.7rem 2rem; background: #f59e0b; color: white; border: none; border-radius: 10px;
-            font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem;
-        }
-
+        .admin-panel .btn-atualizar { padding: 0.7rem 2rem; background: #f59e0b; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
         .admin-panel .btn-atualizar:hover { background: #d97706; }
-
-        .admin-panel .btn-cancelar-admin {
-            padding: 0.7rem 2rem; background: #f3f4f6; color: #555; border: none; border-radius: 10px;
-            font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem;
-        }
-
+        .admin-panel .btn-cancelar-admin { padding: 0.7rem 2rem; background: #f3f4f6; color: #555; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
         .admin-panel .btn-cancelar-admin:hover { background: #e5e7eb; }
-
-        .admin-panel .btn-fechar-admin {
-            padding: 0.7rem 2rem; background: #ef4444; color: white; border: none; border-radius: 10px;
-            font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; margin-left: auto;
-        }
-
+        .admin-panel .btn-fechar-admin { padding: 0.7rem 2rem; background: #ef4444; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; margin-left: auto; }
         .admin-panel .btn-fechar-admin:hover { background: #dc2626; }
-
-        .admin-panel .btn-editar {
-            padding: 0.3rem 1rem; background: #dbeafe; color: #1e40af; border: none; border-radius: 8px;
-            font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.8rem;
-        }
-
+        .admin-panel .btn-editar { padding: 0.3rem 1rem; background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.8rem; }
         .admin-panel .btn-editar:hover { background: #bfdbfe; }
-
-        .admin-panel .btn-excluir {
-            padding: 0.3rem 1rem; background: #fee2e2; color: #b91c1c; border: none; border-radius: 8px;
-            font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.8rem;
-        }
-
+        .admin-panel .btn-excluir { padding: 0.3rem 1rem; background: #fee2e2; color: #b91c1c; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.8rem; }
         .admin-panel .btn-excluir:hover { background: #fecaca; }
-
         .admin-panel .lista-compromissos-admin { margin-top: 1rem; border-top: 2px solid #f0f2f5; padding-top: 1.5rem; }
         .admin-panel .lista-compromissos-admin h3 { color: #1a1a2e; margin-bottom: 1rem; font-size: 1.1rem; }
-
-        .admin-panel .item-admin {
-            display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 1rem;
-            background: #f9fafb; border-radius: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;
-        }
-
+        .admin-panel .item-admin { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 1rem; background: #f9fafb; border-radius: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
         .admin-panel .item-admin .info { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; flex: 1; }
         .admin-panel .item-admin .info .titulo { font-weight: 600; color: #1a1a2e; }
         .admin-panel .item-admin .info .data { color: #6b7280; font-size: 0.85rem; }
         .admin-panel .item-admin .acoes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .admin-panel .full-width { grid-column: 1 / -1; }
-
-        .admin-panel .edit-indicator {
-            background: #fef9c3; color: #92400e; padding: 0.2rem 0.8rem; border-radius: 20px;
-            font-size: 0.75rem; font-weight: 600; display: inline-block; margin-left: 0.5rem;
-        }
-
-        .admin-chat-container {
-            display: flex; flex-direction: column; height: 450px; background: #f9fafb;
-            border-radius: 12px; overflow: hidden;
-        }
-
-        .admin-chat-messages {
-            flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem;
-        }
-
-        .admin-chat-messages .message {
-            max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word;
-        }
-
+        .admin-panel .edit-indicator { background: #fef9c3; color: #92400e; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; margin-left: 0.5rem; }
+        .admin-chat-container { display: flex; flex-direction: column; height: 450px; background: #f9fafb; border-radius: 12px; overflow: hidden; }
+        .admin-chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; }
+        .admin-chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
         .admin-chat-messages .message.user { background: #009739; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
         .admin-chat-messages .message.admin { background: #dbeafe; color: #1a1a2e; align-self: flex-end; border-bottom-right-radius: 4px; }
         .admin-chat-messages .message .time { font-size: 0.65rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
         .admin-chat-messages .message.user .time { color: rgba(255,255,255,0.7); }
         .admin-chat-messages .message.admin .time { color: #6b7280; }
-
-        .admin-chat-empty {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; color: #9ca3af; text-align: center; padding: 2rem;
-        }
-
+        .admin-chat-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af; text-align: center; padding: 2rem; }
         .admin-chat-empty .icon { font-size: 3rem; margin-bottom: 0.5rem; }
-
-        .admin-chat-input-area {
-            padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white;
-        }
-
-        .admin-chat-input-area input {
-            flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px;
-            font-size: 0.9rem; outline: none; transition: border-color 0.2s;
-        }
-
+        .admin-chat-input-area { padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; }
+        .admin-chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
         .admin-chat-input-area input:focus { border-color: #009739; }
-
-        .admin-chat-input-area button {
-            padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px;
-            font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap;
-        }
-
+        .admin-chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap; }
         .admin-chat-input-area button:hover { background: #007a2f; }
-
-        .install-pwa {
-            position: fixed; bottom: 6rem; right: 2rem; background: #009739; color: white; border: none;
-            border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: 600; cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); z-index: 999; display: none;
-            align-items: center; gap: 0.5rem; animation: slideUp 0.3s ease; font-size: 0.9rem;
-        }
-
+        .install-pwa { position: fixed; bottom: 6rem; right: 2rem; background: #009739; color: white; border: none; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); z-index: 999; display: none; align-items: center; gap: 0.5rem; animation: slideUp 0.3s ease; font-size: 0.9rem; }
         .install-pwa:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5); }
         .install-pwa.visible { display: flex !important; }
-
         @media (max-width: 640px) {
             .month-selector-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
             .popup { padding: 1.5rem; }
@@ -626,7 +224,6 @@
             .admin-panel .tab-btn { justify-content: center; }
             .install-pwa { bottom: 5rem; right: 1rem; left: 1rem; justify-content: center; }
         }
-
         .notification-toast { border-radius: 12px !important; border-left: 4px solid #009739 !important; }
     </style>
 </head>
@@ -695,10 +292,14 @@
                         <input type="date" id="adminDataFim">
                     </div>
                     <div class="form-group">
-                        <label>Hora *</label>
+                        <label>Hora Início *</label>
                         <input type="time" id="adminHora" required>
                     </div>
                     <div class="form-group">
+                        <label>Hora Fim (Opcional)</label>
+                        <input type="time" id="adminHoraFim">
+                    </div>
+                    <div class="form-group full-width">
                         <label>Local *</label>
                         <input type="text" id="adminLocal" placeholder="Ex: Sala 301" required>
                     </div>
@@ -793,8 +394,12 @@
                 <input type="date" id="adiarDataFimInput">
             </div>
             <div class="form-group">
-                <label>Nova Hora</label>
+                <label>Nova Hora Início</label>
                 <input type="time" id="adiarHoraInput">
+            </div>
+            <div class="form-group">
+                <label>Nova Hora Fim (Opcional)</label>
+                <input type="time" id="adiarHoraFimInput">
             </div>
             <div class="form-group">
                 <label>Novo Local (Opcional)</label>
@@ -862,7 +467,24 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // GATILHO DE RELATÓRIO PDF (NOVO)
+        // CONFIGURAÇÃO DA API E VAPID KEY
+        // ==========================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
+        const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
+
+        // ==========================================
+        // DADOS GLOBAIS
+        // ==========================================
+        let compromissos = [];
+        let compromissosFiltrados = [];
+        let mensagensChat = [];
+        let adminLogado = false;
+        let proximoId = 1;
+        let compromissoAtual = null;
+        let currentSelectedDate = 'ALL'; 
+
+        // ==========================================
+        // GATILHO DE RELATÓRIO PDF
         // ==========================================
         document.getElementById('btnGerarRelatorio').addEventListener('click', function() {
             if (compromissos.length === 0) {
@@ -888,22 +510,28 @@
                         return da - db;
                     });
 
-                    const colunas = ["Título", "Data Início", "Hora", "Local", "Participantes", "Status", "Data Criação", "Data Fim", "Descrição"];
+                    // Nova ordem: Data, Título, Hora, Local, Participantes, Status e Descrição
+                    const colunas = ["Data", "Título", "Hora", "Local", "Participantes", "Status", "Descrição"];
                     const linhas = ordenados.map(c => {
-                        let dataC = '';
-                        if(c.dataCriacao) {
-                            try { dataC = new Date(c.dataCriacao).toLocaleDateString('pt-BR'); } 
-                            catch(e) { dataC = c.dataCriacao; }
+                        // Data no formato DD/MM apenas para o PDF
+                        let dataCurta = formatarDataBR(c.dia);
+                        if(dataCurta && dataCurta.length === 10) {
+                            dataCurta = dataCurta.substring(0, 5);
                         }
+
+                        // Hora no formato de exibição (se houver horaFim)
+                        let horaExibicao = formatarHoraVisao(c.hora);
+                        if (c.horaFim) {
+                            horaExibicao = `das ${horaExibicao} até ${formatarHoraVisao(c.horaFim)}`;
+                        }
+
                         return [
+                            dataCurta,
                             c.titulo || '',
-                            formatarDataBR(c.dia),
-                            formatarHoraVisao(c.hora),
+                            horaExibicao,
                             c.local || '',
                             c.participantes || '',
                             c.status || '',
-                            dataC,
-                            formatarDataBR(c.diaFim),
                             c.descricao || ''
                         ];
                     });
@@ -916,9 +544,10 @@
                         headStyles: { fillColor: [0, 151, 57] },
                         styles: { fontSize: 8, cellPadding: 2 },
                         columnStyles: { 
-                            0: { cellWidth: 35 }, 
-                            3: { cellWidth: 35 }, 
-                            8: { cellWidth: 40 }  
+                            1: { cellWidth: 35 }, // Título
+                            2: { cellWidth: 25 }, // Hora
+                            3: { cellWidth: 35 }, // Local
+                            6: { cellWidth: 40 }  // Descrição
                         }
                     });
 
@@ -930,12 +559,6 @@
                 }
             }, 500);
         });
-
-        // ==========================================
-        // CONFIGURAÇÃO DA API E VAPID KEY
-        // ==========================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
-        const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
 
         // ==========================================
         // PWA - INSTALAÇÃO E ATUALIZAÇÃO
@@ -1110,17 +733,8 @@
         });
 
         // ==========================================
-        // DADOS GLOBAIS E REQUISIÇÕES
+        // COMUNICAÇÃO GOOGLE SHEETS
         // ==========================================
-        let compromissos = [];
-        let compromissosFiltrados = [];
-        let mensagensChat = [];
-        let adminLogado = false;
-        let proximoId = 1;
-        let compromissoAtual = null;
-
-        let currentSelectedDate = 'ALL'; 
-
         async function fetchGoogle(acao, dados = null) {
             try {
                 const payload = dados ? { acao, dados } : { acao };
@@ -1184,7 +798,13 @@
             const monthSel = document.getElementById('monthSelector');
             const h = getHojeObj();
             
+            // Força preenchimento da input nativa
             monthSel.value = h.yyyymm;
+            if (!monthSel.value) {
+                monthSel.setAttribute("type", "text");
+                monthSel.value = h.yyyymm;
+            }
+
             currentSelectedDate = h.yyyymmdd; 
             
             monthSel.addEventListener('change', () => {
@@ -1207,10 +827,7 @@
             let val = document.getElementById('monthSelector').value;
             const h = getHojeObj();
 
-            // FALLBACK DE SEGURANÇA: Impede que o calendário fique vazio se o navegador falhar em ler o valor
-            if (!val) {
-                val = h.yyyymm;
-            }
+            if (!val) val = h.yyyymm;
             
             const [year, month] = val.split('-');
             const diasNoMes = new Date(year, month, 0).getDate();
@@ -1289,10 +906,7 @@
         function aplicarFiltros() {
             let valMes = document.getElementById('monthSelector').value;
             const h = getHojeObj();
-
-            if (!valMes) {
-                valMes = h.yyyymm;
-            }
+            if (!valMes) valMes = h.yyyymm;
 
             compromissosFiltrados = compromissos.filter(comp => {
                 const dInicio = formatarDataVisao(comp.dia);
@@ -1302,7 +916,8 @@
 
                 if (currentSelectedDate === 'ALL') {
                     return dInicio.startsWith(valMes) || dFim.startsWith(valMes);
-                } else {
+                } 
+                else {
                     return currentSelectedDate >= dInicio && currentSelectedDate <= dFim;
                 }
             });
@@ -1383,6 +998,11 @@
                 }
 
                 const iconeDescricao = comp.descricao ? `<span title="Contém descrição" style="font-size: 0.8rem;">📝</span>` : '';
+                
+                let horaExibicao = formatarHoraVisao(comp.hora);
+                if (comp.horaFim) {
+                    horaExibicao = `${horaExibicao} às ${formatarHoraVisao(comp.horaFim)}`;
+                }
 
                 card.innerHTML = `
                     <div class="card-date-box" style="color: ${borderColor}; border-color: ${borderColor}40; background: ${borderColor}10;">
@@ -1392,7 +1012,7 @@
                     <div class="card-content">
                         <div class="card-titulo">${comp.titulo || 'Sem título'} ${iconeDescricao}</div>
                         <div class="card-data-range">${htmlDataRange}</div>
-                        <div class="card-horario">🕒 ${formatarHoraVisao(comp.hora)}</div>
+                        <div class="card-horario">🕒 ${horaExibicao}</div>
                         <div class="card-local">📍 ${comp.local || 'Local não informado'}</div>
                         ${statusBadge}
                         <div class="card-actions">
@@ -1403,7 +1023,7 @@
 
                 card.addEventListener('click', (e) => {
                     if (e.target.classList.contains('btn-mapa')) return;
-                    abrirPopup(comp); 
+                    abrirPopup(comp);
                 });
 
                 const btnMapa = card.querySelector('.btn-mapa');
@@ -1431,10 +1051,15 @@
                 let strDataAdmin = formatarDataBR(comp.dia);
                 if (comp.diaFim) strDataAdmin += ` a ${formatarDataBR(comp.diaFim)}`;
 
+                let horaExibicao = formatarHoraVisao(comp.hora);
+                if (comp.horaFim) {
+                    horaExibicao = `${horaExibicao} às ${formatarHoraVisao(comp.horaFim)}`;
+                }
+
                 item.innerHTML = `
                     <div class="info">
                         <span class="titulo">${comp.titulo || 'Sem título'}</span>
-                        <span class="data">📅 ${strDataAdmin} às ${formatarHoraVisao(comp.hora)}</span>
+                        <span class="data">📅 ${strDataAdmin} | 🕒 ${horaExibicao}</span>
                         <span class="data">📍 ${comp.local || 'Local não informado'}</span>
                         <span class="data" style="color: #009739; font-weight: 600;">${comp.status || 'Pendente'}</span>
                     </div>
@@ -1492,6 +1117,7 @@
             document.getElementById('adminData').value = formatarDataVisao(comp.dia);
             document.getElementById('adminDataFim').value = formatarDataVisao(comp.diaFim); 
             document.getElementById('adminHora').value = formatarHoraVisao(comp.hora);
+            document.getElementById('adminHoraFim').value = formatarHoraVisao(comp.horaFim);
             document.getElementById('adminLocal').value = comp.local || '';
             document.getElementById('adminParticipantes').value = comp.participantes || '';
             document.getElementById('adminDescricao').value = comp.descricao || ''; 
@@ -1513,6 +1139,7 @@
             document.getElementById('adminData').value = new Date().toISOString().split('T')[0];
             document.getElementById('adminDataFim').value = ''; 
             document.getElementById('adminHora').value = '';
+            document.getElementById('adminHoraFim').value = '';
             document.getElementById('adminLocal').value = '';
             document.getElementById('adminParticipantes').value = '';
             document.getElementById('adminDescricao').value = ''; 
@@ -1538,7 +1165,12 @@
             }
             document.getElementById('popupDia').textContent = dataExibicao || '--/--/----';
 
-            document.getElementById('popupHora').textContent = formatarHoraVisao(comp.hora);
+            let horaExibicao = formatarHoraVisao(comp.hora);
+            if (comp.horaFim) {
+                horaExibicao = `${horaExibicao} às ${formatarHoraVisao(comp.horaFim)}`;
+            }
+            document.getElementById('popupHora').textContent = horaExibicao;
+
             document.getElementById('popupLocal').textContent = comp.local || 'Local não informado';
             document.getElementById('popupParticipantes').textContent = comp.participantes || 'Não informado';
 
@@ -1632,6 +1264,7 @@
             document.getElementById('adiarDataInput').value = formatarDataVisao(compromissoAtual.dia);
             document.getElementById('adiarDataFimInput').value = formatarDataVisao(compromissoAtual.diaFim);
             document.getElementById('adiarHoraInput').value = formatarHoraVisao(compromissoAtual.hora);
+            document.getElementById('adiarHoraFimInput').value = formatarHoraVisao(compromissoAtual.horaFim);
             document.getElementById('adiarLocalInput').value = compromissoAtual.local || '';
 
             document.getElementById('adiarOverlay').classList.add('ativo');
@@ -1642,7 +1275,9 @@
         });
 
         document.getElementById('adiarOverlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('adiarOverlay')) document.getElementById('adiarOverlay').classList.remove('ativo');
+            if (e.target === document.getElementById('adiarOverlay')) {
+                document.getElementById('adiarOverlay').classList.remove('ativo');
+            }
         });
 
         document.getElementById('btnConfirmarAdiar').addEventListener('click', async () => {
@@ -1651,6 +1286,7 @@
             const novaData = document.getElementById('adiarDataInput').value;
             const novaDataFim = document.getElementById('adiarDataFimInput').value;
             const novaHora = document.getElementById('adiarHoraInput').value;
+            const novaHoraFim = document.getElementById('adiarHoraFimInput').value;
             const novoLocal = document.getElementById('adiarLocalInput').value.trim();
 
             if (!novaData) {
@@ -1661,6 +1297,7 @@
             compromissoAtual.dia = novaData;
             compromissoAtual.diaFim = novaDataFim;
             compromissoAtual.hora = novaHora;
+            compromissoAtual.horaFim = novaHoraFim;
             if (novoLocal) compromissoAtual.local = novoLocal;
             compromissoAtual.status = 'Adiado';
             
@@ -1674,154 +1311,6 @@
         });
 
         // ==========================================
-        // FUNÇÕES DO CHAT (Com Sincronização)
-        // ==========================================
-        let isSincronizandoChat = false;
-
-        async function sincronizarChat() {
-            if (isSincronizandoChat) return;
-            isSincronizandoChat = true;
-            
-            try {
-                const msgsServer = await fetchGoogle('listar_chat');
-                if (!msgsServer || msgsServer.status !== 'sucesso' || !msgsServer.dados || msgsServer.dados.length === 0) {
-                    isSincronizandoChat = false;
-                    return;
-                }
-
-                const dadosServidor = msgsServer.dados;
-                const msgsLocaisReais = mensagensChat.filter(m => !String(m.id).startsWith('temp_'));
-
-                if (dadosServidor.length > msgsLocaisReais.length) {
-                    const qtdNovas = dadosServidor.length - msgsLocaisReais.length;
-                    const novasMensagens = dadosServidor.slice(-qtdNovas);
-
-                    const msgsTemporarias = mensagensChat.filter(m => String(m.id).startsWith('temp_'));
-                    mensagensChat = [...dadosServidor, ...msgsTemporarias];
-
-                    let dispararNotificacao = false;
-                    let tituloNotif = '';
-                    let bodyNotif = '';
-
-                    novasMensagens.forEach(msg => {
-                        if (!adminLogado && msg.remetente === 'admin') {
-                            dispararNotificacao = true;
-                            tituloNotif = '📬 Nova resposta do administrador';
-                            bodyNotif = msg.texto.substring(0, 100);
-                            
-                            if (!document.getElementById('chatWindow').classList.contains('aberto')) {
-                                const badge = document.getElementById('userChatBadge');
-                                badge.style.display = 'flex';
-                                badge.textContent = parseInt(badge.textContent || 0) + 1;
-                            }
-                        } 
-                        else if (adminLogado && msg.remetente === 'user') {
-                            dispararNotificacao = true;
-                            tituloNotif = '📬 Nova mensagem de um usuário';
-                            bodyNotif = msg.texto.substring(0, 100);
-                        }
-                    });
-
-                    if (dispararNotificacao) {
-                        sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
-                    }
-
-                    atualizarChatUsuario();
-                    if (adminLogado) atualizarChatAdmin();
-                }
-            } catch (error) {
-                console.error("Erro na sincronização do chat:", error);
-            }
-            
-            isSincronizandoChat = false;
-        }
-
-        async function adicionarMensagemChat(remetente, texto) {
-            const agora = new Date().toISOString();
-            const tempId = 'temp_' + Date.now();
-            
-            const mensagemTemp = {
-                id: tempId,
-                remetente: remetente,
-                texto: texto,
-                data: agora,
-                lida: false,
-                lidaUser: false
-            };
-            
-            mensagensChat.push(mensagemTemp);
-            atualizarChatUsuario();
-            if (adminLogado) atualizarChatAdmin();
-
-            const result = await fetchGoogle('adicionar_chat', {
-                remetente: remetente,
-                texto: texto,
-                data: agora,
-                lida: false
-            });
-
-            if (result.status === 'sucesso') {
-                mensagensChat = mensagensChat.filter(m => m.id !== tempId);
-                await sincronizarChat();
-            }
-        }
-
-        function atualizarChatUsuario() {
-            const cx = document.getElementById('chatMessages');
-            cx.innerHTML = '';
-            mensagensChat.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.remetente === 'user' ? 'user' : 'bot'}`;
-                const time = new Date(msg.data);
-                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                div.innerHTML = `${msg.texto} <span class="time">${timeStr}</span>`;
-                cx.appendChild(div);
-            });
-            cx.scrollTop = cx.scrollHeight;
-        }
-
-        async function atualizarChatAdmin() {
-            if (!adminLogado) return;
-            const cx = document.getElementById('adminChatMessages');
-            cx.innerHTML = '';
-            
-            if (mensagensChat.length === 0) {
-                cx.innerHTML = `
-                    <div class="admin-chat-empty">
-                        <div class="icon">💬</div>
-                        <p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            mensagensChat.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.remetente === 'user' ? 'user' : 'admin'}`;
-                const time = new Date(msg.data);
-                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                const remetenteLabel = msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin';
-                div.innerHTML = `<strong>${remetenteLabel}:</strong> ${msg.texto} <span class="time">${timeStr}</span>`;
-                cx.appendChild(div);
-                if (msg.remetente === 'user') msg.lida = true;
-            });
-            cx.scrollTop = cx.scrollHeight;
-            contarMensagensNaoLidas();
-        }
-
-        function contarMensagensNaoLidas() {
-            if (!adminLogado) return;
-            const naoLidas = mensagensChat.filter(m => m.remetente === 'user' && !m.lida).length;
-            const badge = document.getElementById('adminChatBadge');
-            if (naoLidas > 0) {
-                badge.textContent = naoLidas;
-                badge.style.display = 'inline';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-
-        // ==========================================
         // ADMIN - CRUD E EVENTOS GERAIS
         // ==========================================
         async function cadastrarCompromisso(e) {
@@ -1831,6 +1320,7 @@
             const dia = document.getElementById('adminData').value;
             const diaFim = document.getElementById('adminDataFim').value; 
             const hora = document.getElementById('adminHora').value;
+            const horaFim = document.getElementById('adminHoraFim').value;
             const local = document.getElementById('adminLocal').value.trim();
             const participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
             const descricao = document.getElementById('adminDescricao').value.trim() || ''; 
@@ -1847,6 +1337,7 @@
                 dia,
                 diaFim, 
                 hora,
+                horaFim,
                 local,
                 participantes,
                 descricao, 
@@ -1896,6 +1387,7 @@
             const dia = document.getElementById('adminData').value;
             const diaFim = document.getElementById('adminDataFim').value; 
             const hora = document.getElementById('adminHora').value;
+            const horaFim = document.getElementById('adminHoraFim').value;
             const local = document.getElementById('adminLocal').value.trim();
             const participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
             const descricao = document.getElementById('adminDescricao').value.trim() || ''; 
@@ -1918,6 +1410,7 @@
                 dia,
                 diaFim, 
                 hora,
+                horaFim,
                 local,
                 participantes,
                 descricao, 
@@ -2033,8 +1526,126 @@
         }
 
         // ==========================================
-        // EVENTOS GERAIS
+        // FUNÇÕES DO CHAT
         // ==========================================
+        let isSincronizandoChat = false;
+
+        async function sincronizarChat() {
+            if (isSincronizandoChat) return;
+            isSincronizandoChat = true;
+            try {
+                const msgsServer = await fetchGoogle('listar_chat');
+                if (!msgsServer || msgsServer.status !== 'sucesso' || !msgsServer.dados || msgsServer.dados.length === 0) {
+                    isSincronizandoChat = false; return;
+                }
+                const dadosServidor = msgsServer.dados;
+                const msgsLocaisReais = mensagensChat.filter(m => !String(m.id).startsWith('temp_'));
+
+                if (dadosServidor.length > msgsLocaisReais.length) {
+                    const qtdNovas = dadosServidor.length - msgsLocaisReais.length;
+                    const novasMensagens = dadosServidor.slice(-qtdNovas);
+
+                    const msgsTemporarias = mensagensChat.filter(m => String(m.id).startsWith('temp_'));
+                    mensagensChat = [...dadosServidor, ...msgsTemporarias];
+
+                    let dispararNotificacao = false;
+                    let tituloNotif = '';
+                    let bodyNotif = '';
+
+                    novasMensagens.forEach(msg => {
+                        if (!adminLogado && msg.remetente === 'admin') {
+                            dispararNotificacao = true;
+                            tituloNotif = '📬 Nova resposta do administrador';
+                            bodyNotif = msg.texto.substring(0, 100);
+                            if (!document.getElementById('chatWindow').classList.contains('aberto')) {
+                                const badge = document.getElementById('userChatBadge');
+                                badge.style.display = 'flex';
+                                badge.textContent = parseInt(badge.textContent || 0) + 1;
+                            }
+                        } 
+                        else if (adminLogado && msg.remetente === 'user') {
+                            dispararNotificacao = true;
+                            tituloNotif = '📬 Nova mensagem de um usuário';
+                            bodyNotif = msg.texto.substring(0, 100);
+                        }
+                    });
+
+                    if (dispararNotificacao) {
+                        sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
+                    }
+
+                    atualizarChatUsuario();
+                    if (adminLogado) atualizarChatAdmin();
+                }
+            } catch (error) { console.error("Erro na sincronização do chat:", error); }
+            isSincronizandoChat = false;
+        }
+
+        async function adicionarMensagemChat(remetente, texto) {
+            const agora = new Date().toISOString();
+            const tempId = 'temp_' + Date.now();
+            const mensagemTemp = { id: tempId, remetente: remetente, texto: texto, data: agora, lida: false, lidaUser: false };
+            
+            mensagensChat.push(mensagemTemp);
+            atualizarChatUsuario();
+            if (adminLogado) atualizarChatAdmin();
+
+            const result = await fetchGoogle('adicionar_chat', { remetente: remetente, texto: texto, data: agora, lida: false });
+            if (result.status === 'sucesso') {
+                mensagensChat = mensagensChat.filter(m => m.id !== tempId);
+                await sincronizarChat();
+            }
+        }
+
+        function atualizarChatUsuario() {
+            const cx = document.getElementById('chatMessages');
+            cx.innerHTML = '';
+            mensagensChat.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.remetente === 'user' ? 'user' : 'bot'}`;
+                const time = new Date(msg.data);
+                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+                div.innerHTML = `${msg.texto} <span class="time">${timeStr}</span>`;
+                cx.appendChild(div);
+            });
+            cx.scrollTop = cx.scrollHeight;
+        }
+
+        async function atualizarChatAdmin() {
+            if (!adminLogado) return;
+            const cx = document.getElementById('adminChatMessages');
+            cx.innerHTML = '';
+            if (mensagensChat.length === 0) {
+                cx.innerHTML = `<div class="admin-chat-empty"><div class="icon">💬</div><p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p></div>`;
+                return;
+            }
+            mensagensChat.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.remetente === 'user' ? 'user' : 'admin'}`;
+                const time = new Date(msg.data);
+                const timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+                const remetenteLabel = msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin';
+                div.innerHTML = `<strong>${remetenteLabel}:</strong> ${msg.texto} <span class="time">${timeStr}</span>`;
+                cx.appendChild(div);
+                if (msg.remetente === 'user') msg.lida = true;
+            });
+            cx.scrollTop = cx.scrollHeight;
+            contarMensagensNaoLidas();
+        }
+
+        function contarMensagensNaoLidas() {
+            if (!adminLogado) return;
+            const naoLidas = mensagensChat.filter(m => m.remetente === 'user' && !m.lida).length;
+            const badge = document.getElementById('adminChatBadge');
+            if (naoLidas > 0) {
+                badge.textContent = naoLidas;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // Eventos Chat
         document.getElementById('chatButton').addEventListener('click', () => {
             const cw = document.getElementById('chatWindow');
             cw.classList.toggle('aberto');
@@ -2046,7 +1657,6 @@
             }
         });
         document.getElementById('closeChat').addEventListener('click', () => document.getElementById('chatWindow').classList.remove('aberto'));
-        
         document.getElementById('chatSend').addEventListener('click', () => {
             const input = document.getElementById('chatInput');
             const texto = input.value.trim();
@@ -2054,11 +1664,7 @@
             adicionarMensagemChat('user', texto);
             input.value = '';
         });
-        
-        document.getElementById('chatInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('chatSend').click();
-        });
-
+        document.getElementById('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('chatSend').click(); });
         document.getElementById('adminChatSend').addEventListener('click', () => {
             const input = document.getElementById('adminChatInput');
             const texto = input.value.trim();
@@ -2069,10 +1675,9 @@
             badge.style.display = 'none';
             badge.textContent = '0';
         });
-        document.getElementById('adminChatInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('adminChatSend').click();
-        });
+        document.getElementById('adminChatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('adminChatSend').click(); });
 
+        // Eventos Admin
         document.getElementById('lockBtn').addEventListener('click', () => {
             if (adminLogado) {
                 document.getElementById('adminPanel').classList.add('ativo');
@@ -2084,10 +1689,7 @@
         });
 
         document.getElementById('formLogin').addEventListener('submit', fazerLogin);
-        document.getElementById('loginOverlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('loginOverlay')) fecharLogin();
-        });
-
+        document.getElementById('loginOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('loginOverlay')) fecharLogin(); });
         document.getElementById('btnFecharAdmin').addEventListener('click', fecharAdmin);
         document.getElementById('btnLimparForm').addEventListener('click', limparFormAdmin);
         document.getElementById('formAdmin').addEventListener('submit', cadastrarCompromisso);
@@ -2099,9 +1701,7 @@
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('ativo'));
                 btn.classList.add('ativo');
                 document.getElementById(btn.dataset.tab).classList.add('ativo');
-                if (btn.dataset.tab === 'tabChat' && adminLogado) {
-                    atualizarChatAdmin();
-                }
+                if (btn.dataset.tab === 'tabChat' && adminLogado) atualizarChatAdmin();
             });
         });
 
@@ -2142,6 +1742,7 @@
                 atualizarChatUsuario();
 
                 Swal.close();
+                console.log('✅ Gabinete 247 PWA pronto!');
 
                 // SINCRONIZAÇÃO AUTOMÁTICA
                 setInterval(() => {
