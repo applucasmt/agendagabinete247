@@ -94,25 +94,21 @@
         .card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
         
-        /* Status: Concluído - VERDE */
         .card.status-concluido { border-left-color: #16a34a; }
         .card.status-concluido .card-date-box { color: #16a34a; border-color: #16a34a40; background: #16a34a10; }
         .card.status-concluido .card-status-badge { background: #16a34a15; color: #16a34a; }
         .card.status-concluido .card-horario { color: #16a34a; }
         
-        /* Status: Pendente ou Adiado - AMARELO */
         .card.status-pendente { border-left-color: #f59e0b; }
         .card.status-pendente .card-date-box { color: #f59e0b; border-color: #f59e0b40; background: #f59e0b10; }
         .card.status-pendente .card-status-badge { background: #f59e0b15; color: #f59e0b; }
         .card.status-pendente .card-horario { color: #f59e0b; }
         
-        /* Status: Cancelado ou Atrasado - VERMELHO */
         .card.status-cancelado { border-left-color: #dc2626; }
         .card.status-cancelado .card-date-box { color: #dc2626; border-color: #dc262640; background: #dc262610; }
         .card.status-cancelado .card-status-badge { background: #dc262615; color: #dc2626; }
         .card.status-cancelado .card-horario { color: #dc2626; }
         
-        /* Card padrão (fallback) */
         .card.status-padrao { border-left-color: #009739; }
         .card.status-padrao .card-date-box { color: #009739; border-color: #00973940; background: #00973910; }
         .card.status-padrao .card-status-badge { background: #00973915; color: #009739; }
@@ -519,6 +515,7 @@
         // ==========================================
         // CONFIGURAÇÃO DA API
         // ==========================================
+        // ⚠️ ATENÇÃO: Substitua esta URL pela URL correta do seu Web App do Google Apps Script
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
 
@@ -623,7 +620,8 @@
         // ==========================================
         // FUNÇÃO DE COMPARTILHAMENTO - GERAR TEXTO DA AGENDA
         // ==========================================
-        function gerarTextoAgenda(periodo = 'all') {
+        function gerarTextoAgenda(periodo) {
+            periodo = periodo || 'all';
             let lista = [];
             if (periodo === 'all') {
                 lista = [...compromissos];
@@ -666,7 +664,7 @@
                 grupos[dataKey].forEach((c, idx) => {
                     const horario = formatarHoraVisao(c.hora);
                     const horaFim = c.horaFim ? ' as ' + formatarHoraVisao(c.horaFim) : '';
-                    const statusIcon = c.status === 'Concluido' ? '[OK]' : c.status === 'Cancelado' ? '[X]' : c.status === 'Adiado' ? '[~]' : '[ ]';
+                    const statusIcon = c.status === 'Concluído' || c.status === 'Concluido' ? '[OK]' : c.status === 'Cancelado' ? '[X]' : c.status === 'Adiado' ? '[~]' : '[ ]';
                     
                     let linha = '   ' + statusIcon + ' ' + horario + horaFim + ' - ' + (c.titulo || 'Evento');
                     if (c.local && c.local.trim() !== '') {
@@ -1061,18 +1059,26 @@
         });
 
         // ==========================================
-        // COMUNICACAO GOOGLE SHEETS
+        // COMUNICACAO GOOGLE SHEETS - COM LOG DE ERRO
         // ==========================================
         async function fetchGoogle(acao, dados) {
             dados = dados || null;
             try {
                 var payload = dados ? { acao: acao, dados: dados } : { acao: acao };
+                console.log('Enviando requisicao para:', SCRIPT_URL);
+                console.log('Payload:', payload);
+                
                 var res = await fetch(SCRIPT_URL, {
-                    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
-                return await res.json();
+                
+                var resultado = await res.json();
+                console.log('Resposta do servidor:', resultado);
+                return resultado;
             } catch (error) {
+                console.error('Erro na comunicacao com Google Sheets:', error);
                 return { status: 'erro', mensagem: error.message };
             }
         }
@@ -1258,17 +1264,30 @@
             isSincronizandoAgenda = true;
             
             try {
+                console.log('Sincronizando agenda...');
                 var agendaServer = await fetchGoogle('listar');
+                console.log('Resposta do servidor agenda:', agendaServer);
+                
                 if (agendaServer && agendaServer.status === 'sucesso') {
                     var data = agendaServer.dados || [];
-                    var maxId = Math.max.apply(null, data.map(function(c) { return parseInt(c.id) || 0; }));
+                    console.log('Dados recebidos:', data);
+                    
+                    var maxId = 0;
+                    if (data.length > 0) {
+                        maxId = Math.max.apply(null, data.map(function(c) { return parseInt(c.id) || 0; }));
+                    }
                     proximoId = maxId + 1;
 
                     if (JSON.stringify(data) !== JSON.stringify(compromissos)) {
                         compromissos = data;
+                        console.log('Compromissos atualizados:', compromissos.length);
                         renderDaysCarousel();
                         aplicarFiltros();
+                    } else {
+                        console.log('Nenhuma alteracao na agenda');
                     }
+                } else {
+                    console.warn('Erro ao sincronizar agenda:', agendaServer);
                 }
             } catch (error) {
                 console.error("Erro na sincronizacao da agenda:", error);
@@ -1283,7 +1302,7 @@
         function getStatusClass(status, dataDia) {
             if (!status) return 'status-padrao';
             
-            const statusLower = status.toLowerCase();
+            var statusLower = status.toLowerCase();
             
             // Concluído -> VERDE
             if (statusLower === 'concluído' || statusLower === 'concluido') {
@@ -1297,9 +1316,9 @@
             
             // Verifica se a data já passou (para Pendente e Adiado)
             if (dataDia) {
-                const hoje = new Date();
+                var hoje = new Date();
                 hoje.setHours(0, 0, 0, 0);
-                const dataComp = new Date(formatarDataVisao(dataDia) + 'T00:00:00');
+                var dataComp = new Date(formatarDataVisao(dataDia) + 'T00:00:00');
                 
                 // Se a data já passou e está Pendente ou Adiado -> VERMELHO
                 if (dataComp < hoje && (statusLower === 'pendente' || statusLower === 'adiado')) {
@@ -1333,7 +1352,6 @@
                 var card = document.createElement('div');
                 card.className = 'card';
                 
-                // ADICIONA A CLASSE DE STATUS CORRETA
                 var statusClass = getStatusClass(comp.status, comp.dia);
                 card.classList.add(statusClass);
 
@@ -1550,7 +1568,6 @@
             var bgColor = '#e8f5e9';
             var textColor = '#009739';
             
-            // CORES DO STATUS NO POPUP
             var statusLower = (comp.status || 'Pendente').toLowerCase();
             if (statusLower === 'concluído' || statusLower === 'concluido') {
                 bgColor = '#dcfce7'; 
@@ -1559,7 +1576,6 @@
                 bgColor = '#fee2e2'; 
                 textColor = '#b91c1c';
             } else if (statusLower === 'pendente' || statusLower === 'adiado') {
-                // Verifica se já passou da data
                 if (comp.dia) {
                     var hoje = new Date();
                     hoje.setHours(0, 0, 0, 0);
@@ -2110,16 +2126,28 @@
             initCalendar();
 
             try {
+                console.log('Iniciando carregamento da agenda...');
+                
+                // Carrega compromissos
                 var comp = await fetchGoogle('listar');
+                console.log('Resposta listar:', comp);
+                
                 if (comp && comp.status === 'sucesso') {
                     compromissos = comp.dados || [];
-                    var maxId = Math.max.apply(null, compromissos.map(function(c) { return parseInt(c.id) || 0; }));
+                    console.log('Compromissos carregados:', compromissos.length);
+                    
+                    var maxId = 0;
+                    if (compromissos.length > 0) {
+                        maxId = Math.max.apply(null, compromissos.map(function(c) { return parseInt(c.id) || 0; }));
+                    }
                     proximoId = maxId + 1;
                 } else {
                     compromissos = [];
                     proximoId = 1;
+                    console.warn('Nenhum compromisso encontrado ou erro ao carregar:', comp);
                 }
 
+                // Carrega mensagens do chat
                 var msg = await fetchGoogle('listar_chat');
                 if (msg && msg.status === 'sucesso') {
                     mensagensChat = msg.dados || [];
@@ -2144,10 +2172,12 @@
                 console.error('Erro na inicializacao:', error);
                 Swal.fire({
                     title: 'Erro ao carregar dados',
-                    text: 'Nao foi possivel conectar ao Google Sheets. Tente recarregar a pagina.',
+                    text: 'Nao foi possivel conectar ao Google Sheets. Verifique o console para mais detalhes.\n\nErro: ' + error.message,
                     icon: 'error',
-                    confirmButtonText: 'Recarregar'
-                }).then(function() { location.reload(); });
+                    confirmButtonText: 'Tentar novamente'
+                }).then(function() { 
+                    location.reload(); 
+                });
             }
         }
 
