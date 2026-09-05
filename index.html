@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Agenda Gabinete 247</title>
+    <title>Agenda Chico Guarnieri</title>
     
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#009739">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Gabinete 247">
+    <meta name="apple-mobile-web-app-title" content="Agenda Chico Guarnieri">
     
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
@@ -43,7 +43,6 @@
         .btn-toggle-ui { background: #ffffff; color: #1a1a2e; border: 1.5px solid #d1d5db; padding: 0.7rem 1.5rem; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 1rem; width: 100%; max-width: 1200px; }
         .btn-toggle-ui:hover { background: #f9fafb; border-color: #009739; color: #009739; }
         
-        /* NOVOS BOTÕES DE COMPARTILHAMENTO */
         .share-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; width: 100%; max-width: 1200px; margin-bottom: 1rem; }
         .share-buttons .btn-share { 
             padding: 0.6rem 1.5rem; 
@@ -229,7 +228,6 @@
         .install-pwa:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5); }
         .install-pwa.visible { display: flex !important; }
         
-        /* TOAST */
         .toast-message { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 500; z-index: 9999; animation: slideUp 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         
         @media (max-width: 640px) {
@@ -264,7 +262,7 @@
     <div class="header">
         <h1>
             <span>Agenda</span>
-            <span class="destaque">Gabinete 247</span>
+            <span class="destaque">Chico Guarnieri</span>
         </h1>
         <button id="btnNotificacao" class="btn-notificacoes" title="Ativar Notificações no celular">
             🔔 Ativar Notificações
@@ -273,7 +271,6 @@
 
     <button class="install-pwa" id="installPWA">📱 Instalar App</button>
 
-    <!-- NOVOS BOTÕES DE COMPARTILHAMENTO -->
     <div class="share-buttons" id="shareButtons">
         <button class="btn-share whatsapp" id="btnCompartilharWhatsApp">📱 Compartilhar no WhatsApp</button>
         <button class="btn-share pdf" id="btnCompartilharPDF">📄 Gerar PDF</button>
@@ -487,13 +484,13 @@
 
     <div class="footer">
         <button class="lock-btn" id="lockBtn">🔒</button>
-        <span class="copyright">© 2026 Gabinete 247 - Todos os direitos reservados</span>
+        <span class="copyright">© 2026 Agenda Chico Guarnieri - Todos os direitos reservados</span>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // CONFIGURAÇÃO DA API E VAPID KEY
+        // CONFIGURAÇÃO DA API
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC3M-hTVUOn2ivp_CrU0nbyhmooX2a4Uw49P5Mrq_TfSaJPlWrsBUw5xxWQZQE8tDt6A/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
@@ -508,7 +505,6 @@
         let proximoId = 1;
         let compromissoAtual = null;
         let currentSelectedDate = 'ALL'; 
-        let currentViewMode = 'all'; 
 
         // ==========================================
         // TOAST
@@ -524,7 +520,7 @@
         }
 
         // ==========================================
-        // GATILHO DE RELATÓRIO PDF
+        // GATILHO DE RELATÓRIO PDF (Admin)
         // ==========================================
         document.getElementById('btnGerarRelatorio').addEventListener('click', function() {
             if (compromissos.length === 0) {
@@ -537,10 +533,10 @@
             setTimeout(() => {
                 try {
                     const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('landscape'); 
+                    const doc = new jsPDF('landscape', 'mm', 'a4');
 
                     doc.setFontSize(16);
-                    doc.text('Relatório de Agendas - Gabinete 247', 14, 15);
+                    doc.text('Relatório de Agendas - Chico Guarnieri', 14, 15);
                     doc.setFontSize(10);
                     doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 22);
 
@@ -588,7 +584,7 @@
                         }
                     });
 
-                    doc.save('Relatorio_Agenda_Gabinete.pdf');
+                    doc.save('Relatorio_Agenda_Chico_Guarnieri.pdf');
                     Swal.close();
                 } catch (err) {
                     console.error(err);
@@ -618,14 +614,12 @@
                 return '📭 Nenhum compromisso encontrado para este período.';
             }
 
-            // Ordenar por data e hora
             lista.sort((a, b) => {
                 const da = new Date(`${formatarDataVisao(a.dia)}T${a.hora || '00:00'}`).getTime();
                 const db = new Date(`${formatarDataVisao(b.dia)}T${b.hora || '00:00'}`).getTime();
                 return da - db;
             });
 
-            // Agrupar por dia
             const grupos = {};
             lista.forEach(c => {
                 const dataKey = formatarDataVisao(c.dia);
@@ -633,8 +627,7 @@
                 grupos[dataKey].push(c);
             });
 
-            // Gerar texto formatado
-            let texto = '📅 *AGENDA*\n\n';
+            let texto = '📅 *AGENDA - CHICO GUARNIERI*\n\n';
             const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
             Object.keys(grupos).sort().forEach(dataKey => {
@@ -696,7 +689,6 @@
                 await navigator.clipboard.writeText(texto);
                 showToast('📋 Agenda copiada para a área de transferência!', 3000);
             } catch (err) {
-                // Fallback
                 const textarea = document.createElement('textarea');
                 textarea.value = texto;
                 document.body.appendChild(textarea);
@@ -708,7 +700,7 @@
         });
 
         // ==========================================
-        // COMPARTILHAR PDF
+        // COMPARTILHAR PDF - CORRIGIDO
         // ==========================================
         document.getElementById('btnCompartilharPDF').addEventListener('click', function() {
             const texto = gerarTextoAgenda('current');
@@ -720,14 +712,19 @@
 
             try {
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('portrait', 'a4');
+                // CORREÇÃO: usar 'mm' e 'a4' corretamente
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
                 const margin = 15;
                 let y = margin;
 
-                // Título
                 doc.setFontSize(18);
                 doc.setTextColor(0, 151, 57);
-                doc.text('📅 AGENDA - GABINETE 247', margin, y);
+                doc.text('📅 AGENDA - CHICO GUARNIERI', margin, y);
                 y += 10;
                 
                 doc.setFontSize(10);
@@ -735,11 +732,9 @@
                 doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, margin, y);
                 y += 12;
 
-                // Corpo do texto
                 doc.setFontSize(11);
                 doc.setTextColor(30);
 
-                // Dividir o texto em linhas
                 const lines = texto.split('\n');
                 let pageHeight = doc.internal.pageSize.height;
 
@@ -749,7 +744,6 @@
                         y = margin;
                     }
                     
-                    // Verificar se é cabeçalho de dia (começa com *)
                     if (line.startsWith('*')) {
                         doc.setFontSize(12);
                         doc.setFont('helvetica', 'bold');
@@ -764,15 +758,15 @@
                     y += 6;
                 });
 
-                doc.save('Agenda_Gabinete_247.pdf');
+                doc.save('Agenda_Chico_Guarnieri.pdf');
             } catch (err) {
-                console.error(err);
-                Swal.fire('Erro', 'Não foi possível gerar o PDF.', 'error');
+                console.error('Erro ao gerar PDF:', err);
+                Swal.fire('Erro', 'Não foi possível gerar o PDF: ' + err.message, 'error');
             }
         });
 
         // ==========================================
-        // PWA - INSTALAÇÃO E ATUALIZAÇÃO
+        // PWA - INSTALAÇÃO
         // ==========================================
         let deferredPrompt;
         const installBtn = document.getElementById('installPWA');
@@ -995,7 +989,7 @@
         }
 
         // ==========================================
-        // LÓGICA DO NOVO CALENDÁRIO HORIZONTAL
+        // LÓGICA DO CALENDÁRIO HORIZONTAL
         // ==========================================
         function getHojeObj() {
             const now = new Date();
@@ -1042,7 +1036,6 @@
             const [year, month] = val.split('-');
             const diasNoMes = new Date(year, month, 0).getDate();
 
-            // Botão MÊS
             const btnAll = document.createElement('div');
             btnAll.className = `day-tab ${currentSelectedDate === 'ALL' ? 'active' : ''}`;
             btnAll.innerHTML = `<span class="day-name">MÊS</span><span class="day-num" style="font-size: 0.95rem; margin-top:6px;">Todos</span>`;
@@ -1053,7 +1046,6 @@
             };
             carousel.appendChild(btnAll);
 
-            // Dias do Mês
             for(let d = 1; d <= diasNoMes; d++) {
                 const diaStr = String(d).padStart(2, '0');
                 const dataCompleta = `${year}-${month}-${diaStr}`;
@@ -1129,7 +1121,7 @@
         }
 
         // ==========================================
-        // AGENDA E ADMIN (Sincronização)
+        // AGENDA E ADMIN
         // ==========================================
         let isSincronizandoAgenda = false;
 
@@ -1352,7 +1344,7 @@
         }
 
         // ==========================================
-        // LÓGICA DE POPUPS DE COMPROMISSOS
+        // POPUP DE COMPROMISSOS
         // ==========================================
         function abrirPopup(comp) {
             if (!comp) return;
@@ -1430,7 +1422,7 @@
             }
             compromissoAtual.status = 'Cancelado';
             atualizarCompromissoNoArray(compromissoAtual);
-            fecharPopup();
+            document.getElementById('popupOverlay').classList.remove('ativo');
 
             Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await fetchGoogle('atualizar', compromissoAtual);
@@ -1449,7 +1441,7 @@
             }
             compromissoAtual.status = 'Concluído';
             atualizarCompromissoNoArray(compromissoAtual);
-            fecharPopup();
+            document.getElementById('popupOverlay').classList.remove('ativo');
 
             Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             await fetchGoogle('atualizar', compromissoAtual);
@@ -1504,7 +1496,7 @@
             compromissoAtual.status = 'Adiado';
             
             atualizarCompromissoNoArray(compromissoAtual);
-            fecharPopup();
+            document.getElementById('popupOverlay').classList.remove('ativo');
             document.getElementById('adiarOverlay').classList.remove('ativo');
 
             Swal.fire({ title: 'Salvando nova data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -1512,8 +1504,12 @@
             Swal.fire({ title: '✅ Adiado!', text: 'O compromisso foi adiado com sucesso.', icon: 'success', timer: 2000, showConfirmButton: false });
         });
 
+        document.getElementById('btnCancelar').addEventListener('click', acaoCancelar);
+        document.getElementById('btnConcluir').addEventListener('click', acaoConcluir);
+        document.getElementById('btnAdiar').addEventListener('click', acaoAdiar);
+
         // ==========================================
-        // ADMIN - CRUD E EVENTOS GERAIS
+        // ADMIN - CRUD
         // ==========================================
         async function cadastrarCompromisso(e) {
             e.preventDefault();
@@ -1728,7 +1724,7 @@
         }
 
         // ==========================================
-        // FUNÇÕES DO CHAT
+        // CHAT
         // ==========================================
         let isSincronizandoChat = false;
 
@@ -1847,7 +1843,6 @@
             }
         }
 
-        // Eventos Chat
         document.getElementById('chatButton').addEventListener('click', () => {
             const cw = document.getElementById('chatWindow');
             cw.classList.toggle('aberto');
@@ -1879,7 +1874,6 @@
         });
         document.getElementById('adminChatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('adminChatSend').click(); });
 
-        // Eventos Admin
         document.getElementById('lockBtn').addEventListener('click', () => {
             if (adminLogado) {
                 document.getElementById('adminPanel').classList.add('ativo');
@@ -1944,7 +1938,7 @@
                 atualizarChatUsuario();
 
                 Swal.close();
-                console.log('✅ Gabinete 247 PWA pronto!');
+                console.log('✅ Agenda Chico Guarnieri PWA pronto!');
 
                 setInterval(() => {
                     sincronizarChat();
