@@ -90,7 +90,6 @@
         .day-tab.active .hoje-label { color: #dcfce7; }
         .agenda-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1200px; margin-top: 1rem; }
         
-        /* ===== CORES DOS CARDS ===== */
         .card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
         
@@ -253,6 +252,11 @@
         
         .toast-message { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 500; z-index: 9999; animation: slideUp 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         
+        /* LOADING */
+        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 0; width: 100%; }
+        .loading-spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: #009739; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
         @media (max-width: 640px) {
             .month-selector-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
             .popup { padding: 1.5rem; }
@@ -405,7 +409,12 @@
         </div>
     </div>
 
-    <div class="agenda-grid" id="agendaGrid"></div>
+    <div class="agenda-grid" id="agendaGrid">
+        <div class="loading-container" id="loadingContainer">
+            <div class="loading-spinner"></div>
+            <p style="color: #6b7280;">Carregando compromissos...</p>
+        </div>
+    </div>
 
     <div class="popup-overlay" id="popupOverlay">
         <div class="popup" id="popupCard">
@@ -513,9 +522,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // CONFIGURAÇÃO DA API
+        // ⚠️ ATENÇÃO: Substitua esta URL pela URL correta do seu Web App
         // ==========================================
-        // ⚠️ ATENÇÃO: Substitua esta URL pela URL correta do seu Web App do Google Apps Script
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
 
@@ -533,558 +541,19 @@
         // ==========================================
         // TOAST
         // ==========================================
-        function showToast(mensagem, duracao = 3000) {
-            const existing = document.querySelector('.toast-message');
+        function showToast(mensagem, duracao) {
+            duracao = duracao || 3000;
+            var existing = document.querySelector('.toast-message');
             if (existing) existing.remove();
-            const toast = document.createElement('div');
+            var toast = document.createElement('div');
             toast.className = 'toast-message';
             toast.textContent = mensagem;
             document.body.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, duracao);
+            setTimeout(function() { toast.remove(); }, duracao);
         }
 
         // ==========================================
-        // GATILHO DE RELATÓRIO PDF (Admin)
-        // ==========================================
-        document.getElementById('btnGerarRelatorio').addEventListener('click', function() {
-            if (compromissos.length === 0) {
-                Swal.fire('Aviso', 'Nenhum compromisso cadastrado para gerar relatório.', 'info');
-                return;
-            }
-
-            Swal.fire({ title: 'Gerando PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            setTimeout(() => {
-                try {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('landscape', 'mm', 'a4');
-
-                    doc.setFontSize(16);
-                    doc.text('Relatorio de Agendas - Chico Guarnieri', 14, 15);
-                    doc.setFontSize(10);
-                    doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), 14, 22);
-
-                    const ordenados = [...compromissos].sort((a, b) => {
-                        const da = new Date(a.dia || '9999-12-31').getTime();
-                        const db = new Date(b.dia || '9999-12-31').getTime();
-                        return da - db;
-                    });
-
-                    const colunas = ["Data", "Titulo", "Hora", "Local", "Participantes", "Status", "Descricao"];
-                    const linhas = ordenados.map(c => {
-                        let dataCurta = formatarDataBR(c.dia);
-                        if(dataCurta && dataCurta.length === 10) {
-                            dataCurta = dataCurta.substring(0, 5);
-                        }
-
-                        let horaExibicao = formatarHoraVisao(c.hora);
-                        if (c.horaFim) {
-                            horaExibicao = 'das ' + horaExibicao + ' ate ' + formatarHoraVisao(c.horaFim);
-                        }
-
-                        return [
-                            dataCurta,
-                            c.titulo || '',
-                            horaExibicao,
-                            c.local || '',
-                            c.participantes || '',
-                            c.status || '',
-                            c.descricao || ''
-                        ];
-                    });
-
-                    doc.autoTable({
-                        startY: 28,
-                        head: [colunas],
-                        body: linhas,
-                        theme: 'grid',
-                        headStyles: { fillColor: [0, 151, 57] },
-                        styles: { fontSize: 8, cellPadding: 2 },
-                        columnStyles: { 
-                            1: { cellWidth: 35 },
-                            2: { cellWidth: 25 },
-                            3: { cellWidth: 35 },
-                            6: { cellWidth: 40 }
-                        }
-                    });
-
-                    doc.save('Relatorio_Agenda_Chico_Guarnieri.pdf');
-                    Swal.close();
-                } catch (err) {
-                    console.error(err);
-                    Swal.fire('Erro', 'Ocorreu um erro ao gerar o PDF.', 'error');
-                }
-            }, 500);
-        });
-
-        // ==========================================
-        // FUNÇÃO DE COMPARTILHAMENTO - GERAR TEXTO DA AGENDA
-        // ==========================================
-        function gerarTextoAgenda(periodo) {
-            periodo = periodo || 'all';
-            let lista = [];
-            if (periodo === 'all') {
-                lista = [...compromissos];
-            } else if (periodo === 'month') {
-                const mesAtual = document.getElementById('monthSelector').value;
-                lista = compromissos.filter(c => {
-                    const d = formatarDataVisao(c.dia);
-                    return d.startsWith(mesAtual);
-                });
-            } else {
-                lista = compromissosFiltrados;
-            }
-
-            if (lista.length === 0) {
-                return 'Nenhum compromisso encontrado para este periodo.';
-            }
-
-            lista.sort((a, b) => {
-                const da = new Date(formatarDataVisao(a.dia) + 'T' + (a.hora || '00:00')).getTime();
-                const db = new Date(formatarDataVisao(b.dia) + 'T' + (b.hora || '00:00')).getTime();
-                return da - db;
-            });
-
-            const grupos = {};
-            lista.forEach(c => {
-                const dataKey = formatarDataVisao(c.dia);
-                if (!grupos[dataKey]) grupos[dataKey] = [];
-                grupos[dataKey].push(c);
-            });
-
-            let texto = 'AGENDA - CHICO GUARNIERI\n\n';
-            const diasSemana = ['Domingo', 'Segunda-feira', 'Terca-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sabado'];
-
-            Object.keys(grupos).sort().forEach(dataKey => {
-                const dataObj = new Date(dataKey + 'T12:00:00');
-                const diaSemana = diasSemana[dataObj.getDay()];
-                const dataFormatada = formatarDataBR(dataKey);
-                texto += diaSemana.toUpperCase() + ' - ' + dataFormatada + '\n';
-                
-                grupos[dataKey].forEach((c, idx) => {
-                    const horario = formatarHoraVisao(c.hora);
-                    const horaFim = c.horaFim ? ' as ' + formatarHoraVisao(c.horaFim) : '';
-                    const statusIcon = c.status === 'Concluído' || c.status === 'Concluido' ? '[OK]' : c.status === 'Cancelado' ? '[X]' : c.status === 'Adiado' ? '[~]' : '[ ]';
-                    
-                    let linha = '   ' + statusIcon + ' ' + horario + horaFim + ' - ' + (c.titulo || 'Evento');
-                    if (c.local && c.local.trim() !== '') {
-                        linha += '\n   Local: ' + c.local;
-                    }
-                    if (c.descricao && c.descricao.trim() !== '') {
-                        linha += '\n   Obs: ' + c.descricao;
-                    }
-                    if (c.participantes && c.participantes.trim() !== '' && c.participantes !== 'Nao informado') {
-                        linha += '\n   Participantes: ' + c.participantes;
-                    }
-                    texto += linha + '\n';
-                });
-                texto += '\n';
-            });
-
-            return texto.trim();
-        }
-
-        // ==========================================
-        // COMPARTILHAR NO WHATSAPP
-        // ==========================================
-        document.getElementById('btnCompartilharWhatsApp').addEventListener('click', function() {
-            const texto = gerarTextoAgenda('current');
-            
-            if (texto.includes('Nenhum compromisso')) {
-                Swal.fire('Aviso', 'Nenhum compromisso para compartilhar.', 'info');
-                return;
-            }
-
-            const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(texto);
-            window.open(url, '_blank');
-        });
-
-        // ==========================================
-        // COPIAR AGENDA
-        // ==========================================
-        document.getElementById('btnCopiarAgenda').addEventListener('click', async function() {
-            const texto = gerarTextoAgenda('current');
-            
-            if (texto.includes('Nenhum compromisso')) {
-                Swal.fire('Aviso', 'Nenhum compromisso para copiar.', 'info');
-                return;
-            }
-
-            try {
-                await navigator.clipboard.writeText(texto);
-                showToast('Agenda copiada para a area de transferencia!', 3000);
-            } catch (err) {
-                const textarea = document.createElement('textarea');
-                textarea.value = texto;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showToast('Agenda copiada para a area de transferencia!', 3000);
-            }
-        });
-
-        // ==========================================
-        // COMPARTILHAR PDF
-        // ==========================================
-        document.getElementById('btnCompartilharPDF').addEventListener('click', function() {
-            const texto = gerarTextoAgenda('current');
-            
-            if (texto.includes('Nenhum compromisso')) {
-                Swal.fire('Aviso', 'Nenhum compromisso para gerar PDF.', 'info');
-                return;
-            }
-
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-                
-                const margin = 18;
-                let y = margin;
-
-                doc.setFontSize(20);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(0, 151, 57);
-                doc.text('AGENDA', margin, y);
-                
-                doc.setFontSize(16);
-                doc.setTextColor(0, 0, 0);
-                doc.text('CHICO GUARNIERI', margin + 55, y);
-                y += 12;
-
-                doc.setDrawColor(0, 151, 57);
-                doc.setLineWidth(0.5);
-                doc.line(margin, y, 195, y);
-                y += 8;
-
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(120, 120, 120);
-                doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), margin, y);
-                y += 10;
-
-                doc.setFontSize(10.5);
-                doc.setTextColor(40, 40, 40);
-                doc.setFont('helvetica', 'normal');
-
-                const lines = texto.split('\n');
-                let pageHeight = doc.internal.pageSize.height;
-
-                lines.forEach(function(line) {
-                    if (y > pageHeight - margin) {
-                        doc.addPage();
-                        y = margin;
-                        doc.setDrawColor(0, 151, 57);
-                        doc.setLineWidth(0.3);
-                        doc.line(margin, y, 195, y);
-                        y += 6;
-                    }
-                    
-                    var linhaLimpa = line.replace(/[^\w\s\-\.\,\:\!\?\(\)\*\/\@\#\&\+\=\%\$\"\'\;\>\<\[\]\{\}\|\\\~]/g, '');
-                    linhaLimpa = linhaLimpa.trim();
-                    
-                    if (linhaLimpa === '') {
-                        y += 3;
-                        return;
-                    }
-                    
-                    if (linhaLimpa.match(/^[A-ZÇÁÉÍÓÚÃÕÂÊÔÀ ]+ - \d{2}\/\d{2}\/\d{4}/) || linhaLimpa.includes('AGENDA')) {
-                        var titulo = linhaLimpa;
-                        doc.setFontSize(13);
-                        doc.setFont('helvetica', 'bold');
-                        doc.setTextColor(0, 60, 30);
-                        
-                        var textWidth = doc.getStringUnitWidth(titulo) * 13 / doc.internal.scaleFactor;
-                        doc.setFillColor(240, 248, 240);
-                        doc.rect(margin - 2, y - 4, textWidth + 12, 8, 'F');
-                        
-                        doc.text(titulo, margin + 2, y);
-                        y += 6;
-                        
-                        doc.setFontSize(10.5);
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(40, 40, 40);
-                    } 
-                    else if (linhaLimpa.match(/^\s*[[\]]/)) {
-                        var item = linhaLimpa.trim();
-                        
-                        var horarioMatch = item.match(/(\d{1,2}:\d{2})/);
-                        if (horarioMatch) {
-                            doc.setFont('helvetica', 'bold');
-                            doc.setTextColor(0, 100, 50);
-                            doc.text(horarioMatch[0], margin + 4, y);
-                            
-                            var horarioWidth = doc.getStringUnitWidth(horarioMatch[0]) * 10.5 / doc.internal.scaleFactor;
-                            doc.setFont('helvetica', 'normal');
-                            doc.setTextColor(40, 40, 40);
-                            
-                            var resto = item.replace(horarioMatch[0], '').trim();
-                            if (resto) {
-                                doc.text(resto, margin + 4 + horarioWidth + 3, y);
-                            }
-                        } else {
-                            doc.text(item, margin + 4, y);
-                        }
-                        y += 5.5;
-                    }
-                    else if (linhaLimpa.includes('Local:')) {
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(80, 80, 80);
-                        doc.setFontSize(9.5);
-                        doc.text(linhaLimpa.trim(), margin + 6, y);
-                        doc.setFontSize(10.5);
-                        doc.setTextColor(40, 40, 40);
-                        y += 5;
-                    }
-                    else if (linhaLimpa.includes('Obs:')) {
-                        doc.setFont('helvetica', 'italic');
-                        doc.setTextColor(100, 100, 100);
-                        doc.setFontSize(9.5);
-                        doc.text(linhaLimpa.trim(), margin + 6, y);
-                        doc.setFont('helvetica', 'normal');
-                        doc.setFontSize(10.5);
-                        doc.setTextColor(40, 40, 40);
-                        y += 5;
-                    }
-                    else if (linhaLimpa.includes('Participantes:')) {
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(80, 80, 80);
-                        doc.setFontSize(9.5);
-                        doc.text(linhaLimpa.trim(), margin + 6, y);
-                        doc.setFontSize(10.5);
-                        doc.setTextColor(40, 40, 40);
-                        y += 5;
-                    }
-                    else {
-                        doc.text(linhaLimpa, margin + 2, y);
-                        y += 5.5;
-                    }
-                });
-
-                var totalPages = doc.internal.getNumberOfPages();
-                for (var i = 1; i <= totalPages; i++) {
-                    doc.setPage(i);
-                    doc.setFontSize(8);
-                    doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(150, 150, 150);
-                    doc.text('Pagina ' + i + ' de ' + totalPages, 180, 285);
-                    
-                    doc.setDrawColor(200, 200, 200);
-                    doc.setLineWidth(0.2);
-                    doc.line(margin, 282, 195, 282);
-                }
-
-                doc.save('Agenda_Chico_Guarnieri.pdf');
-            } catch (err) {
-                console.error('Erro ao gerar PDF:', err);
-                Swal.fire('Erro', 'Nao foi possivel gerar o PDF: ' + err.message, 'error');
-            }
-        });
-
-        // ==========================================
-        // PWA - INSTALACAO
-        // ==========================================
-        let deferredPrompt;
-        const installBtn = document.getElementById('installPWA');
-
-        window.addEventListener('beforeinstallprompt', function(e) {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.classList.add('visible'); 
-        });
-
-        installBtn.addEventListener('click', async function() {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            var outcome = await deferredPrompt.userChoice;
-            if (outcome.outcome === 'accepted') {
-                console.log('App instalado com sucesso');
-            }
-            deferredPrompt = null;
-            installBtn.classList.remove('visible');
-        });
-
-        window.addEventListener('appinstalled', function() {
-            installBtn.classList.remove('visible');
-            Swal.fire({
-                title: 'Instalado!',
-                text: 'O aplicativo foi adicionado com sucesso a sua tela.',
-                icon: 'success',
-                timer: 3000,
-                showConfirmButton: false
-            });
-        });
-
-        // ==========================================
-        // TOGGLE FORMULARIO ADMIN
-        // ==========================================
-        document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
-            var form = document.getElementById('formAdmin');
-            if (form.style.display === 'none' || form.style.display === '') {
-                form.style.display = 'block';
-                this.innerHTML = 'Ocultar Formulario';
-                this.style.background = '#f3f4f6';
-                this.style.color = '#555';
-                this.style.borderColor = '#d1d5db';
-            } else {
-                form.style.display = 'none';
-                this.innerHTML = 'Adicionar Novo Compromisso';
-                this.style.background = '#e8f5e9';
-                this.style.color = '#009739';
-                this.style.borderColor = '#009739';
-            }
-        });
-
-        // ==========================================
-        // SISTEMA DE NOTIFICACOES WEB PUSH
-        // ==========================================
-        function urlBase64ToUint8Array(base64String) {
-            var padding = '='.repeat((4 - base64String.length % 4) % 4);
-            var base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-            var rawData = window.atob(base64);
-            var outputArray = new Uint8Array(rawData.length);
-            for (var i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
-            return outputArray;
-        }
-
-        class SistemaNotificacao {
-            constructor() {
-                this.permissoes = { notificacao: false };
-                this.inicializar();
-            }
-
-            async inicializar() {
-                if ('Notification' in window) {
-                    if (Notification.permission === 'granted') {
-                        this.permissoes.notificacao = true;
-                        document.getElementById('btnNotificacao').style.display = 'none';
-                    } else if (Notification.permission === 'default') {
-                        document.getElementById('btnNotificacao').style.display = 'flex';
-                    }
-                }
-            }
-
-            async solicitarPermissao() {
-                if (!('Notification' in window)) {
-                    Swal.fire('Aviso', 'Seu navegador nao suporta notificacoes nativas.', 'info');
-                    return;
-                }
-                var permissao = await Notification.requestPermission();
-                if (permissao === 'granted') {
-                    this.permissoes.notificacao = true;
-                    document.getElementById('btnNotificacao').style.display = 'none';
-                    await this.inscreverWebPush();
-                    Swal.fire('Sucesso!', 'As notificacoes estao ativadas.', 'success');
-                } else {
-                    Swal.fire('Bloqueado', 'Voce bloqueou as notificacoes. Libere nas configuracoes do celular.', 'warning');
-                }
-            }
-
-            async inscreverWebPush() {
-                if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-                try {
-                    if (publicVapidKey.includes('coloque_sua_chave')) return; 
-
-                    var registration = await navigator.serviceWorker.ready;
-                    var subscription = await registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-                    });
-                    
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({ acao: 'salvar_inscricao_push', dados: subscription })
-                    });
-                } catch (e) {
-                    console.warn('Erro ao inscrever no PushManager:', e);
-                }
-            }
-
-            enviar(titulo, mensagem, dados) {
-                dados = dados || {};
-                if (this.permissoes.notificacao && 'Notification' in window) {
-                    try {
-                        var notification = new Notification(titulo, {
-                            body: mensagem,
-                            icon: '/icons/icon-192x192.png',
-                            badge: '/icons/icon-72x72.png',
-                            tag: dados.tag || 'notification',
-                            data: dados,
-                            requireInteraction: true,
-                            vibrate: [200, 100, 200],
-                            silent: false 
-                        });
-
-                        notification.onclick = function() {
-                            window.focus();
-                            if (dados.url) window.location.href = dados.url;
-                            notification.close();
-                        };
-                    } catch (error) {
-                        console.warn('Erro na notificacao nativa:', error);
-                    }
-                }
-
-                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                this.mostrarToast(titulo, mensagem);
-            }
-
-            mostrarToast(titulo, mensagem) {
-                Swal.fire({
-                    title: titulo,
-                    text: mensagem,
-                    icon: 'info',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    background: '#f0fdf4',
-                    iconColor: '#009739',
-                    customClass: { popup: 'notification-toast' }
-                });
-            }
-        }
-
-        var sistemaNotificacao = new SistemaNotificacao();
-        document.getElementById('btnNotificacao').addEventListener('click', function() {
-            sistemaNotificacao.solicitarPermissao();
-        });
-
-        // ==========================================
-        // COMUNICACAO GOOGLE SHEETS - COM LOG DE ERRO
-        // ==========================================
-        async function fetchGoogle(acao, dados) {
-            dados = dados || null;
-            try {
-                var payload = dados ? { acao: acao, dados: dados } : { acao: acao };
-                console.log('Enviando requisicao para:', SCRIPT_URL);
-                console.log('Payload:', payload);
-                
-                var res = await fetch(SCRIPT_URL, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
-                
-                var resultado = await res.json();
-                console.log('Resposta do servidor:', resultado);
-                return resultado;
-            } catch (error) {
-                console.error('Erro na comunicacao com Google Sheets:', error);
-                return { status: 'erro', mensagem: error.message };
-            }
-        }
-
-        // ==========================================
-        // FUNCOES UTEIS DE FORMATACAO
+        // FUNÇÕES DE FORMATAÇÃO
         // ==========================================
         function formatarDataVisao(dataStr) {
             if (!dataStr) return '';
@@ -1119,7 +588,46 @@
         }
 
         // ==========================================
-        // LOGICA DO CALENDARIO HORIZONTAL
+        // COMUNICAÇÃO GOOGLE SHEETS
+        // ==========================================
+        async function fetchGoogle(acao, dados) {
+            dados = dados || null;
+            try {
+                var payload = dados ? { acao: acao, dados: dados } : { acao: acao };
+                console.log('[FETCH] Enviando para:', SCRIPT_URL);
+                console.log('[FETCH] Payload:', JSON.stringify(payload));
+                
+                // Força timeout para evitar erro de rede no celular
+                var controller = new AbortController();
+                var timeoutId = setTimeout(function() { controller.abort(); }, 30000);
+                
+                var res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'text/plain;charset=utf-8',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status + ': ' + res.statusText);
+                }
+                
+                var resultado = await res.json();
+                console.log('[FETCH] Resposta:', resultado);
+                return resultado;
+            } catch (error) {
+                console.error('[FETCH] Erro:', error);
+                return { status: 'erro', mensagem: error.message || 'Erro de conexão' };
+            }
+        }
+
+        // ==========================================
+        // LOGICA DO CALENDARIO
         // ==========================================
         function getHojeObj() {
             var now = new Date();
@@ -1255,48 +763,6 @@
         }
 
         // ==========================================
-        // AGENDA E ADMIN
-        // ==========================================
-        var isSincronizandoAgenda = false;
-
-        async function sincronizarAgenda() {
-            if (isSincronizandoAgenda) return;
-            isSincronizandoAgenda = true;
-            
-            try {
-                console.log('Sincronizando agenda...');
-                var agendaServer = await fetchGoogle('listar');
-                console.log('Resposta do servidor agenda:', agendaServer);
-                
-                if (agendaServer && agendaServer.status === 'sucesso') {
-                    var data = agendaServer.dados || [];
-                    console.log('Dados recebidos:', data);
-                    
-                    var maxId = 0;
-                    if (data.length > 0) {
-                        maxId = Math.max.apply(null, data.map(function(c) { return parseInt(c.id) || 0; }));
-                    }
-                    proximoId = maxId + 1;
-
-                    if (JSON.stringify(data) !== JSON.stringify(compromissos)) {
-                        compromissos = data;
-                        console.log('Compromissos atualizados:', compromissos.length);
-                        renderDaysCarousel();
-                        aplicarFiltros();
-                    } else {
-                        console.log('Nenhuma alteracao na agenda');
-                    }
-                } else {
-                    console.warn('Erro ao sincronizar agenda:', agendaServer);
-                }
-            } catch (error) {
-                console.error("Erro na sincronizacao da agenda:", error);
-            }
-            
-            isSincronizandoAgenda = false;
-        }
-
-        // ==========================================
         // FUNÇÃO PARA DETERMINAR COR DO CARD
         // ==========================================
         function getStatusClass(status, dataDia) {
@@ -1304,29 +770,24 @@
             
             var statusLower = status.toLowerCase();
             
-            // Concluído -> VERDE
             if (statusLower === 'concluído' || statusLower === 'concluido') {
                 return 'status-concluido';
             }
             
-            // Cancelado -> VERMELHO
             if (statusLower === 'cancelado') {
                 return 'status-cancelado';
             }
             
-            // Verifica se a data já passou (para Pendente e Adiado)
             if (dataDia) {
                 var hoje = new Date();
                 hoje.setHours(0, 0, 0, 0);
                 var dataComp = new Date(formatarDataVisao(dataDia) + 'T00:00:00');
                 
-                // Se a data já passou e está Pendente ou Adiado -> VERMELHO
                 if (dataComp < hoje && (statusLower === 'pendente' || statusLower === 'adiado')) {
                     return 'status-cancelado';
                 }
             }
             
-            // Pendente ou Adiado (dentro do prazo) -> AMARELO
             if (statusLower === 'pendente' || statusLower === 'adiado') {
                 return 'status-pendente';
             }
@@ -1343,7 +804,7 @@
             var lista = compromissosFiltrados;
 
             if (lista.length === 0) {
-                grid.innerHTML = '<div class="sem-resultados">Nenhum compromisso encontrado para este periodo.</div>';
+                grid.innerHTML = '<div class="sem-resultados">📭 Nenhum compromisso encontrado para este período.</div>';
                 document.getElementById('contadorCompromissos').textContent = '0 compromissos';
                 return;
             }
@@ -1365,7 +826,7 @@
                     !comp.local.toLowerCase().includes('zoom');
 
                 var htmlDataRange = '📅 ' + formatarDataBR(comp.dia);
-                if (comp.diaFim) htmlDataRange += ' ate ' + formatarDataBR(comp.diaFim);
+                if (comp.diaFim) htmlDataRange += ' até ' + formatarDataBR(comp.diaFim);
 
                 var diaNum = '--';
                 var mesNome = '---';
@@ -1377,11 +838,11 @@
                     }
                 }
 
-                var iconeDescricao = comp.descricao ? '<span title="Contem descricao" style="font-size: 0.8rem;">📝</span>' : '';
+                var iconeDescricao = comp.descricao ? '<span title="Contém descrição" style="font-size: 0.8rem;">📝</span>' : '';
                 
                 var horaExibicao = formatarHoraVisao(comp.hora);
                 if (comp.horaFim) {
-                    horaExibicao = horaExibicao + ' as ' + formatarHoraVisao(comp.horaFim);
+                    horaExibicao = horaExibicao + ' às ' + formatarHoraVisao(comp.horaFim);
                 }
 
                 card.innerHTML = 
@@ -1390,10 +851,10 @@
                         '<span class="mes">' + mesNome + '</span>' +
                     '</div>' +
                     '<div class="card-content">' +
-                        '<div class="card-titulo">' + (comp.titulo || 'Sem titulo') + ' ' + iconeDescricao + '</div>' +
+                        '<div class="card-titulo">' + (comp.titulo || 'Sem título') + ' ' + iconeDescricao + '</div>' +
                         '<div class="card-data-range">' + htmlDataRange + '</div>' +
                         '<div class="card-horario">🕒 ' + horaExibicao + '</div>' +
-                        '<div class="card-local">📍 ' + (comp.local || 'Local nao informado') + '</div>' +
+                        '<div class="card-local">📍 ' + (comp.local || 'Local não informado') + '</div>' +
                         statusBadge +
                         '<div class="card-actions">' +
                             (temEndereco ? '<button class="btn-mapa" data-local="' + comp.local + '">📍 Ver no Mapa</button>' : '') +
@@ -1420,8 +881,434 @@
         }
 
         // ==========================================
-        // RENDERIZAR LISTA ADMIN
+        // SISTEMA DE NOTIFICACOES
         // ==========================================
+        function urlBase64ToUint8Array(base64String) {
+            var padding = '='.repeat((4 - base64String.length % 4) % 4);
+            var base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            var rawData = window.atob(base64);
+            var outputArray = new Uint8Array(rawData.length);
+            for (var i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        class SistemaNotificacao {
+            constructor() {
+                this.permissoes = { notificacao: false };
+                this.inicializar();
+            }
+
+            async inicializar() {
+                if ('Notification' in window) {
+                    if (Notification.permission === 'granted') {
+                        this.permissoes.notificacao = true;
+                        document.getElementById('btnNotificacao').style.display = 'none';
+                    } else if (Notification.permission === 'default') {
+                        document.getElementById('btnNotificacao').style.display = 'flex';
+                    }
+                }
+            }
+
+            async solicitarPermissao() {
+                if (!('Notification' in window)) {
+                    Swal.fire('Aviso', 'Seu navegador não suporta notificações nativas.', 'info');
+                    return;
+                }
+                var permissao = await Notification.requestPermission();
+                if (permissao === 'granted') {
+                    this.permissoes.notificacao = true;
+                    document.getElementById('btnNotificacao').style.display = 'none';
+                    await this.inscreverWebPush();
+                    Swal.fire('Sucesso!', 'As notificações estão ativadas.', 'success');
+                } else {
+                    Swal.fire('Bloqueado', 'Você bloqueou as notificações. Libere nas configurações do celular.', 'warning');
+                }
+            }
+
+            async inscreverWebPush() {
+                if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+                try {
+                    if (publicVapidKey.includes('coloque_sua_chave')) return; 
+
+                    var registration = await navigator.serviceWorker.ready;
+                    var subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+                    });
+                    
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ acao: 'salvar_inscricao_push', dados: subscription })
+                    });
+                } catch (e) {
+                    console.warn('Erro ao inscrever no PushManager:', e);
+                }
+            }
+
+            enviar(titulo, mensagem, dados) {
+                dados = dados || {};
+                if (this.permissoes.notificacao && 'Notification' in window) {
+                    try {
+                        var notification = new Notification(titulo, {
+                            body: mensagem,
+                            icon: '/icons/icon-192x192.png',
+                            badge: '/icons/icon-72x72.png',
+                            tag: dados.tag || 'notification',
+                            data: dados,
+                            requireInteraction: true,
+                            vibrate: [200, 100, 200],
+                            silent: false 
+                        });
+
+                        notification.onclick = function() {
+                            window.focus();
+                            if (dados.url) window.location.href = dados.url;
+                            notification.close();
+                        };
+                    } catch (error) {
+                        console.warn('Erro na notificação nativa:', error);
+                    }
+                }
+
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                this.mostrarToast(titulo, mensagem);
+            }
+
+            mostrarToast(titulo, mensagem) {
+                Swal.fire({
+                    title: titulo,
+                    text: mensagem,
+                    icon: 'info',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 5000,
+                    timerProgressBar: true,
+                    background: '#f0fdf4',
+                    iconColor: '#009739',
+                    customClass: { popup: 'notification-toast' }
+                });
+            }
+        }
+
+        var sistemaNotificacao = new SistemaNotificacao();
+        document.getElementById('btnNotificacao').addEventListener('click', function() {
+            sistemaNotificacao.solicitarPermissao();
+        });
+
+        // ==========================================
+        // CHAT
+        // ==========================================
+        var isSincronizandoChat = false;
+
+        async function sincronizarChat() {
+            if (isSincronizandoChat) return;
+            isSincronizandoChat = true;
+            try {
+                var msgsServer = await fetchGoogle('listar_chat');
+                if (!msgsServer || msgsServer.status !== 'sucesso' || !msgsServer.dados || msgsServer.dados.length === 0) {
+                    isSincronizandoChat = false; return;
+                }
+                var dadosServidor = msgsServer.dados;
+                var msgsLocaisReais = mensagensChat.filter(function(m) { return !String(m.id).startsWith('temp_'); });
+
+                if (dadosServidor.length > msgsLocaisReais.length) {
+                    var qtdNovas = dadosServidor.length - msgsLocaisReais.length;
+                    var novasMensagens = dadosServidor.slice(-qtdNovas);
+
+                    var msgsTemporarias = mensagensChat.filter(function(m) { return String(m.id).startsWith('temp_'); });
+                    mensagensChat = dadosServidor.concat(msgsTemporarias);
+
+                    var dispararNotificacao = false;
+                    var tituloNotif = '';
+                    var bodyNotif = '';
+
+                    novasMensagens.forEach(function(msg) {
+                        if (!adminLogado && msg.remetente === 'admin') {
+                            dispararNotificacao = true;
+                            tituloNotif = 'Nova resposta do administrador';
+                            bodyNotif = msg.texto.substring(0, 100);
+                            if (!document.getElementById('chatWindow').classList.contains('aberto')) {
+                                var badge = document.getElementById('userChatBadge');
+                                badge.style.display = 'flex';
+                                badge.textContent = parseInt(badge.textContent || 0) + 1;
+                            }
+                        } 
+                        else if (adminLogado && msg.remetente === 'user') {
+                            dispararNotificacao = true;
+                            tituloNotif = 'Nova mensagem de um usuário';
+                            bodyNotif = msg.texto.substring(0, 100);
+                        }
+                    });
+
+                    if (dispararNotificacao) {
+                        sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
+                    }
+
+                    atualizarChatUsuario();
+                    if (adminLogado) atualizarChatAdmin();
+                }
+            } catch (error) { console.error("Erro na sincronização do chat:", error); }
+            isSincronizandoChat = false;
+        }
+
+        async function adicionarMensagemChat(remetente, texto) {
+            var agora = new Date().toISOString();
+            var tempId = 'temp_' + Date.now();
+            var mensagemTemp = { id: tempId, remetente: remetente, texto: texto, data: agora, lida: false, lidaUser: false };
+            
+            mensagensChat.push(mensagemTemp);
+            atualizarChatUsuario();
+            if (adminLogado) atualizarChatAdmin();
+
+            var result = await fetchGoogle('adicionar_chat', { remetente: remetente, texto: texto, data: agora, lida: false });
+            if (result.status === 'sucesso') {
+                mensagensChat = mensagensChat.filter(function(m) { return m.id !== tempId; });
+                await sincronizarChat();
+            }
+        }
+
+        function atualizarChatUsuario() {
+            var cx = document.getElementById('chatMessages');
+            cx.innerHTML = '';
+            if (mensagensChat.length === 0) {
+                cx.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:2rem;">💬 Nenhuma mensagem ainda.<br>Envie uma mensagem para o suporte.</div>';
+                return;
+            }
+            mensagensChat.forEach(function(msg) {
+                var div = document.createElement('div');
+                div.className = 'message ' + (msg.remetente === 'user' ? 'user' : 'bot');
+                var time = new Date(msg.data);
+                var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+                div.innerHTML = msg.texto + ' <span class="time">' + timeStr + '</span>';
+                cx.appendChild(div);
+            });
+            cx.scrollTop = cx.scrollHeight;
+        }
+
+        async function atualizarChatAdmin() {
+            if (!adminLogado) return;
+            var cx = document.getElementById('adminChatMessages');
+            cx.innerHTML = '';
+            if (mensagensChat.length === 0) {
+                cx.innerHTML = '<div class="admin-chat-empty"><div class="icon">💬</div><p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p></div>';
+                return;
+            }
+            mensagensChat.forEach(function(msg) {
+                var div = document.createElement('div');
+                div.className = 'message ' + (msg.remetente === 'user' ? 'user' : 'admin');
+                var time = new Date(msg.data);
+                var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+                var remetenteLabel = msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin';
+                div.innerHTML = '<strong>' + remetenteLabel + ':</strong> ' + msg.texto + ' <span class="time">' + timeStr + '</span>';
+                cx.appendChild(div);
+                if (msg.remetente === 'user') msg.lida = true;
+            });
+            cx.scrollTop = cx.scrollHeight;
+            contarMensagensNaoLidas();
+        }
+
+        function contarMensagensNaoLidas() {
+            if (!adminLogado) return;
+            var naoLidas = mensagensChat.filter(function(m) { return m.remetente === 'user' && !m.lida; }).length;
+            var badge = document.getElementById('adminChatBadge');
+            if (naoLidas > 0) {
+                badge.textContent = naoLidas;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // EVENTOS CHAT
+        // ==========================================
+        document.getElementById('chatButton').addEventListener('click', function() {
+            var cw = document.getElementById('chatWindow');
+            cw.classList.toggle('aberto');
+            if (cw.classList.contains('aberto')) {
+                document.getElementById('chatInput').focus();
+                var badge = document.getElementById('userChatBadge');
+                badge.style.display = 'none';
+                badge.textContent = '0';
+            }
+        });
+        document.getElementById('closeChat').addEventListener('click', function() { document.getElementById('chatWindow').classList.remove('aberto'); });
+        document.getElementById('chatSend').addEventListener('click', function() {
+            var input = document.getElementById('chatInput');
+            var texto = input.value.trim();
+            if (!texto) return;
+            adicionarMensagemChat('user', texto);
+            input.value = '';
+        });
+        document.getElementById('chatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('chatSend').click(); });
+        document.getElementById('adminChatSend').addEventListener('click', function() {
+            var input = document.getElementById('adminChatInput');
+            var texto = input.value.trim();
+            if (!texto) return;
+            adicionarMensagemChat('admin', texto);
+            input.value = '';
+            var badge = document.getElementById('adminChatBadge');
+            badge.style.display = 'none';
+            badge.textContent = '0';
+        });
+        document.getElementById('adminChatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('adminChatSend').click(); });
+
+        // ==========================================
+        // ADMIN - CRUD
+        // ==========================================
+        async function cadastrarCompromisso(e) {
+            e.preventDefault();
+
+            var titulo = document.getElementById('adminTitulo').value.trim();
+            var dia = document.getElementById('adminData').value;
+            var diaFim = document.getElementById('adminDataFim').value; 
+            var hora = document.getElementById('adminHora').value;
+            var horaFim = document.getElementById('adminHoraFim').value;
+            var local = document.getElementById('adminLocal').value.trim();
+            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
+            var descricao = document.getElementById('adminDescricao').value.trim() || ''; 
+            var status = document.getElementById('adminStatus').value;
+
+            if (!titulo || !dia || !hora || !local) {
+                Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                return;
+            }
+
+            var novo = {
+                id: proximoId++,
+                titulo: titulo,
+                dia: dia,
+                diaFim: diaFim, 
+                hora: hora,
+                horaFim: horaFim,
+                local: local,
+                participantes: participantes,
+                descricao: descricao, 
+                status: status
+            };
+
+            Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('adicionar', novo);
+            
+            if (result.status === 'sucesso') {
+                novo.id = result.id; 
+                compromissos.push(novo);
+                renderDaysCarousel();
+                aplicarFiltros();
+                if (adminLogado) renderizarListaAdmin();
+                limparFormAdmin();
+                
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = 'Adicionar Novo Compromisso';
+                
+                Swal.fire({
+                    title: 'Sucesso!',
+                    text: 'Compromisso cadastrado com sucesso!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    title: 'Erro!',
+                    text: result.mensagem || 'Erro ao cadastrar compromisso',
+                    icon: 'error'
+                });
+            }
+        }
+
+        async function atualizarCompromissoAdmin(e) {
+            e.preventDefault();
+
+            var id = parseInt(document.getElementById('adminEditId').value);
+            if (!id) {
+                Swal.fire('Erro', 'Nenhum compromisso selecionado para edição.', 'warning');
+                return;
+            }
+
+            var titulo = document.getElementById('adminTitulo').value.trim();
+            var dia = document.getElementById('adminData').value;
+            var diaFim = document.getElementById('adminDataFim').value; 
+            var hora = document.getElementById('adminHora').value;
+            var horaFim = document.getElementById('adminHoraFim').value;
+            var local = document.getElementById('adminLocal').value.trim();
+            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
+            var descricao = document.getElementById('adminDescricao').value.trim() || ''; 
+            var status = document.getElementById('adminStatus').value;
+
+            if (!titulo || !dia || !hora || !local) {
+                Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                return;
+            }
+
+            var index = compromissos.findIndex(function(c) { return String(c.id) === String(id); });
+            if (index === -1) {
+                Swal.fire('Erro', 'Compromisso não encontrado.', 'error');
+                return;
+            }
+
+            var dadosAtualizados = {
+                id: id,
+                titulo: titulo,
+                dia: dia,
+                diaFim: diaFim, 
+                hora: hora,
+                horaFim: horaFim,
+                local: local,
+                participantes: participantes,
+                descricao: descricao, 
+                status: status
+            };
+
+            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('atualizar', dadosAtualizados);
+            
+            if (result.status === 'sucesso') {
+                compromissos[index] = dadosAtualizados;
+                renderDaysCarousel();
+                aplicarFiltros();
+                if (adminLogado) renderizarListaAdmin();
+                limparFormAdmin();
+                
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = 'Adicionar Novo Compromisso';
+                
+                Swal.fire({
+                    title: 'Sucesso!',
+                    text: 'Compromisso atualizado com sucesso!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    title: 'Erro!',
+                    text: result.mensagem || 'Erro ao atualizar compromisso',
+                    icon: 'error'
+                });
+            }
+        }
+
+        function limparFormAdmin() {
+            document.getElementById('adminEditId').value = '';
+            document.getElementById('adminTitulo').value = '';
+            document.getElementById('adminData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('adminDataFim').value = ''; 
+            document.getElementById('adminHora').value = '';
+            document.getElementById('adminHoraFim').value = '';
+            document.getElementById('adminLocal').value = '';
+            document.getElementById('adminParticipantes').value = '';
+            document.getElementById('adminDescricao').value = ''; 
+            document.getElementById('adminStatus').value = 'Pendente';
+            document.getElementById('btnSalvar').style.display = 'inline-block';
+            document.getElementById('btnAtualizar').style.display = 'none';
+            document.getElementById('editModeIndicator').style.display = 'none';
+        }
+
         function renderizarListaAdmin() {
             if (!adminLogado) return;
             var listaAdmin = document.getElementById('listaAdmin');
@@ -1454,7 +1341,7 @@
                 item.querySelector('.btn-editar').addEventListener('click', function() { carregarParaEdicao(comp); });
                 item.querySelector('.btn-excluir').addEventListener('click', async function() {
                     var confirm = await Swal.fire({
-                        title: 'Confirmar exclusao',
+                        title: 'Confirmar exclusão',
                         text: 'Tem certeza que deseja excluir "' + comp.titulo + '"?',
                         icon: 'warning',
                         showCancelButton: true,
@@ -1473,8 +1360,8 @@
                         aplicarFiltros();
                         if (adminLogado) renderizarListaAdmin();
                         Swal.fire({
-                            title: 'Excluido!',
-                            text: 'Compromisso excluido com sucesso!',
+                            title: 'Excluído!',
+                            text: 'Compromisso excluído com sucesso!',
                             icon: 'success',
                             timer: 1500,
                             showConfirmButton: false
@@ -1509,51 +1396,35 @@
             document.getElementById('editModeIndicator').style.display = 'inline-block';
             
             document.getElementById('formAdmin').style.display = 'block';
-            document.getElementById('btnToggleAdminForm').innerHTML = 'Ocultar Formulario';
+            document.getElementById('btnToggleAdminForm').innerHTML = 'Ocultar Formulário';
             
             document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function limparFormAdmin() {
-            document.getElementById('adminEditId').value = '';
-            document.getElementById('adminTitulo').value = '';
-            document.getElementById('adminData').value = new Date().toISOString().split('T')[0];
-            document.getElementById('adminDataFim').value = ''; 
-            document.getElementById('adminHora').value = '';
-            document.getElementById('adminHoraFim').value = '';
-            document.getElementById('adminLocal').value = '';
-            document.getElementById('adminParticipantes').value = '';
-            document.getElementById('adminDescricao').value = ''; 
-            document.getElementById('adminStatus').value = 'Pendente';
-            document.getElementById('btnSalvar').style.display = 'inline-block';
-            document.getElementById('btnAtualizar').style.display = 'none';
-            document.getElementById('editModeIndicator').style.display = 'none';
-        }
-
         // ==========================================
-        // POPUP DE COMPROMISSOS
+        // POPUP
         // ==========================================
         function abrirPopup(comp) {
             if (!comp) return;
 
             compromissoAtual = comp;
 
-            document.getElementById('popupTitulo').textContent = comp.titulo || 'Sem titulo';
+            document.getElementById('popupTitulo').textContent = comp.titulo || 'Sem título';
             
             var dataExibicao = formatarDataBR(comp.dia);
             if (comp.diaFim) {
-                dataExibicao += ' ate ' + formatarDataBR(comp.diaFim);
+                dataExibicao += ' até ' + formatarDataBR(comp.diaFim);
             }
             document.getElementById('popupDia').textContent = dataExibicao || '--/--/----';
 
             var horaExibicao = formatarHoraVisao(comp.hora);
             if (comp.horaFim) {
-                horaExibicao = horaExibicao + ' as ' + formatarHoraVisao(comp.horaFim);
+                horaExibicao = horaExibicao + ' às ' + formatarHoraVisao(comp.horaFim);
             }
             document.getElementById('popupHora').textContent = horaExibicao;
 
-            document.getElementById('popupLocal').textContent = comp.local || 'Local nao informado';
-            document.getElementById('popupParticipantes').textContent = comp.participantes || 'Nao informado';
+            document.getElementById('popupLocal').textContent = comp.local || 'Local não informado';
+            document.getElementById('popupParticipantes').textContent = comp.participantes || 'Não informado';
 
             if (comp.descricao && comp.descricao.trim() !== '') {
                 document.getElementById('popupDescricaoContainer').style.display = 'block';
@@ -1627,7 +1498,7 @@
         async function acaoCancelar() {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Este compromisso ja esta cancelado.', 'warning');
+                Swal.fire('Aviso', 'Este compromisso já está cancelado.', 'warning');
                 return;
             }
             compromissoAtual.status = 'Cancelado';
@@ -1642,11 +1513,11 @@
         async function acaoConcluir() {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Concluído' || compromissoAtual.status === 'Concluido') {
-                Swal.fire('Aviso', 'Este compromisso ja esta concluido.', 'warning');
+                Swal.fire('Aviso', 'Este compromisso já está concluído.', 'warning');
                 return;
             }
             if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Nao e possivel concluir um compromisso cancelado.', 'warning');
+                Swal.fire('Aviso', 'Não é possível concluir um compromisso cancelado.', 'warning');
                 return;
             }
             compromissoAtual.status = 'Concluído';
@@ -1655,13 +1526,13 @@
 
             Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
             await fetchGoogle('atualizar', compromissoAtual);
-            Swal.fire({ title: 'Concluido!', text: 'Compromisso concluido.', icon: 'success', timer: 1500, showConfirmButton: false });
+            Swal.fire({ title: 'Concluído!', text: 'Compromisso concluído.', icon: 'success', timer: 1500, showConfirmButton: false });
         }
 
         function acaoAdiar() {
             if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Nao e possivel adiar um compromisso cancelado.', 'warning');
+                Swal.fire('Aviso', 'Não é possível adiar um compromisso cancelado.', 'warning');
                 return;
             }
 
@@ -1694,7 +1565,7 @@
             var novoLocal = document.getElementById('adiarLocalInput').value.trim();
 
             if (!novaData) {
-                Swal.fire('Aviso', 'A data de inicio e obrigatoria.', 'warning');
+                Swal.fire('Aviso', 'A data de início é obrigatória.', 'warning');
                 return;
             }
 
@@ -1719,142 +1590,6 @@
         document.getElementById('btnAdiar').addEventListener('click', acaoAdiar);
 
         // ==========================================
-        // ADMIN - CRUD
-        // ==========================================
-        async function cadastrarCompromisso(e) {
-            e.preventDefault();
-
-            var titulo = document.getElementById('adminTitulo').value.trim();
-            var dia = document.getElementById('adminData').value;
-            var diaFim = document.getElementById('adminDataFim').value; 
-            var hora = document.getElementById('adminHora').value;
-            var horaFim = document.getElementById('adminHoraFim').value;
-            var local = document.getElementById('adminLocal').value.trim();
-            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Nao informado';
-            var descricao = document.getElementById('adminDescricao').value.trim() || ''; 
-            var status = document.getElementById('adminStatus').value;
-
-            if (!titulo || !dia || !hora || !local) {
-                Swal.fire('Campos obrigatorios', 'Preencha todos os campos marcados com *', 'warning');
-                return;
-            }
-
-            var novo = {
-                id: proximoId++,
-                titulo: titulo,
-                dia: dia,
-                diaFim: diaFim, 
-                hora: hora,
-                horaFim: horaFim,
-                local: local,
-                participantes: participantes,
-                descricao: descricao, 
-                status: status
-            };
-
-            Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            var result = await fetchGoogle('adicionar', novo);
-            
-            if (result.status === 'sucesso') {
-                novo.id = result.id; 
-                compromissos.push(novo);
-                renderDaysCarousel();
-                aplicarFiltros();
-                if (adminLogado) renderizarListaAdmin();
-                limparFormAdmin();
-                
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = 'Adicionar Novo Compromisso';
-                
-                Swal.fire({
-                    title: 'Sucesso!',
-                    text: 'Compromisso cadastrado com sucesso!',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    title: 'Erro!',
-                    text: result.mensagem || 'Erro ao cadastrar compromisso',
-                    icon: 'error'
-                });
-            }
-        }
-
-        async function atualizarCompromissoAdmin(e) {
-            e.preventDefault();
-
-            var id = parseInt(document.getElementById('adminEditId').value);
-            if (!id) {
-                Swal.fire('Erro', 'Nenhum compromisso selecionado para edicao.', 'warning');
-                return;
-            }
-
-            var titulo = document.getElementById('adminTitulo').value.trim();
-            var dia = document.getElementById('adminData').value;
-            var diaFim = document.getElementById('adminDataFim').value; 
-            var hora = document.getElementById('adminHora').value;
-            var horaFim = document.getElementById('adminHoraFim').value;
-            var local = document.getElementById('adminLocal').value.trim();
-            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Nao informado';
-            var descricao = document.getElementById('adminDescricao').value.trim() || ''; 
-            var status = document.getElementById('adminStatus').value;
-
-            if (!titulo || !dia || !hora || !local) {
-                Swal.fire('Campos obrigatorios', 'Preencha todos os campos marcados com *', 'warning');
-                return;
-            }
-
-            var index = compromissos.findIndex(function(c) { return String(c.id) === String(id); });
-            if (index === -1) {
-                Swal.fire('Erro', 'Compromisso nao encontrado.', 'error');
-                return;
-            }
-
-            var dadosAtualizados = {
-                id: id,
-                titulo: titulo,
-                dia: dia,
-                diaFim: diaFim, 
-                hora: hora,
-                horaFim: horaFim,
-                local: local,
-                participantes: participantes,
-                descricao: descricao, 
-                status: status
-            };
-
-            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            var result = await fetchGoogle('atualizar', dadosAtualizados);
-            
-            if (result.status === 'sucesso') {
-                compromissos[index] = dadosAtualizados;
-                renderDaysCarousel();
-                aplicarFiltros();
-                if (adminLogado) renderizarListaAdmin();
-                limparFormAdmin();
-                
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = 'Adicionar Novo Compromisso';
-                
-                Swal.fire({
-                    title: 'Sucesso!',
-                    text: 'Compromisso atualizado com sucesso!',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    title: 'Erro!',
-                    text: result.mensagem || 'Erro ao atualizar compromisso',
-                    icon: 'error'
-                });
-            }
-        }
-
-        // ==========================================
         // ADMIN - LOGIN
         // ==========================================
         function abrirLogin() {
@@ -1877,7 +1612,7 @@
 
             if (!user || !pass) {
                 var erro = document.getElementById('loginErro');
-                erro.textContent = 'Preencha usuario e senha';
+                erro.textContent = 'Preencha usuário e senha';
                 erro.classList.add('visible');
                 return;
             }
@@ -1909,7 +1644,7 @@
             } else {
                 Swal.close();
                 var erro2 = document.getElementById('loginErro');
-                erro2.textContent = result.mensagem || 'Usuario ou senha incorretos';
+                erro2.textContent = result.mensagem || 'Usuário ou senha incorretos';
                 erro2.classList.add('visible');
                 document.getElementById('loginPassword').value = '';
                 document.getElementById('loginPassword').focus();
@@ -1932,157 +1667,6 @@
             document.querySelector('[data-tab="tabAgenda"]').classList.add('ativo');
             document.getElementById('tabAgenda').classList.add('ativo');
         }
-
-        // ==========================================
-        // CHAT
-        // ==========================================
-        var isSincronizandoChat = false;
-
-        async function sincronizarChat() {
-            if (isSincronizandoChat) return;
-            isSincronizandoChat = true;
-            try {
-                var msgsServer = await fetchGoogle('listar_chat');
-                if (!msgsServer || msgsServer.status !== 'sucesso' || !msgsServer.dados || msgsServer.dados.length === 0) {
-                    isSincronizandoChat = false; return;
-                }
-                var dadosServidor = msgsServer.dados;
-                var msgsLocaisReais = mensagensChat.filter(function(m) { return !String(m.id).startsWith('temp_'); });
-
-                if (dadosServidor.length > msgsLocaisReais.length) {
-                    var qtdNovas = dadosServidor.length - msgsLocaisReais.length;
-                    var novasMensagens = dadosServidor.slice(-qtdNovas);
-
-                    var msgsTemporarias = mensagensChat.filter(function(m) { return String(m.id).startsWith('temp_'); });
-                    mensagensChat = dadosServidor.concat(msgsTemporarias);
-
-                    var dispararNotificacao = false;
-                    var tituloNotif = '';
-                    var bodyNotif = '';
-
-                    novasMensagens.forEach(function(msg) {
-                        if (!adminLogado && msg.remetente === 'admin') {
-                            dispararNotificacao = true;
-                            tituloNotif = 'Nova resposta do administrador';
-                            bodyNotif = msg.texto.substring(0, 100);
-                            if (!document.getElementById('chatWindow').classList.contains('aberto')) {
-                                var badge = document.getElementById('userChatBadge');
-                                badge.style.display = 'flex';
-                                badge.textContent = parseInt(badge.textContent || 0) + 1;
-                            }
-                        } 
-                        else if (adminLogado && msg.remetente === 'user') {
-                            dispararNotificacao = true;
-                            tituloNotif = 'Nova mensagem de um usuario';
-                            bodyNotif = msg.texto.substring(0, 100);
-                        }
-                    });
-
-                    if (dispararNotificacao) {
-                        sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
-                    }
-
-                    atualizarChatUsuario();
-                    if (adminLogado) atualizarChatAdmin();
-                }
-            } catch (error) { console.error("Erro na sincronizacao do chat:", error); }
-            isSincronizandoChat = false;
-        }
-
-        async function adicionarMensagemChat(remetente, texto) {
-            var agora = new Date().toISOString();
-            var tempId = 'temp_' + Date.now();
-            var mensagemTemp = { id: tempId, remetente: remetente, texto: texto, data: agora, lida: false, lidaUser: false };
-            
-            mensagensChat.push(mensagemTemp);
-            atualizarChatUsuario();
-            if (adminLogado) atualizarChatAdmin();
-
-            var result = await fetchGoogle('adicionar_chat', { remetente: remetente, texto: texto, data: agora, lida: false });
-            if (result.status === 'sucesso') {
-                mensagensChat = mensagensChat.filter(function(m) { return m.id !== tempId; });
-                await sincronizarChat();
-            }
-        }
-
-        function atualizarChatUsuario() {
-            var cx = document.getElementById('chatMessages');
-            cx.innerHTML = '';
-            mensagensChat.forEach(function(msg) {
-                var div = document.createElement('div');
-                div.className = 'message ' + (msg.remetente === 'user' ? 'user' : 'bot');
-                var time = new Date(msg.data);
-                var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                div.innerHTML = msg.texto + ' <span class="time">' + timeStr + '</span>';
-                cx.appendChild(div);
-            });
-            cx.scrollTop = cx.scrollHeight;
-        }
-
-        async function atualizarChatAdmin() {
-            if (!adminLogado) return;
-            var cx = document.getElementById('adminChatMessages');
-            cx.innerHTML = '';
-            if (mensagensChat.length === 0) {
-                cx.innerHTML = '<div class="admin-chat-empty"><div class="icon">💬</div><p>Nenhuma mensagem ainda.<br>Os usuarios entrarao em contato por aqui.</p></div>';
-                return;
-            }
-            mensagensChat.forEach(function(msg) {
-                var div = document.createElement('div');
-                div.className = 'message ' + (msg.remetente === 'user' ? 'user' : 'admin');
-                var time = new Date(msg.data);
-                var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                var remetenteLabel = msg.remetente === 'user' ? 'Usuario' : 'Admin';
-                div.innerHTML = '<strong>' + remetenteLabel + ':</strong> ' + msg.texto + ' <span class="time">' + timeStr + '</span>';
-                cx.appendChild(div);
-                if (msg.remetente === 'user') msg.lida = true;
-            });
-            cx.scrollTop = cx.scrollHeight;
-            contarMensagensNaoLidas();
-        }
-
-        function contarMensagensNaoLidas() {
-            if (!adminLogado) return;
-            var naoLidas = mensagensChat.filter(function(m) { return m.remetente === 'user' && !m.lida; }).length;
-            var badge = document.getElementById('adminChatBadge');
-            if (naoLidas > 0) {
-                badge.textContent = naoLidas;
-                badge.style.display = 'inline';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-
-        document.getElementById('chatButton').addEventListener('click', function() {
-            var cw = document.getElementById('chatWindow');
-            cw.classList.toggle('aberto');
-            if (cw.classList.contains('aberto')) {
-                document.getElementById('chatInput').focus();
-                var badge = document.getElementById('userChatBadge');
-                badge.style.display = 'none';
-                badge.textContent = '0';
-            }
-        });
-        document.getElementById('closeChat').addEventListener('click', function() { document.getElementById('chatWindow').classList.remove('aberto'); });
-        document.getElementById('chatSend').addEventListener('click', function() {
-            var input = document.getElementById('chatInput');
-            var texto = input.value.trim();
-            if (!texto) return;
-            adicionarMensagemChat('user', texto);
-            input.value = '';
-        });
-        document.getElementById('chatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('chatSend').click(); });
-        document.getElementById('adminChatSend').addEventListener('click', function() {
-            var input = document.getElementById('adminChatInput');
-            var texto = input.value.trim();
-            if (!texto) return;
-            adicionarMensagemChat('admin', texto);
-            input.value = '';
-            var badge = document.getElementById('adminChatBadge');
-            badge.style.display = 'none';
-            badge.textContent = '0';
-        });
-        document.getElementById('adminChatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('adminChatSend').click(); });
 
         document.getElementById('lockBtn').addEventListener('click', function() {
             if (adminLogado) {
@@ -2112,29 +1696,412 @@
         });
 
         // ==========================================
-        // INICIALIZACAO
+        // FUNÇÕES DE COMPARTILHAMENTO
         // ==========================================
-        async function inicializar() {
-            Swal.fire({
-                title: 'Carregando Agenda...',
-                text: 'Conectando ao servidor, por favor aguarde...',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: function() { Swal.showLoading(); }
+        function gerarTextoAgenda(periodo) {
+            periodo = periodo || 'all';
+            var lista = [];
+            if (periodo === 'all') {
+                lista = compromissos.slice();
+            } else if (periodo === 'month') {
+                var mesAtual = document.getElementById('monthSelector').value;
+                lista = compromissos.filter(function(c) {
+                    var d = formatarDataVisao(c.dia);
+                    return d.startsWith(mesAtual);
+                });
+            } else {
+                lista = compromissosFiltrados;
+            }
+
+            if (lista.length === 0) {
+                return 'Nenhum compromisso encontrado para este período.';
+            }
+
+            lista.sort(function(a, b) {
+                var da = new Date(formatarDataVisao(a.dia) + 'T' + (a.hora || '00:00')).getTime();
+                var db = new Date(formatarDataVisao(b.dia) + 'T' + (b.hora || '00:00')).getTime();
+                return da - db;
             });
 
-            initCalendar();
+            var grupos = {};
+            lista.forEach(function(c) {
+                var dataKey = formatarDataVisao(c.dia);
+                if (!grupos[dataKey]) grupos[dataKey] = [];
+                grupos[dataKey].push(c);
+            });
+
+            var texto = 'AGENDA - CHICO GUARNIERI\n\n';
+            var diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+            var keys = Object.keys(grupos).sort();
+            keys.forEach(function(dataKey) {
+                var dataObj = new Date(dataKey + 'T12:00:00');
+                var diaSemana = diasSemana[dataObj.getDay()];
+                var dataFormatada = formatarDataBR(dataKey);
+                texto += diaSemana.toUpperCase() + ' - ' + dataFormatada + '\n';
+                
+                grupos[dataKey].forEach(function(c) {
+                    var horario = formatarHoraVisao(c.hora);
+                    var horaFim = c.horaFim ? ' às ' + formatarHoraVisao(c.horaFim) : '';
+                    var statusIcon = c.status === 'Concluído' || c.status === 'Concluido' ? '✅' : c.status === 'Cancelado' ? '❌' : c.status === 'Adiado' ? '⏳' : '📌';
+                    
+                    var linha = '   ' + statusIcon + ' ' + horario + horaFim + ' - ' + (c.titulo || 'Evento');
+                    if (c.local && c.local.trim() !== '') {
+                        linha += '\n   📍 ' + c.local;
+                    }
+                    if (c.descricao && c.descricao.trim() !== '') {
+                        linha += '\n   _' + c.descricao + '_';
+                    }
+                    if (c.participantes && c.participantes.trim() !== '' && c.participantes !== 'Não informado') {
+                        linha += '\n   👥 ' + c.participantes;
+                    }
+                    texto += linha + '\n';
+                });
+                texto += '\n';
+            });
+
+            return texto.trim();
+        }
+
+        document.getElementById('btnCompartilharWhatsApp').addEventListener('click', function() {
+            var texto = gerarTextoAgenda('current');
+            
+            if (texto.includes('Nenhum compromisso')) {
+                Swal.fire('Aviso', 'Nenhum compromisso para compartilhar.', 'info');
+                return;
+            }
+
+            var url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(texto);
+            window.open(url, '_blank');
+        });
+
+        document.getElementById('btnCopiarAgenda').addEventListener('click', async function() {
+            var texto = gerarTextoAgenda('current');
+            
+            if (texto.includes('Nenhum compromisso')) {
+                Swal.fire('Aviso', 'Nenhum compromisso para copiar.', 'info');
+                return;
+            }
 
             try {
-                console.log('Iniciando carregamento da agenda...');
+                await navigator.clipboard.writeText(texto);
+                showToast('📋 Agenda copiada para a área de transferência!', 3000);
+            } catch (err) {
+                var textarea = document.createElement('textarea');
+                textarea.value = texto;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('📋 Agenda copiada para a área de transferência!', 3000);
+            }
+        });
+
+        document.getElementById('btnCompartilharPDF').addEventListener('click', function() {
+            var texto = gerarTextoAgenda('current');
+            
+            if (texto.includes('Nenhum compromisso')) {
+                Swal.fire('Aviso', 'Nenhum compromisso para gerar PDF.', 'info');
+                return;
+            }
+
+            try {
+                var { jsPDF } = window.jspdf;
+                var doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
                 
-                // Carrega compromissos
+                var margin = 18;
+                var y = margin;
+
+                doc.setFontSize(20);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0, 151, 57);
+                doc.text('AGENDA', margin, y);
+                
+                doc.setFontSize(16);
+                doc.setTextColor(0, 0, 0);
+                doc.text('CHICO GUARNIERI', margin + 55, y);
+                y += 12;
+
+                doc.setDrawColor(0, 151, 57);
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, 195, y);
+                y += 8;
+
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(120, 120, 120);
+                doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), margin, y);
+                y += 10;
+
+                doc.setFontSize(10.5);
+                doc.setTextColor(40, 40, 40);
+                doc.setFont('helvetica', 'normal');
+
+                var lines = texto.split('\n');
+                var pageHeight = doc.internal.pageSize.height;
+
+                lines.forEach(function(line) {
+                    if (y > pageHeight - margin) {
+                        doc.addPage();
+                        y = margin;
+                        doc.setDrawColor(0, 151, 57);
+                        doc.setLineWidth(0.3);
+                        doc.line(margin, y, 195, y);
+                        y += 6;
+                    }
+                    
+                    var linhaLimpa = line.replace(/[^\w\s\-\.\,\:\!\?\(\)\*\/\@\#\&\+\=\%\$\"\'\;\>\<\[\]\{\}\|\\\~]/g, '');
+                    linhaLimpa = linhaLimpa.trim();
+                    
+                    if (linhaLimpa === '') {
+                        y += 3;
+                        return;
+                    }
+                    
+                    if (linhaLimpa.match(/^[A-ZÇÁÉÍÓÚÃÕÂÊÔÀ ]+ - \d{2}\/\d{2}\/\d{4}/) || linhaLimpa.includes('AGENDA')) {
+                        var titulo = linhaLimpa;
+                        doc.setFontSize(13);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(0, 60, 30);
+                        
+                        var textWidth = doc.getStringUnitWidth(titulo) * 13 / doc.internal.scaleFactor;
+                        doc.setFillColor(240, 248, 240);
+                        doc.rect(margin - 2, y - 4, textWidth + 12, 8, 'F');
+                        
+                        doc.text(titulo, margin + 2, y);
+                        y += 6;
+                        
+                        doc.setFontSize(10.5);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(40, 40, 40);
+                    } 
+                    else if (linhaLimpa.match(/^\s*[📌✅❌⏳]/)) {
+                        var item = linhaLimpa.trim();
+                        
+                        var horarioMatch = item.match(/(\d{1,2}:\d{2})/);
+                        if (horarioMatch) {
+                            doc.setFont('helvetica', 'bold');
+                            doc.setTextColor(0, 100, 50);
+                            doc.text(horarioMatch[0], margin + 4, y);
+                            
+                            var horarioWidth = doc.getStringUnitWidth(horarioMatch[0]) * 10.5 / doc.internal.scaleFactor;
+                            doc.setFont('helvetica', 'normal');
+                            doc.setTextColor(40, 40, 40);
+                            
+                            var resto = item.replace(horarioMatch[0], '').trim();
+                            if (resto) {
+                                doc.text(resto, margin + 4 + horarioWidth + 3, y);
+                            }
+                        } else {
+                            doc.text(item, margin + 4, y);
+                        }
+                        y += 5.5;
+                    }
+                    else if (linhaLimpa.includes('📍')) {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(80, 80, 80);
+                        doc.setFontSize(9.5);
+                        doc.text(linhaLimpa.trim(), margin + 6, y);
+                        doc.setFontSize(10.5);
+                        doc.setTextColor(40, 40, 40);
+                        y += 5;
+                    }
+                    else if (linhaLimpa.startsWith('_') || linhaLimpa.includes('_')) {
+                        doc.setFont('helvetica', 'italic');
+                        doc.setTextColor(100, 100, 100);
+                        doc.setFontSize(9.5);
+                        doc.text(linhaLimpa.replace(/_/g, '').trim(), margin + 6, y);
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(10.5);
+                        doc.setTextColor(40, 40, 40);
+                        y += 5;
+                    }
+                    else if (linhaLimpa.includes('👥')) {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(80, 80, 80);
+                        doc.setFontSize(9.5);
+                        doc.text(linhaLimpa.trim(), margin + 6, y);
+                        doc.setFontSize(10.5);
+                        doc.setTextColor(40, 40, 40);
+                        y += 5;
+                    }
+                    else {
+                        doc.text(linhaLimpa, margin + 2, y);
+                        y += 5.5;
+                    }
+                });
+
+                var totalPages = doc.internal.getNumberOfPages();
+                for (var i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(150, 150, 150);
+                    doc.text('Página ' + i + ' de ' + totalPages, 180, 285);
+                    
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.2);
+                    doc.line(margin, 282, 195, 282);
+                }
+
+                doc.save('Agenda_Chico_Guarnieri.pdf');
+            } catch (err) {
+                console.error('Erro ao gerar PDF:', err);
+                Swal.fire('Erro', 'Não foi possível gerar o PDF: ' + err.message, 'error');
+            }
+        });
+
+        document.getElementById('btnGerarRelatorio').addEventListener('click', function() {
+            if (compromissos.length === 0) {
+                Swal.fire('Aviso', 'Nenhum compromisso cadastrado para gerar relatório.', 'info');
+                return;
+            }
+
+            Swal.fire({ title: 'Gerando PDF...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+            setTimeout(function() {
+                try {
+                    var { jsPDF } = window.jspdf;
+                    var doc = new jsPDF('landscape', 'mm', 'a4');
+
+                    doc.setFontSize(16);
+                    doc.text('Relatório de Agendas - Chico Guarnieri', 14, 15);
+                    doc.setFontSize(10);
+                    doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), 14, 22);
+
+                    var ordenados = compromissos.slice().sort(function(a, b) {
+                        var da = new Date(a.dia || '9999-12-31').getTime();
+                        var db = new Date(b.dia || '9999-12-31').getTime();
+                        return da - db;
+                    });
+
+                    var colunas = ["Data", "Título", "Hora", "Local", "Participantes", "Status", "Descrição"];
+                    var linhas = ordenados.map(function(c) {
+                        var dataCurta = formatarDataBR(c.dia);
+                        if(dataCurta && dataCurta.length === 10) {
+                            dataCurta = dataCurta.substring(0, 5);
+                        }
+
+                        var horaExibicao = formatarHoraVisao(c.hora);
+                        if (c.horaFim) {
+                            horaExibicao = 'das ' + horaExibicao + ' até ' + formatarHoraVisao(c.horaFim);
+                        }
+
+                        return [
+                            dataCurta,
+                            c.titulo || '',
+                            horaExibicao,
+                            c.local || '',
+                            c.participantes || '',
+                            c.status || '',
+                            c.descricao || ''
+                        ];
+                    });
+
+                    doc.autoTable({
+                        startY: 28,
+                        head: [colunas],
+                        body: linhas,
+                        theme: 'grid',
+                        headStyles: { fillColor: [0, 151, 57] },
+                        styles: { fontSize: 8, cellPadding: 2 },
+                        columnStyles: { 
+                            1: { cellWidth: 35 },
+                            2: { cellWidth: 25 },
+                            3: { cellWidth: 35 },
+                            6: { cellWidth: 40 }
+                        }
+                    });
+
+                    doc.save('Relatorio_Agenda_Chico_Guarnieri.pdf');
+                    Swal.close();
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Erro', 'Ocorreu um erro ao gerar o PDF.', 'error');
+                }
+            }, 500);
+        });
+
+        document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
+            var form = document.getElementById('formAdmin');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+                this.innerHTML = '➖ Ocultar Formulário';
+                this.style.background = '#f3f4f6';
+                this.style.color = '#555';
+                this.style.borderColor = '#d1d5db';
+            } else {
+                form.style.display = 'none';
+                this.innerHTML = '➕ Adicionar Novo Compromisso';
+                this.style.background = '#e8f5e9';
+                this.style.color = '#009739';
+                this.style.borderColor = '#009739';
+            }
+        });
+
+        // ==========================================
+        // SINCRONIZAÇÃO AUTOMÁTICA
+        // ==========================================
+        var isSincronizandoAgenda = false;
+
+        async function sincronizarAgenda() {
+            if (isSincronizandoAgenda) return;
+            isSincronizandoAgenda = true;
+            
+            try {
+                console.log('[SYNC] Sincronizando agenda...');
+                var agendaServer = await fetchGoogle('listar');
+                
+                if (agendaServer && agendaServer.status === 'sucesso') {
+                    var data = agendaServer.dados || [];
+                    console.log('[SYNC] Dados recebidos:', data.length);
+                    
+                    var maxId = 0;
+                    if (data.length > 0) {
+                        maxId = Math.max.apply(null, data.map(function(c) { return parseInt(c.id) || 0; }));
+                    }
+                    proximoId = maxId + 1;
+
+                    if (JSON.stringify(data) !== JSON.stringify(compromissos)) {
+                        compromissos = data;
+                        console.log('[SYNC] Compromissos atualizados:', compromissos.length);
+                        renderDaysCarousel();
+                        aplicarFiltros();
+                    }
+                } else {
+                    console.warn('[SYNC] Erro na resposta:', agendaServer);
+                }
+            } catch (error) {
+                console.error('[SYNC] Erro:', error);
+            }
+            
+            isSincronizandoAgenda = false;
+        }
+
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+        async function inicializar() {
+            console.log('[INIT] Iniciando aplicação...');
+            
+            // Mostra loading
+            var grid = document.getElementById('agendaGrid');
+            grid.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><p style="color: #6b7280;">Carregando compromissos...</p></div>';
+
+            try {
+                initCalendar();
+
+                console.log('[INIT] Carregando compromissos...');
                 var comp = await fetchGoogle('listar');
-                console.log('Resposta listar:', comp);
+                console.log('[INIT] Resposta listar:', comp);
                 
                 if (comp && comp.status === 'sucesso') {
                     compromissos = comp.dados || [];
-                    console.log('Compromissos carregados:', compromissos.length);
+                    console.log('[INIT] Compromissos carregados:', compromissos.length);
                     
                     var maxId = 0;
                     if (compromissos.length > 0) {
@@ -2144,7 +2111,7 @@
                 } else {
                     compromissos = [];
                     proximoId = 1;
-                    console.warn('Nenhum compromisso encontrado ou erro ao carregar:', comp);
+                    console.warn('[INIT] Nenhum compromisso encontrado ou erro:', comp);
                 }
 
                 // Carrega mensagens do chat
@@ -2159,20 +2126,22 @@
                 aplicarFiltros();
                 atualizarChatUsuario();
 
-                Swal.close();
-                console.log('Agenda Chico Guarnieri PWA pronto!');
-
+                // Inicia sincronização automática
                 setInterval(function() {
                     sincronizarChat();
                     sincronizarAgenda();
-                }, 5000);
+                }, 10000);
 
+                console.log('[INIT] ✅ Agenda Chico Guarnieri pronta!');
+                
             } catch (error) {
-                Swal.close();
-                console.error('Erro na inicializacao:', error);
+                console.error('[INIT] ❌ Erro:', error);
+                var grid = document.getElementById('agendaGrid');
+                grid.innerHTML = '<div class="sem-resultados" style="color: #dc2626;">❌ Erro ao carregar dados.<br><br><small>' + error.message + '</small><br><br><button onclick="location.reload()" style="padding:0.5rem 1.5rem;background:#009739;color:white;border:none;border-radius:8px;cursor:pointer;">Tentar novamente</button></div>';
+                
                 Swal.fire({
                     title: 'Erro ao carregar dados',
-                    text: 'Nao foi possivel conectar ao Google Sheets. Verifique o console para mais detalhes.\n\nErro: ' + error.message,
+                    text: 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.',
                     icon: 'error',
                     confirmButtonText: 'Tentar novamente'
                 }).then(function() { 
