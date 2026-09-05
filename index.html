@@ -89,15 +89,42 @@
         .day-tab .hoje-label { font-size: 0.5rem; font-weight: 700; color: #009739; margin-top: -2px; }
         .day-tab.active .hoje-label { color: #dcfce7; }
         .agenda-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1200px; margin-top: 1rem; }
+        
+        /* ===== CORES DOS CARDS ===== */
         .card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
-        .card-date-box { background: #e8f5e9; color: #009739; min-width: 70px; height: 75px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #c8e6c9; }
+        
+        /* Status: Concluído - VERDE */
+        .card.status-concluido { border-left-color: #16a34a; }
+        .card.status-concluido .card-date-box { color: #16a34a; border-color: #16a34a40; background: #16a34a10; }
+        .card.status-concluido .card-status-badge { background: #16a34a15; color: #16a34a; }
+        .card.status-concluido .card-horario { color: #16a34a; }
+        
+        /* Status: Pendente ou Adiado - AMARELO */
+        .card.status-pendente { border-left-color: #f59e0b; }
+        .card.status-pendente .card-date-box { color: #f59e0b; border-color: #f59e0b40; background: #f59e0b10; }
+        .card.status-pendente .card-status-badge { background: #f59e0b15; color: #f59e0b; }
+        .card.status-pendente .card-horario { color: #f59e0b; }
+        
+        /* Status: Cancelado ou Atrasado - VERMELHO */
+        .card.status-cancelado { border-left-color: #dc2626; }
+        .card.status-cancelado .card-date-box { color: #dc2626; border-color: #dc262640; background: #dc262610; }
+        .card.status-cancelado .card-status-badge { background: #dc262615; color: #dc2626; }
+        .card.status-cancelado .card-horario { color: #dc2626; }
+        
+        /* Card padrão (fallback) */
+        .card.status-padrao { border-left-color: #009739; }
+        .card.status-padrao .card-date-box { color: #009739; border-color: #00973940; background: #00973910; }
+        .card.status-padrao .card-status-badge { background: #00973915; color: #009739; }
+        .card.status-padrao .card-horario { color: #009739; }
+
+        .card-date-box { min-width: 70px; height: 75px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #c8e6c9; }
         .card-date-box .dia { font-size: 2rem; font-weight: 800; line-height: 1; }
         .card-date-box .mes { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-top: 3px; letter-spacing: 1px; }
         .card-content { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
         .card-titulo { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-data-range { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 0.3rem; }
-        .card-horario { font-size: 0.9rem; color: #009739; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+        .card-horario { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
         .card-local { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; flex-wrap: wrap; }
         .card-actions .btn-mapa { padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739; border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
@@ -115,7 +142,7 @@
         .popup-info p { display: flex; align-items: baseline; gap: 0.5rem; font-size: 1rem; color: #222; }
         .popup-info strong { min-width: 90px; color: #555; font-weight: 500; flex-shrink: 0; }
         .popup-descricao-text { background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem; }
-        .popup-status { display: inline-block; background: #e8f5e9; color: #009739; padding: 0.2rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+        .popup-status { display: inline-block; padding: 0.2rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
         .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem; }
         .btn { padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; flex: 1 0 auto; background: #f0f2f5; color: #1a1a2e; }
         .btn:hover { transform: scale(0.97); }
@@ -492,7 +519,7 @@
         // ==========================================
         // CONFIGURAÇÃO DA API
         // ==========================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC3M-hTVUOn2ivp_CrU0nbyhmooX2a4Uw49P5Mrq_TfSaJPlWrsBUw5xxWQZQE8tDt6A/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpBXjziYjULUGOZV4U243tjzMe53w1bPdRj1f5LR16DJynnuSnX4XrZCnjx-O9iFyE/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
 
         // ==========================================
@@ -700,7 +727,7 @@
         });
 
         // ==========================================
-        // COMPARTILHAR PDF - CORRIGIDO
+        // COMPARTILHAR PDF
         // ==========================================
         document.getElementById('btnCompartilharPDF').addEventListener('click', function() {
             const texto = gerarTextoAgenda('current');
@@ -721,7 +748,6 @@
                 const margin = 18;
                 let y = margin;
 
-                // CABECALHO
                 doc.setFontSize(20);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(0, 151, 57);
@@ -743,7 +769,6 @@
                 doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), margin, y);
                 y += 10;
 
-                // CORPO
                 doc.setFontSize(10.5);
                 doc.setTextColor(40, 40, 40);
                 doc.setFont('helvetica', 'normal');
@@ -769,7 +794,6 @@
                         return;
                     }
                     
-                    // Titulo de dia
                     if (linhaLimpa.match(/^[A-ZÇÁÉÍÓÚÃÕÂÊÔÀ ]+ - \d{2}\/\d{2}\/\d{4}/) || linhaLimpa.includes('AGENDA')) {
                         var titulo = linhaLimpa;
                         doc.setFontSize(13);
@@ -787,7 +811,6 @@
                         doc.setFont('helvetica', 'normal');
                         doc.setTextColor(40, 40, 40);
                     } 
-                    // Item de compromisso
                     else if (linhaLimpa.match(/^\s*[[\]]/)) {
                         var item = linhaLimpa.trim();
                         
@@ -810,7 +833,6 @@
                         }
                         y += 5.5;
                     }
-                    // Local
                     else if (linhaLimpa.includes('Local:')) {
                         doc.setFont('helvetica', 'normal');
                         doc.setTextColor(80, 80, 80);
@@ -820,7 +842,6 @@
                         doc.setTextColor(40, 40, 40);
                         y += 5;
                     }
-                    // Observacao
                     else if (linhaLimpa.includes('Obs:')) {
                         doc.setFont('helvetica', 'italic');
                         doc.setTextColor(100, 100, 100);
@@ -831,7 +852,6 @@
                         doc.setTextColor(40, 40, 40);
                         y += 5;
                     }
-                    // Participantes
                     else if (linhaLimpa.includes('Participantes:')) {
                         doc.setFont('helvetica', 'normal');
                         doc.setTextColor(80, 80, 80);
@@ -847,7 +867,6 @@
                     }
                 });
 
-                // RODAPE
                 var totalPages = doc.internal.getNumberOfPages();
                 for (var i = 1; i <= totalPages; i++) {
                     doc.setPage(i);
@@ -1258,6 +1277,47 @@
             isSincronizandoAgenda = false;
         }
 
+        // ==========================================
+        // FUNÇÃO PARA DETERMINAR COR DO CARD
+        // ==========================================
+        function getStatusClass(status, dataDia) {
+            if (!status) return 'status-padrao';
+            
+            const statusLower = status.toLowerCase();
+            
+            // Concluído -> VERDE
+            if (statusLower === 'concluído' || statusLower === 'concluido') {
+                return 'status-concluido';
+            }
+            
+            // Cancelado -> VERMELHO
+            if (statusLower === 'cancelado') {
+                return 'status-cancelado';
+            }
+            
+            // Verifica se a data já passou (para Pendente e Adiado)
+            if (dataDia) {
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+                const dataComp = new Date(formatarDataVisao(dataDia) + 'T00:00:00');
+                
+                // Se a data já passou e está Pendente ou Adiado -> VERMELHO
+                if (dataComp < hoje && (statusLower === 'pendente' || statusLower === 'adiado')) {
+                    return 'status-cancelado';
+                }
+            }
+            
+            // Pendente ou Adiado (dentro do prazo) -> AMARELO
+            if (statusLower === 'pendente' || statusLower === 'adiado') {
+                return 'status-pendente';
+            }
+            
+            return 'status-padrao';
+        }
+
+        // ==========================================
+        // RENDERIZAR AGENDA
+        // ==========================================
         function renderizarAgenda() {
             var grid = document.getElementById('agendaGrid');
             grid.innerHTML = '';
@@ -1272,13 +1332,12 @@
             lista.forEach(function(comp) {
                 var card = document.createElement('div');
                 card.className = 'card';
-                var borderColor = '#009739';
-                if (comp.status === 'Concluido') borderColor = '#16a34a';
-                else if (comp.status === 'Cancelado') borderColor = '#dc2626';
-                else if (comp.status === 'Adiado') borderColor = '#f59e0b';
-                card.style.borderLeftColor = borderColor;
+                
+                // ADICIONA A CLASSE DE STATUS CORRETA
+                var statusClass = getStatusClass(comp.status, comp.dia);
+                card.classList.add(statusClass);
 
-                var statusBadge = '<div class="card-status-badge" style="background: ' + borderColor + '15; color: ' + borderColor + '">' + (comp.status || 'Pendente') + '</div>';
+                var statusBadge = '<div class="card-status-badge">' + (comp.status || 'Pendente') + '</div>';
 
                 var temEndereco = comp.local && 
                     !comp.local.toLowerCase().includes('online') && 
@@ -1308,7 +1367,7 @@
                 }
 
                 card.innerHTML = 
-                    '<div class="card-date-box" style="color: ' + borderColor + '; border-color: ' + borderColor + '40; background: ' + borderColor + '10;">' +
+                    '<div class="card-date-box">' +
                         '<span class="dia">' + diaNum + '</span>' +
                         '<span class="mes">' + mesNome + '</span>' +
                     '</div>' +
@@ -1342,6 +1401,9 @@
             document.getElementById('contadorCompromissos').textContent = lista.length + ' compromisso' + (lista.length !== 1 ? 's' : '');
         }
 
+        // ==========================================
+        // RENDERIZAR LISTA ADMIN
+        // ==========================================
         function renderizarListaAdmin() {
             if (!adminLogado) return;
             var listaAdmin = document.getElementById('listaAdmin');
@@ -1487,9 +1549,34 @@
             ps.textContent = comp.status || 'Pendente';
             var bgColor = '#e8f5e9';
             var textColor = '#009739';
-            if (comp.status === 'Concluido') { bgColor = '#dcfce7'; textColor = '#166534'; }
-            else if (comp.status === 'Cancelado') { bgColor = '#fee2e2'; textColor = '#b91c1c'; }
-            else if (comp.status === 'Adiado') { bgColor = '#fef9c3'; textColor = '#92400e'; }
+            
+            // CORES DO STATUS NO POPUP
+            var statusLower = (comp.status || 'Pendente').toLowerCase();
+            if (statusLower === 'concluído' || statusLower === 'concluido') {
+                bgColor = '#dcfce7'; 
+                textColor = '#166534';
+            } else if (statusLower === 'cancelado') {
+                bgColor = '#fee2e2'; 
+                textColor = '#b91c1c';
+            } else if (statusLower === 'pendente' || statusLower === 'adiado') {
+                // Verifica se já passou da data
+                if (comp.dia) {
+                    var hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    var dataComp = new Date(formatarDataVisao(comp.dia) + 'T00:00:00');
+                    if (dataComp < hoje) {
+                        bgColor = '#fee2e2'; 
+                        textColor = '#b91c1c';
+                    } else {
+                        bgColor = '#fef9c3'; 
+                        textColor = '#92400e';
+                    }
+                } else {
+                    bgColor = '#fef9c3'; 
+                    textColor = '#92400e';
+                }
+            }
+            
             ps.style.backgroundColor = bgColor;
             ps.style.color = textColor;
 
@@ -1538,7 +1625,7 @@
 
         async function acaoConcluir() {
             if (!compromissoAtual) return;
-            if (compromissoAtual.status === 'Concluido') {
+            if (compromissoAtual.status === 'Concluído' || compromissoAtual.status === 'Concluido') {
                 Swal.fire('Aviso', 'Este compromisso ja esta concluido.', 'warning');
                 return;
             }
@@ -1546,7 +1633,7 @@
                 Swal.fire('Aviso', 'Nao e possivel concluir um compromisso cancelado.', 'warning');
                 return;
             }
-            compromissoAtual.status = 'Concluido';
+            compromissoAtual.status = 'Concluído';
             atualizarCompromissoNoArray(compromissoAtual);
             document.getElementById('popupOverlay').classList.remove('ativo');
 
