@@ -1,4 +1,4 @@
-// sw.js - Service Worker para PWA (Atualizado para Web Push Protocol)
+// sw.js - Service Worker para PWA
 const CACHE_NAME = 'gabinete247-v1.0.2';
 const urlsToCache = [
   '/',
@@ -52,7 +52,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Evento disparado pelo Servidor Web Push
 self.addEventListener('push', event => {
   let data = {};
   
