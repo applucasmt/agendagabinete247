@@ -521,7 +521,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // ⚠️ ATENÇÃO: Substitua esta URL pela URL correta do seu Web App
+        // CONFIGURAÇÃO DA API
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4'; 
@@ -552,13 +552,11 @@
         }
 
         // ==========================================
-        // FUNÇÕES DE FORMATAÇÃO - CORRIGIDAS
+        // FUNÇÕES DE FORMATAÇÃO - CORRIGIDAS PARA HORÁRIOS
         // ==========================================
         function formatarDataVisao(dataStr) {
             if (!dataStr) return '';
-            // Se já estiver no formato YYYY-MM-DD, retorna só a data
             if (dataStr.includes('T')) return dataStr.split('T')[0];
-            // Se tiver espaço (ex: "2026-09-06 12:00"), pega só a data
             if (dataStr.includes(' ')) return dataStr.split(' ')[0];
             return dataStr;
         }
@@ -571,46 +569,57 @@
             return d;
         }
 
-        // CORREÇÃO PRINCIPAL: Extrai a hora exata sem conversão de fuso
+        // CORREÇÃO PRINCIPAL: Extrai APENAS HH:MM do formato HH:MM:SS
         function formatarHoraVisao(horaStr) {
             if (!horaStr) return '--:--';
             
-            // Se já tiver no formato HH:MM, retorna direto
-            if (horaStr.match(/^\d{2}:\d{2}$/)) {
-                return horaStr;
+            // Se for null ou undefined
+            if (horaStr === null || horaStr === undefined) return '--:--';
+            
+            // Converte para string
+            var str = String(horaStr);
+            
+            // Se for "00:00:00" ou similar, pega só HH:MM
+            if (str.match(/^\d{2}:\d{2}:\d{2}$/)) {
+                return str.substring(0, 5);
             }
             
-            // Se veio como data completa (com T)
-            if (horaStr.includes('T')) {
-                var d = new Date(horaStr);
-                // Usa getUTCHours para evitar conversão de fuso
-                var h = d.getUTCHours().toString().padStart(2, '0');
-                var m = d.getUTCMinutes().toString().padStart(2, '0');
-                return h + ':' + m;
+            // Se já tiver no formato HH:MM
+            if (str.match(/^\d{2}:\d{2}$/)) {
+                return str;
             }
             
-            // Se veio como "2026-09-06 12:00" (espaço)
-            if (horaStr.includes(' ')) {
-                var partes = horaStr.split(' ');
-                var horaParte = partes[1] || partes[0];
-                if (horaParte.match(/^\d{2}:\d{2}$/)) {
-                    return horaParte;
+            // Se vier com T (ISO)
+            if (str.includes('T')) {
+                var partes = str.split('T');
+                var horaParte = partes[1] || '';
+                if (horaParte.match(/^\d{2}:\d{2}/)) {
+                    return horaParte.substring(0, 5);
+                }
+            }
+            
+            // Se vier com espaço (ex: "2026-09-06 12:00:00")
+            if (str.includes(' ')) {
+                var partes = str.split(' ');
+                var horaParte = partes[1] || '';
+                if (horaParte.match(/^\d{2}:\d{2}/)) {
+                    return horaParte.substring(0, 5);
                 }
             }
             
             // Tenta extrair qualquer padrão HH:MM
-            var match = horaStr.match(/(\d{2}):(\d{2})/);
+            var match = str.match(/(\d{2}):(\d{2})/);
             if (match) {
                 return match[1] + ':' + match[2];
             }
             
-            return horaStr;
+            return str;
         }
 
-        // CORREÇÃO: Extrai a hora pura para ordenação
+        // Extrai hora para ordenação
         function extrairHoraParaOrdenacao(horaStr) {
             var h = formatarHoraVisao(horaStr);
-            if (h === '--:--') return '00:00';
+            if (h === '--:--' || h === '') return '00:00';
             return h;
         }
 
@@ -875,7 +884,7 @@
 
                 var iconeDescricao = comp.descricao ? '<span title="Contém descrição" style="font-size: 0.8rem;">📝</span>' : '';
                 
-                // CORREÇÃO: Usa a nova função formatarHoraVisao que preserva o horário exato
+                // CORREÇÃO: Usa a nova função formatarHoraVisao
                 var horaExibicao = formatarHoraVisao(comp.hora);
                 if (comp.horaFim) {
                     var horaFimExibicao = formatarHoraVisao(comp.horaFim);
