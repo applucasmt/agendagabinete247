@@ -569,7 +569,7 @@
             return d;
         }
 
-        // CORREÇÃO PRINCIPAL: Extrai APENAS HH:MM do formato HH:MM:SS
+        // CORREÇÃO PRINCIPAL: Extrai e converte a hora corretamente (resolvendo bug do fuso horário 15:44)
         function formatarHoraVisao(horaStr) {
             if (!horaStr) return '--:--';
             
@@ -589,12 +589,14 @@
                 return str;
             }
             
-            // Se vier com T (ISO)
+            // Se vier com T (formato ISO retornado pelo Google Sheets)
             if (str.includes('T')) {
-                var partes = str.split('T');
-                var horaParte = partes[1] || '';
-                if (horaParte.match(/^\d{2}:\d{2}/)) {
-                    return horaParte.substring(0, 5);
+                var dataObjeto = new Date(str);
+                if (!isNaN(dataObjeto.getTime())) {
+                    // Instancia a data e pega a hora já convertida para o fuso local do navegador
+                    var horas = String(dataObjeto.getHours()).padStart(2, '0');
+                    var minutos = String(dataObjeto.getMinutes()).padStart(2, '0');
+                    return horas + ':' + minutos;
                 }
             }
             
@@ -607,29 +609,13 @@
                 }
             }
             
-            // Tenta extrair qualquer padrão HH:MM
+            // Tenta extrair qualquer padrão HH:MM como fallback
             var match = str.match(/(\d{2}):(\d{2})/);
             if (match) {
                 return match[1] + ':' + match[2];
             }
             
             return str;
-        }
-
-        // Extrai hora para ordenação
-        function extrairHoraParaOrdenacao(horaStr) {
-            var h = formatarHoraVisao(horaStr);
-            if (h === '--:--' || h === '') return '00:00';
-            return h;
-        }
-
-        function abrirGoogleMaps(endereco) {
-            if (!endereco || endereco.trim() === '') {
-                alert('Endereço não disponível para este compromisso.');
-                return;
-            }
-            var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(endereco);
-            window.open(url, '_blank');
         }
 
         // ==========================================
