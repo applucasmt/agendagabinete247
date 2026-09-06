@@ -18,7 +18,58 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
+    <!-- FORÇA RECARREGAR DO SERVIDOR -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <script>
+        // FORÇA O NAVEGADOR A NÃO USAR CACHE ANTIGO
+        if (window.performance) {
+            var navEntries = window.performance.getEntriesByType('navigation');
+            if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+                // Se for um reload, força limpeza de cache
+                if ('caches' in window) {
+                    caches.keys().then(function(keys) {
+                        keys.forEach(function(key) {
+                            caches.delete(key);
+                        });
+                    });
+                }
+            }
+        }
+        
+        // SISTEMA DE ATUALIZAÇÃO FORÇADA
+        const APP_VERSION = '3.0.0';
+        const versaoSalva = localStorage.getItem('app_version');
+        
+        // Se a versão salva for diferente ou não existir, limpa tudo
+        if (!versaoSalva || versaoSalva !== APP_VERSION) {
+            // Limpa localStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Limpa cache do Service Worker
+            if ('caches' in window) {
+                caches.keys().then(function(keys) {
+                    keys.forEach(function(key) {
+                        caches.delete(key);
+                    });
+                });
+            }
+            
+            // Salva nova versão
+            localStorage.setItem('app_version', APP_VERSION);
+            
+            // Recarrega a página se ainda não estiver na versão correta
+            if (versaoSalva && versaoSalva !== APP_VERSION) {
+                // Mostra mensagem e recarrega
+                setTimeout(function() {
+                    window.location.reload(true);
+                }, 500);
+            }
+        }
+        
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -290,6 +341,7 @@
         .card-actions .btn-mapa { padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739; border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
         .card-actions .btn-mapa:hover { background: #009739; color: white; transform: scale(1.05); }
         .card-status-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.8rem; border-radius: 20px; align-self: flex-start; }
+        .card-por { font-size: 0.7rem; color: #888; font-style: italic; margin-top: 0.2rem; }
         .sem-resultados { grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: #6b7280; font-size: 1.1rem; }
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999; padding: 1rem; }
         .popup-overlay.ativo { display: flex; }
@@ -744,11 +796,47 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // CONFIGURAÇÃO DA API
+        // VERSÃO DO APP - MUDE PARA FORÇAR ATUALIZAÇÃO
         // ==========================================
+        const APP_VERSION = '3.0.1';
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4';
-        const APP_VERSION = '2.0.3';
+
+        // ==========================================
+        // FORÇA LIMPEZA DE CACHE
+        // ==========================================
+        (function forcarLimpezaCache() {
+            // Verifica se é a versão correta
+            var versaoSalva = localStorage.getItem('app_version');
+            
+            // Se não tiver versão ou for diferente, limpa tudo
+            if (!versaoSalva || versaoSalva !== APP_VERSION) {
+                console.log('[CACHE] Nova versão detectada! Limpando cache...');
+                
+                // Limpa localStorage e sessionStorage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Limpa cache do navegador
+                if ('caches' in window) {
+                    caches.keys().then(function(keys) {
+                        keys.forEach(function(key) {
+                            caches.delete(key);
+                        });
+                    });
+                }
+                
+                // Salva a nova versão
+                localStorage.setItem('app_version', APP_VERSION);
+                
+                // Recarrega a página forçadamente
+                if (versaoSalva && versaoSalva !== APP_VERSION) {
+                    setTimeout(function() {
+                        window.location.reload(true);
+                    }, 300);
+                }
+            }
+        })();
 
         // ==========================================
         // DADOS GLOBAIS
@@ -811,7 +899,7 @@
         ];
 
         // ==========================================
-        // SISTEMA DE ATUALIZAÇÃO (NOVO)
+        // SISTEMA DE ATUALIZAÇÃO
         // ==========================================
         function verificarAtualizacao() {
             const versaoSalva = localStorage.getItem('app_version');
@@ -957,7 +1045,7 @@
         }
 
         // ==========================================
-        // LOGIN OBRIGATÓRIO (NOVO)
+        // LOGIN OBRIGATÓRIO
         // ==========================================
         function fazerLoginPrincipal(e) {
             e.preventDefault();
@@ -1020,7 +1108,7 @@
         document.getElementById('btnSair').addEventListener('click', fazerLogout);
 
         // ==========================================
-        // LOGIN ADMIN (ORIGINAL - MANTER)
+        // LOGIN ADMIN (ORIGINAL)
         // ==========================================
         function abrirLogin() {
             document.getElementById('loginOverlay').classList.add('ativo');
@@ -1261,7 +1349,7 @@
         }
 
         // ==========================================
-        // ADMIN CRUD (ORIGINAL - MANTIDO)
+        // ADMIN CRUD (ORIGINAL)
         // ==========================================
         async function cadastrarCompromisso(e) {
             e.preventDefault();
@@ -1539,7 +1627,7 @@
         });
 
         // ==========================================
-        // POPUP (ORIGINAL - MANTIDO)
+        // POPUP (ORIGINAL)
         // ==========================================
         function abrirPopup(comp) {
             if (!comp) return;
@@ -1675,7 +1763,7 @@
         document.getElementById('btnAdiar').addEventListener('click', acaoAdiar);
 
         // ==========================================
-        // FUNÇÕES DE COMPARTILHAMENTO (ORIGINAL)
+        // FUNÇÕES DE COMPARTILHAMENTO
         // ==========================================
         function gerarTextoAgenda(periodo) {
             periodo = periodo || 'all';
@@ -1851,7 +1939,7 @@
         });
 
         // ==========================================
-        // SISTEMA DE NOTIFICACOES (ORIGINAL)
+        // SISTEMA DE NOTIFICACOES
         // ==========================================
         function urlBase64ToUint8Array(base64String) {
             var padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -1909,7 +1997,7 @@
         document.getElementById('btnNotificacao').addEventListener('click', function() { sistemaNotificacao.solicitarPermissao(); });
 
         // ==========================================
-        // CHAT (ORIGINAL)
+        // CHAT
         // ==========================================
         let isSincronizandoChat = false;
 
@@ -2082,7 +2170,7 @@
         // INICIALIZAÇÃO
         // ==========================================
         async function inicializar() {
-            console.log('[INIT] Iniciando aplicação...');
+            console.log('[INIT] Iniciando aplicação versão ' + APP_VERSION);
             
             // Verifica atualização
             verificarAtualizacao();
