@@ -25,9 +25,13 @@
     
     <script>
         // FORÇA O NAVEGADOR A NÃO USAR CACHE ANTIGO
-        if (window.performance) {
-            var navEntries = window.performance.getEntriesByType('navigation');
-            if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+        (function forcarLimpezaCache() {
+            const APP_VERSION = '3.0.3';
+            const versaoSalva = localStorage.getItem('app_version');
+            
+            if (!versaoSalva || versaoSalva !== APP_VERSION) {
+                localStorage.clear();
+                sessionStorage.clear();
                 if ('caches' in window) {
                     caches.keys().then(function(keys) {
                         keys.forEach(function(key) {
@@ -35,30 +39,14 @@
                         });
                     });
                 }
+                localStorage.setItem('app_version', APP_VERSION);
+                if (versaoSalva && versaoSalva !== APP_VERSION) {
+                    setTimeout(function() {
+                        window.location.reload(true);
+                    }, 500);
+                }
             }
-        }
-        
-        // SISTEMA DE ATUALIZAÇÃO FORÇADA
-        const APP_VERSION = '3.0.2';
-        const versaoSalva = localStorage.getItem('app_version');
-        
-        if (!versaoSalva || versaoSalva !== APP_VERSION) {
-            localStorage.clear();
-            sessionStorage.clear();
-            if ('caches' in window) {
-                caches.keys().then(function(keys) {
-                    keys.forEach(function(key) {
-                        caches.delete(key);
-                    });
-                });
-            }
-            localStorage.setItem('app_version', APP_VERSION);
-            if (versaoSalva && versaoSalva !== APP_VERSION) {
-                setTimeout(function() {
-                    window.location.reload(true);
-                }, 500);
-            }
-        }
+        })();
         
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -531,14 +519,12 @@
             <div class="logo">📅</div>
             <h2>Agenda <span style="color:#009739;">Chico Guarnieri</span></h2>
             <p class="subtitle">Identifique-se para acessar a agenda</p>
-            <form id="formLoginPrincipal" onsubmit="return false;">
-                <div class="form-group">
-                    <label>👤 Seu Nome</label>
-                    <input type="text" id="loginUserPrincipal" placeholder="Digite seu nome" required autofocus>
-                </div>
-                <div class="erro" id="loginErroPrincipal">❌ Por favor, digite seu nome</div>
-                <button type="button" class="btn-login" id="btnLoginPrincipal">✅ Entrar</button>
-            </form>
+            <div class="form-group">
+                <label>👤 Seu Nome</label>
+                <input type="text" id="loginUserPrincipal" placeholder="Digite seu nome" required autofocus>
+            </div>
+            <div class="erro" id="loginErroPrincipal">❌ Por favor, digite seu nome</div>
+            <button class="btn-login" id="btnLoginPrincipal">✅ Entrar</button>
         </div>
     </div>
 
@@ -788,7 +774,7 @@
         // ==========================================
         // VERSÃO DO APP
         // ==========================================
-        const APP_VERSION = '3.0.2';
+        const APP_VERSION = '3.0.3';
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4';
 
@@ -997,10 +983,12 @@
         }
 
         // ==========================================
-        // LOGIN OBRIGATÓRIO - CORRIGIDO
+        // LOGIN OBRIGATÓRIO - CORRIGIDO COM REMOÇÃO DO FORM
         // ==========================================
         function fazerLoginPrincipal() {
+            console.log('[LOGIN] Tentando fazer login...');
             var user = document.getElementById('loginUserPrincipal').value.trim();
+            console.log('[LOGIN] Usuário:', user);
 
             if (!user) {
                 var erro = document.getElementById('loginErroPrincipal');
@@ -1030,6 +1018,8 @@
                 toast: true,
                 position: 'top-end'
             });
+            
+            console.log('[LOGIN] Login realizado com sucesso para:', user);
         }
 
         function fazerLogout() {
@@ -1052,7 +1042,10 @@
         }
 
         // Evento do botão de login (NÃO USA SUBMIT)
-        document.getElementById('btnLoginPrincipal').addEventListener('click', fazerLoginPrincipal);
+        document.getElementById('btnLoginPrincipal').addEventListener('click', function(e) {
+            e.preventDefault();
+            fazerLoginPrincipal();
+        });
         
         // Enter no campo de login também funciona
         document.getElementById('loginUserPrincipal').addEventListener('keypress', function(e) {
