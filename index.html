@@ -18,26 +18,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('Service Worker registrado com sucesso!');
-                    })
-                    .catch(error => {
-                        console.log('Falha ao registrar Service Worker:', error);
-                    });
-            });
-        }
-    </script>
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; position: relative; }
+        
+        /* ESCONDE TODO O CONTEÚDO INICIALMENTE */
+        #conteudo-principal { display: none; }
+        #conteudo-principal.visivel { display: block; width: 100%; }
+        
         .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
         h1 { color: #1a1a2e; font-weight: 700; letter-spacing: -0.5px; font-size: 1.8rem; }
         h1 .destaque { color: #009739; }
+        
+        .usuario-logado {
+            background: #e8f5e9;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #009739;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .usuario-logado .sair-btn {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .usuario-logado .sair-btn:hover { background: #fee2e2; }
         
         .btn-notificacoes { background: #fef08a; color: #854d0e; border: 1px solid #fde047; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; display: none; }
         .btn-notificacoes:hover { background: #fde047; transform: scale(1.05); }
@@ -184,19 +199,96 @@
         .footer .lock-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem 0.8rem; border-radius: 8px; transition: background 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; }
         .footer .lock-btn:hover { background: #f3f4f6; color: #1a1a2e; }
         .footer .copyright { color: #9ca3af; font-size: 0.85rem; }
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 1rem; }
-        .login-overlay.ativo { display: flex; }
-        .login-modal { background: white; border-radius: 24px; padding: 2.5rem 2rem; max-width: 420px; width: 100%; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.3s ease; position: relative; }
-        .login-modal h2 { color: #1a1a2e; font-size: 1.5rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
-        .login-modal .subtitle { color: #6b7280; font-size: 0.9rem; margin-bottom: 1.8rem; }
-        .login-modal .form-group { margin-bottom: 1.2rem; }
-        .login-modal .form-group label { display: block; font-weight: 500; color: #333; font-size: 0.9rem; margin-bottom: 0.3rem; }
-        .login-modal .form-group input { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none; background: #fafafa; }
-        .login-modal .form-group input:focus { border-color: #009739; box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15); background: white; }
-        .login-modal .btn-login { width: 100%; padding: 0.8rem; background: #009739; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem; }
-        .login-modal .btn-login:hover { background: #007a2f; }
-        .login-modal .erro { color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
-        .login-modal .erro.visible { display: block; }
+        
+        /* LOGIN OBRIGATÓRIO - MAIOR E MAIS DESTAQUE */
+        .login-overlay-principal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 1rem;
+        }
+        .login-overlay-principal.oculto { display: none; }
+        .login-modal-principal {
+            background: white;
+            border-radius: 28px;
+            padding: 3rem 2.5rem;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.4s ease;
+            text-align: center;
+        }
+        .login-modal-principal .logo {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .login-modal-principal h2 {
+            color: #1a1a2e;
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
+        }
+        .login-modal-principal .subtitle {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+        .login-modal-principal .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .login-modal-principal .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            text-align: left;
+        }
+        .login-modal-principal .form-group input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border: 2px solid #d1d5db;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            transition: border-color 0.2s;
+            outline: none;
+            background: #fafafa;
+            text-align: center;
+        }
+        .login-modal-principal .form-group input:focus {
+            border-color: #009739;
+            box-shadow: 0 0 0 4px rgba(0, 151, 57, 0.15);
+            background: white;
+        }
+        .login-modal-principal .btn-login {
+            width: 100%;
+            padding: 0.9rem;
+            background: #009739;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+        }
+        .login-modal-principal .btn-login:hover { background: #007a2f; }
+        .login-modal-principal .erro {
+            color: #dc2626;
+            font-size: 0.9rem;
+            margin-top: 0.8rem;
+            display: none;
+        }
+        .login-modal-principal .erro.visible { display: block; }
+        
         .admin-panel { display: none; background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 1200px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); animation: fadeIn 0.3s ease; }
         .admin-panel.ativo { display: block; }
         .admin-panel .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; flex-wrap: wrap; }
@@ -260,7 +352,6 @@
         .loading-spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: #009739; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Botão de Atualização */
         .update-banner {
             display: none;
             position: fixed;
@@ -271,7 +362,7 @@
             color: #854d0e;
             padding: 1rem 1.5rem;
             text-align: center;
-            z-index: 9999;
+            z-index: 9998;
             border-bottom: 3px solid #f59e0b;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             font-weight: 500;
@@ -305,6 +396,28 @@
         }
         .update-banner .btn-ignorar:hover { background: #854d0e; color: white; }
         
+        .erro-conexao {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #dc2626;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .erro-conexao .icone { font-size: 3rem; margin-bottom: 1rem; }
+        .erro-conexao .btn-tentar {
+            margin-top: 1.5rem;
+            padding: 0.7rem 2rem;
+            background: #009739;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .erro-conexao .btn-tentar:hover { background: #007a2f; }
+        
         @media (max-width: 640px) {
             .month-selector-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
             .popup { padding: 1.5rem; }
@@ -316,7 +429,8 @@
             .chat-button { width: 52px; height: 52px; font-size: 1.5rem; bottom: 1.2rem; right: 1.2rem; }
             .admin-panel .form-row { grid-template-columns: 1fr; }
             .admin-panel { padding: 1.2rem; }
-            .login-modal { padding: 1.8rem 1.2rem; }
+            .login-modal-principal { padding: 2rem 1.5rem; }
+            .login-modal-principal h2 { font-size: 1.4rem; }
             .admin-panel .item-admin { flex-direction: column; align-items: flex-start; }
             .admin-panel .item-admin .acoes { align-self: flex-end; }
             .admin-panel .form-actions { flex-direction: column; }
@@ -343,180 +457,218 @@
         <button class="btn-ignorar" id="btnIgnorarAtualizacao">Ignorar</button>
     </div>
 
-    <div class="header">
-        <h1>
-            <span>Agenda</span>
-            <span class="destaque">Chico Guarnieri</span>
-        </h1>
-        <button id="btnNotificacao" class="btn-notificacoes" title="Ativar Notificações no celular">
-            🔔 Ativar Notificações
-        </button>
-    </div>
-
-    <button class="install-pwa" id="installPWA">📱 Instalar App</button>
-
-    <div class="share-buttons" id="shareButtons">
-        <button class="btn-share whatsapp" id="btnCompartilharWhatsApp">📱 Compartilhar no WhatsApp</button>
-        <button class="btn-share pdf" id="btnCompartilharPDF">📄 Gerar PDF</button>
-        <button class="btn-share copiar" id="btnCopiarAgenda">📋 Copiar Agenda</button>
-    </div>
-
-    <div class="calendar-nav">
-        <div class="month-selector-container">
-            <input type="month" id="monthSelector" title="Escolha o Mês e Ano">
-            <span class="contador" id="contadorCompromissos">0 compromissos</span>
-        </div>
-        <div class="days-carousel" id="daysCarousel">
-            <!-- Preenchido via JavaScript -->
-        </div>
-    </div>
-
-    <div class="admin-panel" id="adminPanel">
-        <h2>
-            🛠️ Painel Administrativo
-            <span class="admin-badge" id="adminUserName">Admin</span>
-            <span id="editModeIndicator" style="display:none;" class="edit-indicator">✏️ Modo Edição</span>
-        </h2>
-
-        <div class="tabs">
-            <button class="tab-btn ativo" data-tab="tabAgenda">📋 Agenda</button>
-            <button class="tab-btn" data-tab="tabChat">💬 Chat <span id="adminChatBadge" style="background:#ef4444;color:white;padding:0.1rem 0.6rem;border-radius:50%;font-size:0.7rem;display:none;">0</span></button>
-        </div>
-
-        <div class="tab-content ativo" id="tabAgenda">
-            
-            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                <button id="btnToggleAdminForm" class="btn-toggle-ui" style="margin-bottom:0; background: #e8f5e9; border-color: #009739; color: #009739;">➕ Adicionar Novo Compromisso</button>
-                <button id="btnGerarRelatorio" class="btn-toggle-ui" style="margin-bottom:0; background: #eef2ff; border-color: #3b82f6; color: #1d4ed8;">📄 Gerar Relatório PDF</button>
-            </div>
-            
-            <form id="formAdmin" style="display: none; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
-                <input type="hidden" id="adminEditId" value="">
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label>Título *</label>
-                        <input type="text" id="adminTitulo" placeholder="Ex: Reunião com equipe" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data Início *</label>
-                        <input type="date" id="adminData" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data Fim (Opcional)</label>
-                        <input type="date" id="adminDataFim">
-                    </div>
-                    <div class="form-group">
-                        <label>Hora Início *</label>
-                        <input type="time" id="adminHora" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Hora Fim (Opcional)</label>
-                        <input type="time" id="adminHoraFim">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Local *</label>
-                        <input type="text" id="adminLocal" placeholder="Ex: Sala 301" required>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Participantes</label>
-                        <input type="text" id="adminParticipantes" placeholder="Ex: Ana, Carlos, Beatriz">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Descrição / Observações (Opcional)</label>
-                        <textarea id="adminDescricao" placeholder="Pautas, links, detalhes adicionais..."></textarea>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Status</label>
-                        <select id="adminStatus">
-                            <option value="Pendente">Pendente</option>
-                            <option value="Concluído">Concluído</option>
-                            <option value="Cancelado">Cancelado</option>
-                            <option value="Adiado">Adiado</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-salvar" id="btnSalvar">➕ Adicionar Compromisso</button>
-                    <button type="button" class="btn-atualizar" id="btnAtualizar" style="display:none;">✏️ Atualizar Compromisso</button>
-                    <button type="button" class="btn-cancelar-admin" id="btnLimparForm">🔄 Limpar Formulário</button>
-                    <button type="button" class="btn-fechar-admin" id="btnFecharAdmin">🚪 Fechar Painel</button>
-                </div>
-            </form>
-
-            <div class="lista-compromissos-admin">
-                <h3>📋 Compromissos Cadastrados</h3>
-                <div id="listaAdmin"></div>
-            </div>
-        </div>
-
-        <div class="tab-content" id="tabChat">
-            <h3 style="margin-bottom: 1rem;">💬 Conversas com Usuários</h3>
-            <div class="admin-chat-container">
-                <div class="admin-chat-messages" id="adminChatMessages">
-                    <div class="admin-chat-empty">
-                        <div class="icon">💬</div>
-                        <p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p>
-                    </div>
-                </div>
-                <div class="admin-chat-input-area">
-                    <input type="text" id="adminChatInput" placeholder="Digite sua resposta..." />
-                    <button id="adminChatSend">Enviar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="agenda-grid" id="agendaGrid">
-        <div class="loading-container" id="loadingContainer">
-            <div class="loading-spinner"></div>
-            <p style="color: #6b7280;">Carregando compromissos...</p>
-        </div>
-    </div>
-
-    <div class="popup-overlay" id="popupOverlay">
-        <div class="popup" id="popupCard">
-            <button class="popup-close" id="popupClose">&times;</button>
-            <h2 id="popupTitulo">Título</h2>
-            <div class="popup-info">
-                <p><strong>📅 Período:</strong> <span id="popupDia">—</span></p>
-                <p><strong>⏰ Hora:</strong> <span id="popupHora">—</span></p>
-                <p><strong>📍 Local:</strong> <span id="popupLocal">—</span></p>
-                <p><strong>👥 Participantes:</strong> <span id="popupParticipantes">—</span></p>
-                <div id="popupDescricaoContainer" style="display: none;">
-                    <strong>📝 Descrição:</strong>
-                    <div class="popup-descricao-text" id="popupDescricao">—</div>
-                </div>
-                <p style="margin-top: 0.5rem;"><strong>📌 Status:</strong> <span class="popup-status" id="popupStatus">Pendente</span></p>
-                <div class="popup-por" id="popupPor"></div>
-            </div>
-            <div class="popup-acoes">
-                <button class="btn btn-mapa-popup" id="btnMapaPopup">📍 Ver no Google Maps</button>
-                <button class="btn btn-cancelar" id="btnCancelar">✕ Cancelar</button>
-                <button class="btn btn-adiar" id="btnAdiar">⏳ Adiar</button>
-                <button class="btn btn-concluir" id="btnConcluir">✓ Concluir</button>
-                <button class="btn btn-fechar" id="btnFechar">Fechar</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="login-overlay" id="loginOverlay">
-        <div class="login-modal">
-            <h2>👋 Identifique-se</h2>
-            <p class="subtitle">Digite seu nome para continuar</p>
-            <form id="formLogin">
+    <!-- LOGIN OBRIGATÓRIO - Aparece assim que a página carrega -->
+    <div class="login-overlay-principal" id="loginOverlayPrincipal">
+        <div class="login-modal-principal">
+            <div class="logo">📅</div>
+            <h2>Agenda <span style="color:#009739;">Chico Guarnieri</span></h2>
+            <p class="subtitle">Identifique-se para acessar a agenda</p>
+            <form id="formLoginPrincipal">
                 <div class="form-group">
-                    <label>Seu Nome</label>
-                    <input type="text" id="loginUser" placeholder="Digite seu nome completo" required>
+                    <label>👤 Seu Nome</label>
+                    <input type="text" id="loginUserPrincipal" placeholder="Digite seu nome completo" required autofocus>
                 </div>
-                <div class="erro" id="loginErro">❌ Por favor, digite seu nome</div>
-                <button type="submit" class="btn-login">✅ Entrar</button>
+                <div class="erro" id="loginErroPrincipal">❌ Por favor, digite seu nome</div>
+                <button type="submit" class="btn-login">✅ Entrar na Agenda</button>
             </form>
         </div>
     </div>
 
-    <div class="footer">
-        <button class="lock-btn" id="lockBtn">🔒</button>
-        <span class="copyright">© 2026 Agenda Chico Guarnieri - Todos os direitos reservados</span>
+    <!-- CONTEÚDO PRINCIPAL (escondido até o login) -->
+    <div id="conteudo-principal">
+        <div class="header">
+            <h1>
+                <span>Agenda</span>
+                <span class="destaque">Chico Guarnieri</span>
+            </h1>
+            <span class="usuario-logado" id="usuarioLogadoBadge">
+                👤 <span id="nomeUsuarioExibido"></span>
+                <button class="sair-btn" id="btnSair">✕ Sair</button>
+            </span>
+            <button id="btnNotificacao" class="btn-notificacoes" title="Ativar Notificações no celular">
+                🔔 Ativar Notificações
+            </button>
+        </div>
+
+        <button class="install-pwa" id="installPWA">📱 Instalar App</button>
+
+        <div class="share-buttons" id="shareButtons">
+            <button class="btn-share whatsapp" id="btnCompartilharWhatsApp">📱 Compartilhar no WhatsApp</button>
+            <button class="btn-share pdf" id="btnCompartilharPDF">📄 Gerar PDF</button>
+            <button class="btn-share copiar" id="btnCopiarAgenda">📋 Copiar Agenda</button>
+        </div>
+
+        <div class="calendar-nav">
+            <div class="month-selector-container">
+                <input type="month" id="monthSelector" title="Escolha o Mês e Ano">
+                <span class="contador" id="contadorCompromissos">0 compromissos</span>
+            </div>
+            <div class="days-carousel" id="daysCarousel"></div>
+        </div>
+
+        <div class="admin-panel" id="adminPanel">
+            <h2>
+                🛠️ Painel Administrativo
+                <span class="admin-badge" id="adminUserName">Admin</span>
+                <span id="editModeIndicator" style="display:none;" class="edit-indicator">✏️ Modo Edição</span>
+            </h2>
+
+            <div class="tabs">
+                <button class="tab-btn ativo" data-tab="tabAgenda">📋 Agenda</button>
+                <button class="tab-btn" data-tab="tabChat">💬 Chat <span id="adminChatBadge" style="background:#ef4444;color:white;padding:0.1rem 0.6rem;border-radius:50%;font-size:0.7rem;display:none;">0</span></button>
+            </div>
+
+            <div class="tab-content ativo" id="tabAgenda">
+                
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <button id="btnToggleAdminForm" class="btn-toggle-ui" style="margin-bottom:0; background: #e8f5e9; border-color: #009739; color: #009739;">➕ Adicionar Novo Compromisso</button>
+                    <button id="btnGerarRelatorio" class="btn-toggle-ui" style="margin-bottom:0; background: #eef2ff; border-color: #3b82f6; color: #1d4ed8;">📄 Gerar Relatório PDF</button>
+                </div>
+                
+                <form id="formAdmin" style="display: none; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
+                    <input type="hidden" id="adminEditId" value="">
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>Título *</label>
+                            <input type="text" id="adminTitulo" placeholder="Ex: Reunião com equipe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Início *</label>
+                            <input type="date" id="adminData" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Fim (Opcional)</label>
+                            <input type="date" id="adminDataFim">
+                        </div>
+                        <div class="form-group">
+                            <label>Hora Início *</label>
+                            <input type="time" id="adminHora" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Hora Fim (Opcional)</label>
+                            <input type="time" id="adminHoraFim">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Local *</label>
+                            <input type="text" id="adminLocal" placeholder="Ex: Sala 301" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Participantes</label>
+                            <input type="text" id="adminParticipantes" placeholder="Ex: Ana, Carlos, Beatriz">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Descrição / Observações (Opcional)</label>
+                            <textarea id="adminDescricao" placeholder="Pautas, links, detalhes adicionais..."></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Status</label>
+                            <select id="adminStatus">
+                                <option value="Pendente">Pendente</option>
+                                <option value="Concluído">Concluído</option>
+                                <option value="Cancelado">Cancelado</option>
+                                <option value="Adiado">Adiado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-salvar" id="btnSalvar">➕ Adicionar Compromisso</button>
+                        <button type="button" class="btn-atualizar" id="btnAtualizar" style="display:none;">✏️ Atualizar Compromisso</button>
+                        <button type="button" class="btn-cancelar-admin" id="btnLimparForm">🔄 Limpar Formulário</button>
+                        <button type="button" class="btn-fechar-admin" id="btnFecharAdmin">🚪 Fechar Painel</button>
+                    </div>
+                </form>
+
+                <div class="lista-compromissos-admin">
+                    <h3>📋 Compromissos Cadastrados</h3>
+                    <div id="listaAdmin"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tabChat">
+                <h3 style="margin-bottom: 1rem;">💬 Conversas com Usuários</h3>
+                <div class="admin-chat-container">
+                    <div class="admin-chat-messages" id="adminChatMessages">
+                        <div class="admin-chat-empty">
+                            <div class="icon">💬</div>
+                            <p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p>
+                        </div>
+                    </div>
+                    <div class="admin-chat-input-area">
+                        <input type="text" id="adminChatInput" placeholder="Digite sua resposta..." />
+                        <button id="adminChatSend">Enviar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="agenda-grid" id="agendaGrid">
+            <div class="loading-container" id="loadingContainer">
+                <div class="loading-spinner"></div>
+                <p style="color: #6b7280;">Carregando compromissos...</p>
+            </div>
+        </div>
+
+        <div class="popup-overlay" id="popupOverlay">
+            <div class="popup" id="popupCard">
+                <button class="popup-close" id="popupClose">&times;</button>
+                <h2 id="popupTitulo">Título</h2>
+                <div class="popup-info">
+                    <p><strong>📅 Período:</strong> <span id="popupDia">—</span></p>
+                    <p><strong>⏰ Hora:</strong> <span id="popupHora">—</span></p>
+                    <p><strong>📍 Local:</strong> <span id="popupLocal">—</span></p>
+                    <p><strong>👥 Participantes:</strong> <span id="popupParticipantes">—</span></p>
+                    <div id="popupDescricaoContainer" style="display: none;">
+                        <strong>📝 Descrição:</strong>
+                        <div class="popup-descricao-text" id="popupDescricao">—</div>
+                    </div>
+                    <p style="margin-top: 0.5rem;"><strong>📌 Status:</strong> <span class="popup-status" id="popupStatus">Pendente</span></p>
+                    <div class="popup-por" id="popupPor"></div>
+                </div>
+                <div class="popup-acoes">
+                    <button class="btn btn-mapa-popup" id="btnMapaPopup">📍 Ver no Google Maps</button>
+                    <button class="btn btn-cancelar" id="btnCancelar">✕ Cancelar</button>
+                    <button class="btn btn-adiar" id="btnAdiar">⏳ Adiar</button>
+                    <button class="btn btn-concluir" id="btnConcluir">✓ Concluir</button>
+                    <button class="btn btn-fechar" id="btnFechar">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-overlay" id="adiarOverlay">
+            <div class="login-modal">
+                <h2>⏳ Adiar Compromisso</h2>
+                <p class="subtitle">Selecione os novos dados para o compromisso.</p>
+                <div class="form-group">
+                    <label>Nova Data Início</label>
+                    <input type="date" id="adiarDataInput">
+                </div>
+                <div class="form-group">
+                    <label>Nova Data Fim (Opcional)</label>
+                    <input type="date" id="adiarDataFimInput">
+                </div>
+                <div class="form-group">
+                    <label>Nova Hora Início</label>
+                    <input type="time" id="adiarHoraInput">
+                </div>
+                <div class="form-group">
+                    <label>Nova Hora Fim (Opcional)</label>
+                    <input type="time" id="adiarHoraFimInput">
+                </div>
+                <div class="form-group">
+                    <label>Novo Local (Opcional)</label>
+                    <input type="text" id="adiarLocalInput" placeholder="Ex: Sala 302">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn btn-concluir" id="btnConfirmarAdiar" style="flex: 1;">✓ Salvar</button>
+                    <button class="btn btn-cancelar" id="btnFecharAdiar" style="flex: 1; text-align: center;">✕ Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <button class="lock-btn" id="lockBtn" title="Clique para abrir o painel administrativo">🔒</button>
+            <span class="copyright">© 2026 Agenda Chico Guarnieri - Todos os direitos reservados</span>
+        </div>
     </div>
 
     <button class="chat-button" id="chatButton" aria-label="Abrir chat de suporte">
@@ -549,7 +701,7 @@
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4';
-        const APP_VERSION = '2.0.1';
+        const APP_VERSION = '2.0.2';
 
         // ==========================================
         // DADOS GLOBAIS
@@ -563,66 +715,53 @@
         let compromissoAtual = null;
         let currentSelectedDate = 'ALL';
 
-        // ==========================================
-        // SISTEMA DE ATUALIZAÇÃO
-        // ==========================================
-        function verificarAtualizacao() {
-            const versaoSalva = localStorage.getItem('app_version');
-            if (!versaoSalva) {
-                localStorage.setItem('app_version', APP_VERSION);
-                return;
+        const DADOS_EXEMPLO = [
+            {
+                id: 1,
+                titulo: 'Reunião de Planejamento',
+                dia: new Date().toISOString().split('T')[0],
+                hora: '09:00',
+                horaFim: '10:30',
+                local: 'Sala 301',
+                participantes: 'Ana, Carlos, Beatriz',
+                status: 'Pendente',
+                descricao: 'Discussão sobre o projeto do trimestre.',
+                criadoPor: 'Admin',
+                criadoEm: new Date().toISOString(),
+                editadoPor: '',
+                editadoEm: ''
+            },
+            {
+                id: 2,
+                titulo: 'Apresentação de Resultados',
+                dia: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                hora: '14:00',
+                horaFim: '15:30',
+                local: 'Auditório Principal',
+                participantes: 'Equipe Comercial',
+                status: 'Concluído',
+                descricao: 'Apresentação dos resultados do semestre.',
+                criadoPor: 'Admin',
+                criadoEm: new Date().toISOString(),
+                editadoPor: '',
+                editadoEm: ''
+            },
+            {
+                id: 3,
+                titulo: 'Workshop de Inovação',
+                dia: new Date(Date.now() + 172800000).toISOString().split('T')[0],
+                hora: '08:30',
+                horaFim: '12:00',
+                local: 'Sala 405',
+                participantes: 'Todos os departamentos',
+                status: 'Pendente',
+                descricao: 'Workshop sobre novas metodologias.',
+                criadoPor: 'Admin',
+                criadoEm: new Date().toISOString(),
+                editadoPor: '',
+                editadoEm: ''
             }
-            
-            if (versaoSalva !== APP_VERSION) {
-                document.getElementById('updateBanner').classList.add('visible');
-            }
-        }
-
-        function limparCacheERecarregar() {
-            if ('caches' in window) {
-                caches.keys().then(function(keys) {
-                    keys.forEach(function(key) {
-                        caches.delete(key);
-                    });
-                });
-            }
-            
-            localStorage.clear();
-            sessionStorage.clear();
-            
-            document.getElementById('updateBanner').classList.remove('visible');
-            localStorage.setItem('app_version', APP_VERSION);
-            
-            Swal.fire({
-                title: '🔄 Atualizando...',
-                text: 'O aplicativo será reiniciado com a nova versão.',
-                icon: 'info',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(function() {
-                window.location.reload(true);
-            });
-        }
-
-        document.getElementById('btnAtualizarApp').addEventListener('click', limparCacheERecarregar);
-        document.getElementById('btnIgnorarAtualizacao').addEventListener('click', function() {
-            document.getElementById('updateBanner').classList.remove('visible');
-            localStorage.setItem('app_version', APP_VERSION);
-        });
-
-        // ==========================================
-        // TOAST
-        // ==========================================
-        function showToast(mensagem, duracao) {
-            duracao = duracao || 3000;
-            var existing = document.querySelector('.toast-message');
-            if (existing) existing.remove();
-            var toast = document.createElement('div');
-            toast.className = 'toast-message';
-            toast.textContent = mensagem;
-            document.body.appendChild(toast);
-            setTimeout(function() { toast.remove(); }, duracao);
-        }
+        ];
 
         // ==========================================
         // FUNÇÕES DE FORMATAÇÃO
@@ -646,12 +785,8 @@
             if (!horaStr) return '--:--';
             if (horaStr === null || horaStr === undefined) return '--:--';
             var str = String(horaStr);
-            if (str.match(/^\d{2}:\d{2}:\d{2}$/)) {
-                return str.substring(0, 5);
-            }
-            if (str.match(/^\d{2}:\d{2}$/)) {
-                return str;
-            }
+            if (str.match(/^\d{2}:\d{2}:\d{2}$/)) return str.substring(0, 5);
+            if (str.match(/^\d{2}:\d{2}$/)) return str;
             if (str.includes('T')) {
                 var dataObjeto = new Date(str);
                 if (!isNaN(dataObjeto.getTime())) {
@@ -663,37 +798,40 @@
             if (str.includes(' ')) {
                 var partes = str.split(' ');
                 var horaParte = partes[1] || '';
-                if (horaParte.match(/^\d{2}:\d{2}/)) {
-                    return horaParte.substring(0, 5);
-                }
+                if (horaParte.match(/^\d{2}:\d{2}/)) return horaParte.substring(0, 5);
             }
             var match = str.match(/(\d{2}):(\d{2})/);
-            if (match) {
-                return match[1] + ':' + match[2];
-            }
+            if (match) return match[1] + ':' + match[2];
             return str;
         }
 
-        function obterDataHoraAtual() {
-            var agora = new Date();
-            var iso = agora.toISOString();
-            return iso;
-        }
+        function obterDataHoraAtual() { return new Date().toISOString(); }
 
         function formatarDataHoraParaExibicao(isoStr) {
             if (!isoStr) return '';
             try {
                 var d = new Date(isoStr);
-                return d.toLocaleString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } catch(e) {
-                return isoStr;
-            }
+                return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            } catch(e) { return isoStr; }
+        }
+
+        function getHojeObj() {
+            var now = new Date();
+            var ano = now.getFullYear();
+            var mes = String(now.getMonth() + 1).padStart(2, '0');
+            var dia = String(now.getDate()).padStart(2, '0');
+            return { ano: ano, mes: mes, dia: dia, yyyymm: ano + '-' + mes, yyyymmdd: ano + '-' + mes + '-' + dia };
+        }
+
+        function showToast(mensagem, duracao) {
+            duracao = duracao || 3000;
+            var existing = document.querySelector('.toast-message');
+            if (existing) existing.remove();
+            var toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = mensagem;
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, duracao);
         }
 
         // ==========================================
@@ -703,30 +841,17 @@
             dados = dados || null;
             try {
                 var payload = dados ? { acao: acao, dados: dados } : { acao: acao };
-                console.log('[FETCH] Enviando para:', SCRIPT_URL);
-                console.log('[FETCH] Payload:', JSON.stringify(payload));
-                
                 var controller = new AbortController();
-                var timeoutId = setTimeout(function() { controller.abort(); }, 30000);
-                
+                var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
                 var res = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'text/plain;charset=utf-8',
-                        'Accept': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8', 'Accept': 'application/json' },
                     body: JSON.stringify(payload),
                     signal: controller.signal
                 });
-                
                 clearTimeout(timeoutId);
-                
-                if (!res.ok) {
-                    throw new Error('HTTP ' + res.status + ': ' + res.statusText);
-                }
-                
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 var resultado = await res.json();
-                console.log('[FETCH] Resposta:', resultado);
                 return resultado;
             } catch (error) {
                 console.error('[FETCH] Erro:', error);
@@ -735,42 +860,42 @@
         }
 
         // ==========================================
-        // LOGIN SEM SENHA
+        // LOGIN OBRIGATÓRIO
         // ==========================================
-        function abrirLogin() {
-            document.getElementById('loginOverlay').classList.add('ativo');
-            document.getElementById('loginErro').classList.remove('visible');
-            document.getElementById('loginUser').value = '';
-            document.getElementById('loginUser').focus();
-        }
-
-        function fecharLogin() {
-            document.getElementById('loginOverlay').classList.remove('ativo');
-            document.getElementById('loginErro').classList.remove('visible');
-        }
-
-        function fazerLogin(e) {
+        function fazerLoginPrincipal(e) {
             e.preventDefault();
-            var user = document.getElementById('loginUser').value.trim();
+            var user = document.getElementById('loginUserPrincipal').value.trim();
 
             if (!user) {
-                var erro = document.getElementById('loginErro');
-                erro.textContent = 'Por favor, digite seu nome';
+                var erro = document.getElementById('loginErroPrincipal');
+                erro.textContent = '❌ Por favor, digite seu nome';
                 erro.classList.add('visible');
                 return;
             }
 
             usuarioAtual = user;
             adminLogado = true;
-            fecharLogin();
             
-            document.getElementById('adminPanel').classList.add('ativo');
-            document.getElementById('lockBtn').innerHTML = '🔓';
+            // Esconde login e mostra conteúdo
+            document.getElementById('loginOverlayPrincipal').classList.add('oculto');
+            document.getElementById('conteudo-principal').classList.add('visivel');
+            
+            // Atualiza badge do usuário
+            document.getElementById('nomeUsuarioExibido').textContent = user;
             document.getElementById('adminUserName').textContent = '👤 ' + user;
             
+            // Abre painel admin automaticamente
+            document.getElementById('adminPanel').classList.add('ativo');
+            document.getElementById('lockBtn').innerHTML = '🔓';
+            
+            // Esconde chat button (admin não precisa)
             document.getElementById('chatButton').style.display = 'none';
             document.getElementById('chatWindow').classList.remove('aberto');
 
+            // Salva na sessão
+            sessionStorage.setItem('usuarioAtual', user);
+
+            // Renderiza lista admin
             renderizarListaAdmin();
             atualizarChatAdmin();
             
@@ -779,16 +904,25 @@
                 text: 'Você está logado como administrador.',
                 icon: 'success',
                 timer: 2000,
-                showConfirmButton: false
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
             });
         }
 
-        function fecharAdmin() {
-            if (!confirm('Tem certeza que deseja sair do painel administrativo?')) return;
+        function fazerLogout() {
+            if (!confirm('Tem certeza que deseja sair?')) return;
+            
             adminLogado = false;
             usuarioAtual = '';
+            sessionStorage.removeItem('usuarioAtual');
+            
             document.getElementById('adminPanel').classList.remove('ativo');
             document.getElementById('lockBtn').innerHTML = '🔒';
+            document.getElementById('conteudo-principal').classList.remove('visivel');
+            document.getElementById('loginOverlayPrincipal').classList.remove('oculto');
+            document.getElementById('loginUserPrincipal').value = '';
+            document.getElementById('loginUserPrincipal').focus();
             document.getElementById('chatButton').style.display = 'flex';
             
             limparFormAdmin();
@@ -800,53 +934,25 @@
             document.getElementById('tabAgenda').classList.add('ativo');
         }
 
-        document.getElementById('lockBtn').addEventListener('click', function() {
-            if (adminLogado) {
-                document.getElementById('adminPanel').classList.add('ativo');
-                renderizarListaAdmin();
-                atualizarChatAdmin();
-            } else {
-                abrirLogin();
-            }
+        document.getElementById('formLoginPrincipal').addEventListener('submit', fazerLoginPrincipal);
+        document.getElementById('loginUserPrincipal').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('formLoginPrincipal').dispatchEvent(new Event('submit'));
         });
-
-        document.getElementById('formLogin').addEventListener('submit', fazerLogin);
-        document.getElementById('loginOverlay').addEventListener('click', function(e) { 
-            if (e.target === document.getElementById('loginOverlay')) fecharLogin(); 
-        });
-        document.getElementById('btnFecharAdmin').addEventListener('click', fecharAdmin);
+        document.getElementById('btnSair').addEventListener('click', fazerLogout);
 
         // ==========================================
-        // LOGICA DO CALENDARIO
+        // CALENDARIO
         // ==========================================
-        function getHojeObj() {
-            var now = new Date();
-            var ano = now.getFullYear();
-            var mes = String(now.getMonth() + 1).padStart(2, '0');
-            var dia = String(now.getDate()).padStart(2, '0');
-            return { ano: ano, mes: mes, dia: dia, yyyymm: ano + '-' + mes, yyyymmdd: ano + '-' + mes + '-' + dia };
-        }
-
         function initCalendar() {
             var monthSel = document.getElementById('monthSelector');
             var h = getHojeObj();
-            
             monthSel.value = h.yyyymm;
-            if (!monthSel.value) {
-                monthSel.setAttribute("type", "text");
-                monthSel.value = h.yyyymm;
-            }
-
+            if (!monthSel.value) { monthSel.setAttribute("type", "text"); monthSel.value = h.yyyymm; }
             currentSelectedDate = h.yyyymmdd; 
-            
             monthSel.addEventListener('change', function() {
                 var val = monthSel.value;
                 var objH = getHojeObj();
-                if (val === objH.yyyymm) {
-                    currentSelectedDate = objH.yyyymmdd;
-                } else {
-                    currentSelectedDate = 'ALL';
-                }
+                currentSelectedDate = (val === objH.yyyymm) ? objH.yyyymmdd : 'ALL';
                 renderDaysCarousel();
                 aplicarFiltros();
             });
@@ -855,25 +961,17 @@
         function renderDaysCarousel() {
             var carousel = document.getElementById('daysCarousel');
             carousel.innerHTML = '';
-            
             var val = document.getElementById('monthSelector').value;
             var h = getHojeObj();
-
             if (!val) val = h.yyyymm;
-            
             var parts = val.split('-');
-            var year = parts[0];
-            var month = parts[1];
+            var year = parts[0], month = parts[1];
             var diasNoMes = new Date(year, month, 0).getDate();
 
             var btnAll = document.createElement('div');
             btnAll.className = 'day-tab ' + (currentSelectedDate === 'ALL' ? 'active' : '');
             btnAll.innerHTML = '<span class="day-name">MES</span><span class="day-num" style="font-size: 0.95rem; margin-top:6px;">Todos</span>';
-            btnAll.onclick = function() { 
-                currentSelectedDate = 'ALL'; 
-                renderDaysCarousel(); 
-                aplicarFiltros(); 
-            };
+            btnAll.onclick = function() { currentSelectedDate = 'ALL'; renderDaysCarousel(); aplicarFiltros(); };
             carousel.appendChild(btnAll);
 
             for(var d = 1; d <= diasNoMes; d++) {
@@ -881,51 +979,25 @@
                 var dataCompleta = year + '-' + month + '-' + diaStr;
                 var objData = new Date(dataCompleta + 'T12:00:00');
                 var nomeSemana = objData.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.','');
-
                 var temCompromisso = compromissos.some(function(comp) {
                     var dInicio = formatarDataVisao(comp.dia);
                     var dFim = comp.diaFim ? formatarDataVisao(comp.diaFim) : dInicio;
                     return dataCompleta >= dInicio && dataCompleta <= dFim;
                 });
-
                 var isHoje = (dataCompleta === h.yyyymmdd);
                 var isActive = (currentSelectedDate === dataCompleta);
-
                 var btn = document.createElement('div');
                 btn.className = 'day-tab ' + (isActive ? 'active' : '') + (temCompromisso ? ' has-event' : '');
-                
-                if (isHoje && !isActive) {
-                    btn.style.borderColor = '#009739';
-                    btn.style.background = '#f0fdf4';
-                }
-
-                var nomeExibicao = nomeSemana;
-                var numeroExibicao = d;
-                var hojeLabel = '';
-
-                if (isHoje) {
-                    nomeExibicao = 'HOJE';
-                    hojeLabel = '<span class="hoje-label">✓</span>';
-                }
-
-                btn.innerHTML = '<span class="day-name">' + nomeExibicao + '</span><span class="day-num">' + numeroExibicao + '</span>' + hojeLabel + '<div class="event-dot"></div>';
-                
-                btn.onclick = function(data) {
-                    return function() {
-                        currentSelectedDate = data;
-                        renderDaysCarousel();
-                        aplicarFiltros();
-                    };
-                }(dataCompleta);
-                
+                if (isHoje && !isActive) { btn.style.borderColor = '#009739'; btn.style.background = '#f0fdf4'; }
+                var nomeExibicao = isHoje ? 'HOJE' : nomeSemana;
+                var hojeLabel = isHoje ? '<span class="hoje-label">✓</span>' : '';
+                btn.innerHTML = '<span class="day-name">' + nomeExibicao + '</span><span class="day-num">' + d + '</span>' + hojeLabel + '<div class="event-dot"></div>';
+                btn.onclick = function(data) { return function() { currentSelectedDate = data; renderDaysCarousel(); aplicarFiltros(); }; }(dataCompleta);
                 carousel.appendChild(btn);
             }
-
             setTimeout(function() {
                 var ativos = carousel.querySelectorAll('.day-tab.active');
-                if(ativos.length > 0) {
-                    ativos[ativos.length - 1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                }
+                if(ativos.length > 0) ativos[ativos.length - 1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }, 50);
         }
 
@@ -933,275 +1005,430 @@
             var valMes = document.getElementById('monthSelector').value;
             var h = getHojeObj();
             if (!valMes) valMes = h.yyyymm;
-
             compromissosFiltrados = compromissos.filter(function(comp) {
                 var dInicio = formatarDataVisao(comp.dia);
                 var dFim = comp.diaFim ? formatarDataVisao(comp.diaFim) : dInicio;
-                
                 if (!dInicio) return false;
-
-                if (currentSelectedDate === 'ALL') {
-                    return dInicio.startsWith(valMes) || dFim.startsWith(valMes);
-                } 
-                else {
-                    return currentSelectedDate >= dInicio && currentSelectedDate <= dFim;
-                }
+                if (currentSelectedDate === 'ALL') return dInicio.startsWith(valMes) || dFim.startsWith(valMes);
+                else return currentSelectedDate >= dInicio && currentSelectedDate <= dFim;
             });
-
             renderizarAgenda();
             if (adminLogado) renderizarListaAdmin();
         }
 
         // ==========================================
-        // FUNÇÃO PARA DETERMINAR COR DO CARD
+        // RENDERIZAR AGENDA
         // ==========================================
         function getStatusClass(status, dataDia) {
             if (!status) return 'status-padrao';
-            
             var statusLower = status.toLowerCase();
-            
-            if (statusLower === 'concluído' || statusLower === 'concluido') {
-                return 'status-concluido';
-            }
-            
-            if (statusLower === 'cancelado') {
-                return 'status-cancelado';
-            }
-            
+            if (statusLower === 'concluído' || statusLower === 'concluido') return 'status-concluido';
+            if (statusLower === 'cancelado') return 'status-cancelado';
             if (dataDia) {
-                var hoje = new Date();
-                hoje.setHours(0, 0, 0, 0);
+                var hoje = new Date(); hoje.setHours(0,0,0,0);
                 var dataComp = new Date(formatarDataVisao(dataDia) + 'T00:00:00');
-                
-                if (dataComp < hoje && (statusLower === 'pendente' || statusLower === 'adiado')) {
-                    return 'status-cancelado';
-                }
+                if (dataComp < hoje && (statusLower === 'pendente' || statusLower === 'adiado')) return 'status-cancelado';
             }
-            
-            if (statusLower === 'pendente' || statusLower === 'adiado') {
-                return 'status-pendente';
-            }
-            
+            if (statusLower === 'pendente' || statusLower === 'adiado') return 'status-pendente';
             return 'status-padrao';
         }
 
-        // ==========================================
-        // RENDERIZAR AGENDA
-        // ==========================================
         function renderizarAgenda() {
             var grid = document.getElementById('agendaGrid');
             grid.innerHTML = '';
             var lista = compromissosFiltrados;
-
             if (lista.length === 0) {
                 grid.innerHTML = '<div class="sem-resultados">📭 Nenhum compromisso encontrado para este período.</div>';
                 document.getElementById('contadorCompromissos').textContent = '0 compromissos';
                 return;
             }
-
             lista.forEach(function(comp) {
                 var card = document.createElement('div');
                 card.className = 'card';
-                
                 var statusClass = getStatusClass(comp.status, comp.dia);
                 card.classList.add(statusClass);
-
                 var statusBadge = '<div class="card-status-badge">' + (comp.status || 'Pendente') + '</div>';
-
-                var temEndereco = comp.local && 
-                    !comp.local.toLowerCase().includes('online') && 
-                    !comp.local.toLowerCase().includes('virtual') &&
-                    !comp.local.toLowerCase().includes('discord') &&
-                    !comp.local.toLowerCase().includes('meet') &&
-                    !comp.local.toLowerCase().includes('zoom');
-
+                var temEndereco = comp.local && !comp.local.toLowerCase().includes('online') && !comp.local.toLowerCase().includes('virtual') && !comp.local.toLowerCase().includes('discord') && !comp.local.toLowerCase().includes('meet') && !comp.local.toLowerCase().includes('zoom');
                 var htmlDataRange = '📅 ' + formatarDataBR(comp.dia);
                 if (comp.diaFim) htmlDataRange += ' até ' + formatarDataBR(comp.diaFim);
-
-                var diaNum = '--';
-                var mesNome = '---';
+                var diaNum = '--', mesNome = '---';
                 if (comp.dia) {
                     var dataObj = new Date(formatarDataVisao(comp.dia) + 'T12:00:00');
-                    if(!isNaN(dataObj)) {
-                        diaNum = String(dataObj.getDate()).padStart(2, '0');
-                        mesNome = dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase();
-                    }
+                    if(!isNaN(dataObj)) { diaNum = String(dataObj.getDate()).padStart(2, '0'); mesNome = dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase(); }
                 }
-
                 var iconeDescricao = comp.descricao ? '<span title="Contém descrição" style="font-size: 0.8rem;">📝</span>' : '';
-                
                 var horaExibicao = formatarHoraVisao(comp.hora);
-                if (comp.horaFim) {
-                    var horaFimExibicao = formatarHoraVisao(comp.horaFim);
-                    horaExibicao = horaExibicao + ' às ' + horaFimExibicao;
-                }
-
+                if (comp.horaFim) { var horaFimExibicao = formatarHoraVisao(comp.horaFim); horaExibicao = horaExibicao + ' às ' + horaFimExibicao; }
                 var porTexto = '';
-                if (comp.editadoPor) {
+                if (comp.editadoPor && comp.editadoPor.trim() !== '') {
                     porTexto = '<div class="card-por">✏️ Editado por ' + comp.editadoPor + ' em ' + formatarDataHoraParaExibicao(comp.editadoEm) + '</div>';
-                } else if (comp.criadoPor) {
+                } else if (comp.criadoPor && comp.criadoPor.trim() !== '') {
                     porTexto = '<div class="card-por">📝 Criado por ' + comp.criadoPor + ' em ' + formatarDataHoraParaExibicao(comp.criadoEm) + '</div>';
                 }
-
                 card.innerHTML = 
-                    '<div class="card-date-box">' +
-                        '<span class="dia">' + diaNum + '</span>' +
-                        '<span class="mes">' + mesNome + '</span>' +
-                    '</div>' +
+                    '<div class="card-date-box"><span class="dia">' + diaNum + '</span><span class="mes">' + mesNome + '</span></div>' +
                     '<div class="card-content">' +
                         '<div class="card-titulo">' + (comp.titulo || 'Sem título') + ' ' + iconeDescricao + '</div>' +
                         '<div class="card-data-range">' + htmlDataRange + '</div>' +
                         '<div class="card-horario">🕒 ' + horaExibicao + '</div>' +
                         '<div class="card-local">📍 ' + (comp.local || 'Local não informado') + '</div>' +
-                        statusBadge +
-                        porTexto +
-                        '<div class="card-actions">' +
-                            (temEndereco ? '<button class="btn-mapa" data-local="' + comp.local + '">📍 Ver no Mapa</button>' : '') +
-                        '</div>' +
+                        statusBadge + porTexto +
+                        '<div class="card-actions">' + (temEndereco ? '<button class="btn-mapa" data-local="' + comp.local.replace(/"/g, '&quot;') + '">📍 Ver no Mapa</button>' : '') + '</div>' +
                     '</div>';
-
-                card.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('btn-mapa')) return;
-                    abrirPopup(comp);
-                });
-
+                card.addEventListener('click', function(e) { if (e.target.classList.contains('btn-mapa')) return; abrirPopup(comp); });
                 var btnMapa = card.querySelector('.btn-mapa');
-                if (btnMapa) {
-                    btnMapa.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        abrirGoogleMaps(btnMapa.getAttribute('data-local'));
-                    });
-                }
-
+                if (btnMapa) { btnMapa.addEventListener('click', function(e) { e.stopPropagation(); abrirGoogleMaps(btnMapa.getAttribute('data-local')); }); }
                 grid.appendChild(card);
             });
-
             document.getElementById('contadorCompromissos').textContent = lista.length + ' compromisso' + (lista.length !== 1 ? 's' : '');
         }
 
-        // ==========================================
-        // SISTEMA DE NOTIFICACOES
-        // ==========================================
-        function urlBase64ToUint8Array(base64String) {
-            var padding = '='.repeat((4 - base64String.length % 4) % 4);
-            var base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-            var rawData = window.atob(base64);
-            var outputArray = new Uint8Array(rawData.length);
-            for (var i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
-            return outputArray;
+        function abrirGoogleMaps(endereco) {
+            if (!endereco) return;
+            window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(endereco), '_blank');
         }
 
-        class SistemaNotificacao {
-            constructor() {
-                this.permissoes = { notificacao: false };
-                this.inicializar();
-            }
+        // ==========================================
+        // ADMIN CRUD
+        // ==========================================
+        function limparFormAdmin() {
+            document.getElementById('adminEditId').value = '';
+            document.getElementById('adminTitulo').value = '';
+            document.getElementById('adminData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('adminDataFim').value = '';
+            document.getElementById('adminHora').value = '';
+            document.getElementById('adminHoraFim').value = '';
+            document.getElementById('adminLocal').value = '';
+            document.getElementById('adminParticipantes').value = '';
+            document.getElementById('adminDescricao').value = '';
+            document.getElementById('adminStatus').value = 'Pendente';
+            document.getElementById('btnSalvar').style.display = 'inline-block';
+            document.getElementById('btnAtualizar').style.display = 'none';
+            document.getElementById('editModeIndicator').style.display = 'none';
+        }
 
-            async inicializar() {
-                if ('Notification' in window) {
-                    if (Notification.permission === 'granted') {
-                        this.permissoes.notificacao = true;
-                        document.getElementById('btnNotificacao').style.display = 'none';
-                    } else if (Notification.permission === 'default') {
-                        document.getElementById('btnNotificacao').style.display = 'flex';
+        function renderizarListaAdmin() {
+            if (!adminLogado) return;
+            var listaAdmin = document.getElementById('listaAdmin');
+            listaAdmin.innerHTML = '';
+            compromissos.forEach(function(comp) {
+                var item = document.createElement('div');
+                item.className = 'item-admin';
+                var strDataAdmin = formatarDataBR(comp.dia);
+                if (comp.diaFim) strDataAdmin += ' a ' + formatarDataBR(comp.diaFim);
+                var horaExibicao = formatarHoraVisao(comp.hora);
+                if (comp.horaFim) { var horaFimExibicao = formatarHoraVisao(comp.horaFim); horaExibicao = horaExibicao + ' as ' + horaFimExibicao; }
+                var editadoInfo = '';
+                if (comp.editadoPor && comp.editadoPor.trim() !== '') {
+                    editadoInfo = ' | ✏️ ' + comp.editadoPor + ' em ' + formatarDataHoraParaExibicao(comp.editadoEm);
+                } else if (comp.criadoPor && comp.criadoPor.trim() !== '') {
+                    editadoInfo = ' | 📝 ' + comp.criadoPor;
+                }
+                item.innerHTML = 
+                    '<div class="info"><span class="titulo">' + (comp.titulo || 'Sem titulo') + '</span>' +
+                    '<span class="data">📅 ' + strDataAdmin + ' | 🕒 ' + horaExibicao + '</span>' +
+                    '<span class="data">📍 ' + (comp.local || 'Local nao informado') + '</span>' +
+                    '<span class="data" style="color: #009739; font-weight: 600;">' + (comp.status || 'Pendente') + '</span>' +
+                    '<span class="data" style="color: #888; font-size: 0.75rem;">' + editadoInfo + '</span></div>' +
+                    '<div class="acoes"><button class="btn-editar" data-id="' + comp.id + '">✏️ Editar</button><button class="btn-excluir" data-id="' + comp.id + '">🗑️ Excluir</button></div>';
+                listaAdmin.appendChild(item);
+                item.querySelector('.btn-editar').addEventListener('click', function() { carregarParaEdicao(comp); });
+                item.querySelector('.btn-excluir').addEventListener('click', async function() {
+                    var confirm = await Swal.fire({ title: 'Confirmar exclusão', text: 'Tem certeza que deseja excluir "' + comp.titulo + '"?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sim, excluir', cancelButtonText: 'Cancelar', confirmButtonColor: '#dc2626' });
+                    if (!confirm.isConfirmed) return;
+                    Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+                    var result = await fetchGoogle('excluir', {id: comp.id});
+                    if (result.status === 'sucesso') {
+                        compromissos = compromissos.filter(function(c) { return String(c.id) !== String(comp.id); });
+                        renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin();
+                        Swal.fire({ title: 'Excluído!', text: 'Compromisso excluído com sucesso!', icon: 'success', timer: 1500, showConfirmButton: false });
+                    } else {
+                        compromissos = compromissos.filter(function(c) { return String(c.id) !== String(comp.id); });
+                        renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin();
+                        Swal.fire({ title: 'Excluído!', text: 'Compromisso removido localmente.', icon: 'warning', timer: 1500, showConfirmButton: false });
                     }
-                }
-            }
-
-            async solicitarPermissao() {
-                if (!('Notification' in window)) {
-                    Swal.fire('Aviso', 'Seu navegador não suporta notificações nativas.', 'info');
-                    return;
-                }
-                var permissao = await Notification.requestPermission();
-                if (permissao === 'granted') {
-                    this.permissoes.notificacao = true;
-                    document.getElementById('btnNotificacao').style.display = 'none';
-                    await this.inscreverWebPush();
-                    Swal.fire('Sucesso!', 'As notificações estão ativadas.', 'success');
-                } else {
-                    Swal.fire('Bloqueado', 'Você bloqueou as notificações. Libere nas configurações do celular.', 'warning');
-                }
-            }
-
-            async inscreverWebPush() {
-                if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-                try {
-                    if (publicVapidKey.includes('coloque_sua_chave')) return; 
-
-                    var registration = await navigator.serviceWorker.ready;
-                    var subscription = await registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-                    });
-                    
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({ acao: 'salvar_inscricao_push', dados: subscription })
-                    });
-                } catch (e) {
-                    console.warn('Erro ao inscrever no PushManager:', e);
-                }
-            }
-
-            enviar(titulo, mensagem, dados) {
-                dados = dados || {};
-                if (this.permissoes.notificacao && 'Notification' in window) {
-                    try {
-                        var notification = new Notification(titulo, {
-                            body: mensagem,
-                            icon: '/icons/icon-192x192.png',
-                            badge: '/icons/icon-72x72.png',
-                            tag: dados.tag || 'notification',
-                            data: dados,
-                            requireInteraction: true,
-                            vibrate: [200, 100, 200],
-                            silent: false 
-                        });
-
-                        notification.onclick = function() {
-                            window.focus();
-                            if (dados.url) window.location.href = dados.url;
-                            notification.close();
-                        };
-                    } catch (error) {
-                        console.warn('Erro na notificação nativa:', error);
-                    }
-                }
-
-                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                this.mostrarToast(titulo, mensagem);
-            }
-
-            mostrarToast(titulo, mensagem) {
-                Swal.fire({
-                    title: titulo,
-                    text: mensagem,
-                    icon: 'info',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    background: '#f0fdf4',
-                    iconColor: '#009739',
-                    customClass: { popup: 'notification-toast' }
                 });
+            });
+            if (compromissos.length === 0) listaAdmin.innerHTML = '<p style="color: #6b7280;">Nenhum compromisso cadastrado ainda.</p>';
+        }
+
+        function carregarParaEdicao(comp) {
+            if (!comp) return;
+            document.getElementById('adminEditId').value = comp.id;
+            document.getElementById('adminTitulo').value = comp.titulo || '';
+            document.getElementById('adminData').value = formatarDataVisao(comp.dia);
+            document.getElementById('adminDataFim').value = formatarDataVisao(comp.diaFim);
+            document.getElementById('adminHora').value = formatarHoraVisao(comp.hora);
+            document.getElementById('adminHoraFim').value = formatarHoraVisao(comp.horaFim);
+            document.getElementById('adminLocal').value = comp.local || '';
+            document.getElementById('adminParticipantes').value = comp.participantes || '';
+            document.getElementById('adminDescricao').value = comp.descricao || '';
+            document.getElementById('adminStatus').value = comp.status || 'Pendente';
+            document.getElementById('btnSalvar').style.display = 'none';
+            document.getElementById('btnAtualizar').style.display = 'inline-block';
+            document.getElementById('editModeIndicator').style.display = 'inline-block';
+            document.getElementById('formAdmin').style.display = 'block';
+            document.getElementById('btnToggleAdminForm').innerHTML = '➖ Ocultar Formulário';
+            document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ==========================================
+        // POPUP
+        // ==========================================
+        function abrirPopup(comp) {
+            if (!comp) return;
+            compromissoAtual = comp;
+            document.getElementById('popupTitulo').textContent = comp.titulo || 'Sem título';
+            var dataExibicao = formatarDataBR(comp.dia);
+            if (comp.diaFim) dataExibicao += ' até ' + formatarDataBR(comp.diaFim);
+            document.getElementById('popupDia').textContent = dataExibicao || '--/--/----';
+            var horaExibicao = formatarHoraVisao(comp.hora);
+            if (comp.horaFim) { var horaFimExibicao = formatarHoraVisao(comp.horaFim); horaExibicao = horaExibicao + ' às ' + horaFimExibicao; }
+            document.getElementById('popupHora').textContent = horaExibicao;
+            document.getElementById('popupLocal').textContent = comp.local || 'Local não informado';
+            document.getElementById('popupParticipantes').textContent = comp.participantes || 'Não informado';
+            if (comp.descricao && comp.descricao.trim() !== '') {
+                document.getElementById('popupDescricaoContainer').style.display = 'block';
+                document.getElementById('popupDescricao').textContent = comp.descricao;
+            } else {
+                document.getElementById('popupDescricaoContainer').style.display = 'none';
+                document.getElementById('popupDescricao').textContent = '';
+            }
+            var ps = document.getElementById('popupStatus');
+            ps.textContent = comp.status || 'Pendente';
+            var bgColor = '#e8f5e9', textColor = '#009739';
+            var statusLower = (comp.status || 'Pendente').toLowerCase();
+            if (statusLower === 'concluído' || statusLower === 'concluido') { bgColor = '#dcfce7'; textColor = '#166534'; }
+            else if (statusLower === 'cancelado') { bgColor = '#fee2e2'; textColor = '#b91c1c'; }
+            else if (statusLower === 'pendente' || statusLower === 'adiado') {
+                if (comp.dia) {
+                    var hoje = new Date(); hoje.setHours(0,0,0,0);
+                    var dataComp = new Date(formatarDataVisao(comp.dia) + 'T00:00:00');
+                    if (dataComp < hoje) { bgColor = '#fee2e2'; textColor = '#b91c1c'; } else { bgColor = '#fef9c3'; textColor = '#92400e'; }
+                } else { bgColor = '#fef9c3'; textColor = '#92400e'; }
+            }
+            ps.style.backgroundColor = bgColor; ps.style.color = textColor;
+            var porDiv = document.getElementById('popupPor');
+            var porTexto = '';
+            if (comp.editadoPor && comp.editadoPor.trim() !== '') {
+                porTexto = '✏️ Editado por <strong>' + comp.editadoPor + '</strong> em ' + formatarDataHoraParaExibicao(comp.editadoEm);
+            } else if (comp.criadoPor && comp.criadoPor.trim() !== '') {
+                porTexto = '📝 Criado por <strong>' + comp.criadoPor + '</strong> em ' + formatarDataHoraParaExibicao(comp.criadoEm);
+            }
+            porDiv.innerHTML = porTexto;
+            porDiv.style.display = porTexto ? 'block' : 'none';
+            var temEndereco = comp.local && !comp.local.toLowerCase().includes('online') && !comp.local.toLowerCase().includes('virtual') && !comp.local.toLowerCase().includes('discord') && !comp.local.toLowerCase().includes('meet') && !comp.local.toLowerCase().includes('zoom');
+            var btnMapaPopup = document.getElementById('btnMapaPopup');
+            btnMapaPopup.style.display = temEndereco ? 'inline-block' : 'none';
+            if (temEndereco) btnMapaPopup.onclick = function() { abrirGoogleMaps(comp.local); };
+            document.getElementById('popupOverlay').classList.add('ativo');
+        }
+
+        document.getElementById('popupClose').addEventListener('click', function() { document.getElementById('popupOverlay').classList.remove('ativo'); });
+        document.getElementById('btnFechar').addEventListener('click', function() { document.getElementById('popupOverlay').classList.remove('ativo'); });
+
+        function atualizarCompromissoNoArray(compAtualizado) {
+            var index = compromissos.findIndex(function(c) { return String(c.id) === String(compAtualizado.id); });
+            if (index !== -1) { compromissos[index] = compAtualizado; }
+            renderDaysCarousel(); aplicarFiltros();
+        }
+
+        async function acaoCancelar() {
+            if (!compromissoAtual || !usuarioAtual) return;
+            if (compromissoAtual.status === 'Cancelado') { Swal.fire('Aviso', 'Este compromisso já está cancelado.', 'warning'); return; }
+            var agora = obterDataHoraAtual();
+            compromissoAtual.status = 'Cancelado';
+            compromissoAtual.editadoPor = usuarioAtual;
+            compromissoAtual.editadoEm = agora;
+            atualizarCompromissoNoArray(compromissoAtual);
+            document.getElementById('popupOverlay').classList.remove('ativo');
+            Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('atualizar', compromissoAtual);
+            if (result.status !== 'sucesso') {
+                Swal.fire({ title: '⚠️ Modo Offline', text: 'Alteração salva localmente.', icon: 'warning', timer: 2000, showConfirmButton: false });
+            } else {
+                Swal.fire({ title: 'Cancelado!', text: 'Compromisso cancelado por ' + usuarioAtual, icon: 'success', timer: 1500, showConfirmButton: false });
             }
         }
 
-        var sistemaNotificacao = new SistemaNotificacao();
-        document.getElementById('btnNotificacao').addEventListener('click', function() {
-            sistemaNotificacao.solicitarPermissao();
+        async function acaoConcluir() {
+            if (!compromissoAtual || !usuarioAtual) return;
+            if (compromissoAtual.status === 'Concluído' || compromissoAtual.status === 'Concluido') { Swal.fire('Aviso', 'Este compromisso já está concluído.', 'warning'); return; }
+            if (compromissoAtual.status === 'Cancelado') { Swal.fire('Aviso', 'Não é possível concluir um compromisso cancelado.', 'warning'); return; }
+            var agora = obterDataHoraAtual();
+            compromissoAtual.status = 'Concluído';
+            compromissoAtual.editadoPor = usuarioAtual;
+            compromissoAtual.editadoEm = agora;
+            atualizarCompromissoNoArray(compromissoAtual);
+            document.getElementById('popupOverlay').classList.remove('ativo');
+            Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('atualizar', compromissoAtual);
+            if (result.status !== 'sucesso') {
+                Swal.fire({ title: '⚠️ Modo Offline', text: 'Alteração salva localmente.', icon: 'warning', timer: 2000, showConfirmButton: false });
+            } else {
+                Swal.fire({ title: 'Concluído!', text: 'Compromisso concluído por ' + usuarioAtual, icon: 'success', timer: 1500, showConfirmButton: false });
+            }
+        }
+
+        function acaoAdiar() {
+            if (!compromissoAtual || !usuarioAtual) return;
+            if (compromissoAtual.status === 'Cancelado') { Swal.fire('Aviso', 'Não é possível adiar um compromisso cancelado.', 'warning'); return; }
+            document.getElementById('adiarDataInput').value = formatarDataVisao(compromissoAtual.dia);
+            document.getElementById('adiarDataFimInput').value = formatarDataVisao(compromissoAtual.diaFim);
+            document.getElementById('adiarHoraInput').value = formatarHoraVisao(compromissoAtual.hora);
+            document.getElementById('adiarHoraFimInput').value = formatarHoraVisao(compromissoAtual.horaFim);
+            document.getElementById('adiarLocalInput').value = compromissoAtual.local || '';
+            document.getElementById('adiarOverlay').classList.add('ativo');
+        }
+
+        document.getElementById('btnFecharAdiar').addEventListener('click', function() { document.getElementById('adiarOverlay').classList.remove('ativo'); });
+        document.getElementById('adiarOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('adiarOverlay')) document.getElementById('adiarOverlay').classList.remove('ativo'); });
+
+        document.getElementById('btnConfirmarAdiar').addEventListener('click', async function() {
+            if (!compromissoAtual) return;
+            var novaData = document.getElementById('adiarDataInput').value;
+            var novaDataFim = document.getElementById('adiarDataFimInput').value;
+            var novaHora = document.getElementById('adiarHoraInput').value;
+            var novaHoraFim = document.getElementById('adiarHoraFimInput').value;
+            var novoLocal = document.getElementById('adiarLocalInput').value.trim();
+            if (!novaData) { Swal.fire('Aviso', 'A data de início é obrigatória.', 'warning'); return; }
+            var agora = obterDataHoraAtual();
+            compromissoAtual.dia = novaData;
+            compromissoAtual.diaFim = novaDataFim;
+            compromissoAtual.hora = novaHora;
+            compromissoAtual.horaFim = novaHoraFim;
+            if (novoLocal) compromissoAtual.local = novoLocal;
+            compromissoAtual.status = 'Adiado';
+            compromissoAtual.editadoPor = usuarioAtual;
+            compromissoAtual.editadoEm = agora;
+            atualizarCompromissoNoArray(compromissoAtual);
+            document.getElementById('popupOverlay').classList.remove('ativo');
+            document.getElementById('adiarOverlay').classList.remove('ativo');
+            Swal.fire({ title: 'Salvando nova data...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('atualizar', compromissoAtual);
+            if (result.status !== 'sucesso') {
+                Swal.fire({ title: '⚠️ Modo Offline', text: 'Alteração salva localmente.', icon: 'warning', timer: 2000, showConfirmButton: false });
+            } else {
+                Swal.fire({ title: 'Adiado!', text: 'O compromisso foi adiado por ' + usuarioAtual, icon: 'success', timer: 2000, showConfirmButton: false });
+            }
+        });
+
+        document.getElementById('btnCancelar').addEventListener('click', acaoCancelar);
+        document.getElementById('btnConcluir').addEventListener('click', acaoConcluir);
+        document.getElementById('btnAdiar').addEventListener('click', acaoAdiar);
+
+        // ==========================================
+        // ADMIN FORM
+        // ==========================================
+        document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
+            var form = document.getElementById('formAdmin');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+                this.innerHTML = '➖ Ocultar Formulário';
+                this.style.background = '#f3f4f6'; this.style.color = '#555'; this.style.borderColor = '#d1d5db';
+            } else {
+                form.style.display = 'none';
+                this.innerHTML = '➕ Adicionar Novo Compromisso';
+                this.style.background = '#e8f5e9'; this.style.color = '#009739'; this.style.borderColor = '#009739';
+            }
+        });
+
+        document.getElementById('btnLimparForm').addEventListener('click', limparFormAdmin);
+
+        document.getElementById('formAdmin').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!usuarioAtual) { Swal.fire('Aviso', 'Você precisa estar logado.', 'warning'); return; }
+            var titulo = document.getElementById('adminTitulo').value.trim();
+            var dia = document.getElementById('adminData').value;
+            var diaFim = document.getElementById('adminDataFim').value;
+            var hora = document.getElementById('adminHora').value;
+            var horaFim = document.getElementById('adminHoraFim').value;
+            var local = document.getElementById('adminLocal').value.trim();
+            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
+            var descricao = document.getElementById('adminDescricao').value.trim() || '';
+            var status = document.getElementById('adminStatus').value;
+            if (!titulo || !dia || !hora || !local) { Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning'); return; }
+            var agora = obterDataHoraAtual();
+            var novo = { id: proximoId++, titulo: titulo, dia: dia, diaFim: diaFim, hora: hora, horaFim: horaFim, local: local, participantes: participantes, descricao: descricao, status: status, criadoPor: usuarioAtual, criadoEm: agora, editadoPor: '', editadoEm: '' };
+            Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('adicionar', novo);
+            if (result.status === 'sucesso') {
+                novo.id = result.id; compromissos.push(novo); renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin(); limparFormAdmin();
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                Swal.fire({ title: 'Sucesso!', text: 'Compromisso cadastrado por ' + usuarioAtual, icon: 'success', timer: 2000, showConfirmButton: false });
+            } else {
+                compromissos.push(novo); renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin(); limparFormAdmin();
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                Swal.fire({ title: '⚠️ Modo Offline', text: 'Compromisso salvo localmente.', icon: 'warning', timer: 3000, showConfirmButton: false });
+            }
+        });
+
+        document.getElementById('btnAtualizar').addEventListener('click', async function(e) {
+            e.preventDefault();
+            if (!usuarioAtual) { Swal.fire('Aviso', 'Você precisa estar logado.', 'warning'); return; }
+            var id = parseInt(document.getElementById('adminEditId').value);
+            if (!id) { Swal.fire('Erro', 'Nenhum compromisso selecionado.', 'warning'); return; }
+            var titulo = document.getElementById('adminTitulo').value.trim();
+            var dia = document.getElementById('adminData').value;
+            var diaFim = document.getElementById('adminDataFim').value;
+            var hora = document.getElementById('adminHora').value;
+            var horaFim = document.getElementById('adminHoraFim').value;
+            var local = document.getElementById('adminLocal').value.trim();
+            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
+            var descricao = document.getElementById('adminDescricao').value.trim() || '';
+            var status = document.getElementById('adminStatus').value;
+            if (!titulo || !dia || !hora || !local) { Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning'); return; }
+            var index = compromissos.findIndex(function(c) { return String(c.id) === String(id); });
+            if (index === -1) { Swal.fire('Erro', 'Compromisso não encontrado.', 'error'); return; }
+            var agora = obterDataHoraAtual();
+            var dadosAtualizados = { id: id, titulo: titulo, dia: dia, diaFim: diaFim, hora: hora, horaFim: horaFim, local: local, participantes: participantes, descricao: descricao, status: status, editadoPor: usuarioAtual, editadoEm: agora };
+            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('atualizar', dadosAtualizados);
+            if (result.status === 'sucesso') {
+                compromissos[index] = dadosAtualizados; renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin(); limparFormAdmin();
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                Swal.fire({ title: 'Sucesso!', text: 'Compromisso atualizado por ' + usuarioAtual, icon: 'success', timer: 2000, showConfirmButton: false });
+            } else {
+                compromissos[index] = dadosAtualizados; renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin(); limparFormAdmin();
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                Swal.fire({ title: '⚠️ Modo Offline', text: 'Compromisso atualizado localmente.', icon: 'warning', timer: 3000, showConfirmButton: false });
+            }
+        });
+
+        document.getElementById('btnFecharAdmin').addEventListener('click', function() {
+            if (!confirm('Tem certeza que deseja fechar o painel administrativo?')) return;
+            document.getElementById('adminPanel').classList.remove('ativo');
+            document.getElementById('lockBtn').innerHTML = '🔒';
+        });
+
+        document.getElementById('lockBtn').addEventListener('click', function() {
+            if (adminLogado) {
+                document.getElementById('adminPanel').classList.toggle('ativo');
+                if (document.getElementById('adminPanel').classList.contains('ativo')) {
+                    renderizarListaAdmin();
+                    atualizarChatAdmin();
+                }
+            }
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('ativo'); });
+                document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('ativo'); });
+                btn.classList.add('ativo');
+                document.getElementById(btn.dataset.tab).classList.add('ativo');
+                if (btn.dataset.tab === 'tabChat' && adminLogado) atualizarChatAdmin();
+            });
         });
 
         // ==========================================
         // CHAT
         // ==========================================
-        var isSincronizandoChat = false;
+        let isSincronizandoChat = false;
 
         async function sincronizarChat() {
             if (isSincronizandoChat) return;
@@ -1213,18 +1440,12 @@
                 }
                 var dadosServidor = msgsServer.dados;
                 var msgsLocaisReais = mensagensChat.filter(function(m) { return !String(m.id).startsWith('temp_'); });
-
                 if (dadosServidor.length > msgsLocaisReais.length) {
                     var qtdNovas = dadosServidor.length - msgsLocaisReais.length;
                     var novasMensagens = dadosServidor.slice(-qtdNovas);
-
                     var msgsTemporarias = mensagensChat.filter(function(m) { return String(m.id).startsWith('temp_'); });
                     mensagensChat = dadosServidor.concat(msgsTemporarias);
-
-                    var dispararNotificacao = false;
-                    var tituloNotif = '';
-                    var bodyNotif = '';
-
+                    var dispararNotificacao = false, tituloNotif = '', bodyNotif = '';
                     novasMensagens.forEach(function(msg) {
                         if (!adminLogado && msg.remetente === 'admin') {
                             dispararNotificacao = true;
@@ -1235,18 +1456,15 @@
                                 badge.style.display = 'flex';
                                 badge.textContent = parseInt(badge.textContent || 0) + 1;
                             }
-                        } 
-                        else if (adminLogado && msg.remetente === 'user') {
+                        } else if (adminLogado && msg.remetente === 'user') {
                             dispararNotificacao = true;
                             tituloNotif = 'Nova mensagem de um usuário';
                             bodyNotif = msg.texto.substring(0, 100);
                         }
                     });
-
                     if (dispararNotificacao) {
                         sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
                     }
-
                     atualizarChatUsuario();
                     if (adminLogado) atualizarChatAdmin();
                 }
@@ -1258,11 +1476,9 @@
             var agora = new Date().toISOString();
             var tempId = 'temp_' + Date.now();
             var mensagemTemp = { id: tempId, remetente: remetente, texto: texto, data: agora, lida: false, lidaUser: false };
-            
             mensagensChat.push(mensagemTemp);
             atualizarChatUsuario();
             if (adminLogado) atualizarChatAdmin();
-
             var result = await fetchGoogle('adicionar_chat', { remetente: remetente, texto: texto, data: agora, lida: false });
             if (result.status === 'sucesso') {
                 mensagensChat = mensagensChat.filter(function(m) { return m.id !== tempId; });
@@ -1314,17 +1530,9 @@
             if (!adminLogado) return;
             var naoLidas = mensagensChat.filter(function(m) { return m.remetente === 'user' && !m.lida; }).length;
             var badge = document.getElementById('adminChatBadge');
-            if (naoLidas > 0) {
-                badge.textContent = naoLidas;
-                badge.style.display = 'inline';
-            } else {
-                badge.style.display = 'none';
-            }
+            if (naoLidas > 0) { badge.textContent = naoLidas; badge.style.display = 'inline'; } else { badge.style.display = 'none'; }
         }
 
-        // ==========================================
-        // EVENTOS CHAT
-        // ==========================================
         document.getElementById('chatButton').addEventListener('click', function() {
             var cw = document.getElementById('chatWindow');
             cw.classList.toggle('aberto');
@@ -1335,7 +1543,9 @@
                 badge.textContent = '0';
             }
         });
+
         document.getElementById('closeChat').addEventListener('click', function() { document.getElementById('chatWindow').classList.remove('aberto'); });
+
         document.getElementById('chatSend').addEventListener('click', function() {
             var input = document.getElementById('chatInput');
             var texto = input.value.trim();
@@ -1343,7 +1553,9 @@
             adicionarMensagemChat('user', texto);
             input.value = '';
         });
+
         document.getElementById('chatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('chatSend').click(); });
+
         document.getElementById('adminChatSend').addEventListener('click', function() {
             var input = document.getElementById('adminChatInput');
             var texto = input.value.trim();
@@ -1354,617 +1566,62 @@
             badge.style.display = 'none';
             badge.textContent = '0';
         });
+
         document.getElementById('adminChatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('adminChatSend').click(); });
 
         // ==========================================
-        // ADMIN - CRUD COM REGISTRO DE QUEM FEZ
-        // ==========================================
-        async function cadastrarCompromisso(e) {
-            e.preventDefault();
-
-            if (!usuarioAtual) {
-                Swal.fire('Aviso', 'Você precisa estar logado para criar compromissos.', 'warning');
-                return;
-            }
-
-            var titulo = document.getElementById('adminTitulo').value.trim();
-            var dia = document.getElementById('adminData').value;
-            var diaFim = document.getElementById('adminDataFim').value; 
-            var hora = document.getElementById('adminHora').value;
-            var horaFim = document.getElementById('adminHoraFim').value;
-            var local = document.getElementById('adminLocal').value.trim();
-            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
-            var descricao = document.getElementById('adminDescricao').value.trim() || ''; 
-            var status = document.getElementById('adminStatus').value;
-
-            if (!titulo || !dia || !hora || !local) {
-                Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
-                return;
-            }
-
-            var agora = obterDataHoraAtual();
-
-            var novo = {
-                id: proximoId++,
-                titulo: titulo,
-                dia: dia,
-                diaFim: diaFim, 
-                hora: hora,
-                horaFim: horaFim,
-                local: local,
-                participantes: participantes,
-                descricao: descricao, 
-                status: status,
-                criadoPor: usuarioAtual,
-                criadoEm: agora,
-                editadoPor: null,
-                editadoEm: null
-            };
-
-            Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            var result = await fetchGoogle('adicionar', novo);
-            
-            if (result.status === 'sucesso') {
-                novo.id = result.id; 
-                compromissos.push(novo);
-                renderDaysCarousel();
-                aplicarFiltros();
-                if (adminLogado) renderizarListaAdmin();
-                limparFormAdmin();
-                
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
-                
-                Swal.fire({
-                    title: 'Sucesso!',
-                    text: 'Compromisso cadastrado por ' + usuarioAtual,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    title: 'Erro!',
-                    text: result.mensagem || 'Erro ao cadastrar compromisso',
-                    icon: 'error'
-                });
-            }
-        }
-
-        async function atualizarCompromissoAdmin(e) {
-            e.preventDefault();
-
-            if (!usuarioAtual) {
-                Swal.fire('Aviso', 'Você precisa estar logado para atualizar compromissos.', 'warning');
-                return;
-            }
-
-            var id = parseInt(document.getElementById('adminEditId').value);
-            if (!id) {
-                Swal.fire('Erro', 'Nenhum compromisso selecionado para edição.', 'warning');
-                return;
-            }
-
-            var titulo = document.getElementById('adminTitulo').value.trim();
-            var dia = document.getElementById('adminData').value;
-            var diaFim = document.getElementById('adminDataFim').value; 
-            var hora = document.getElementById('adminHora').value;
-            var horaFim = document.getElementById('adminHoraFim').value;
-            var local = document.getElementById('adminLocal').value.trim();
-            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
-            var descricao = document.getElementById('adminDescricao').value.trim() || ''; 
-            var status = document.getElementById('adminStatus').value;
-
-            if (!titulo || !dia || !hora || !local) {
-                Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
-                return;
-            }
-
-            var index = compromissos.findIndex(function(c) { return String(c.id) === String(id); });
-            if (index === -1) {
-                Swal.fire('Erro', 'Compromisso não encontrado.', 'error');
-                return;
-            }
-
-            var agora = obterDataHoraAtual();
-
-            var dadosAtualizados = {
-                id: id,
-                titulo: titulo,
-                dia: dia,
-                diaFim: diaFim, 
-                hora: hora,
-                horaFim: horaFim,
-                local: local,
-                participantes: participantes,
-                descricao: descricao, 
-                status: status,
-                editadoPor: usuarioAtual,
-                editadoEm: agora
-            };
-
-            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            var result = await fetchGoogle('atualizar', dadosAtualizados);
-            
-            if (result.status === 'sucesso') {
-                compromissos[index] = dadosAtualizados;
-                renderDaysCarousel();
-                aplicarFiltros();
-                if (adminLogado) renderizarListaAdmin();
-                limparFormAdmin();
-                
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
-                
-                Swal.fire({
-                    title: 'Sucesso!',
-                    text: 'Compromisso atualizado por ' + usuarioAtual,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    title: 'Erro!',
-                    text: result.mensagem || 'Erro ao atualizar compromisso',
-                    icon: 'error'
-                });
-            }
-        }
-
-        function limparFormAdmin() {
-            document.getElementById('adminEditId').value = '';
-            document.getElementById('adminTitulo').value = '';
-            document.getElementById('adminData').value = new Date().toISOString().split('T')[0];
-            document.getElementById('adminDataFim').value = ''; 
-            document.getElementById('adminHora').value = '';
-            document.getElementById('adminHoraFim').value = '';
-            document.getElementById('adminLocal').value = '';
-            document.getElementById('adminParticipantes').value = '';
-            document.getElementById('adminDescricao').value = ''; 
-            document.getElementById('adminStatus').value = 'Pendente';
-            document.getElementById('btnSalvar').style.display = 'inline-block';
-            document.getElementById('btnAtualizar').style.display = 'none';
-            document.getElementById('editModeIndicator').style.display = 'none';
-        }
-
-        function renderizarListaAdmin() {
-            if (!adminLogado) return;
-            var listaAdmin = document.getElementById('listaAdmin');
-            listaAdmin.innerHTML = '';
-            compromissos.forEach(function(comp) {
-                var item = document.createElement('div');
-                item.className = 'item-admin';
-                
-                var strDataAdmin = formatarDataBR(comp.dia);
-                if (comp.diaFim) strDataAdmin += ' a ' + formatarDataBR(comp.diaFim);
-
-                var horaExibicao = formatarHoraVisao(comp.hora);
-                if (comp.horaFim) {
-                    var horaFimExibicao = formatarHoraVisao(comp.horaFim);
-                    horaExibicao = horaExibicao + ' as ' + horaFimExibicao;
-                }
-
-                var editadoInfo = '';
-                if (comp.editadoPor) {
-                    editadoInfo = ' | ✏️ ' + comp.editadoPor + ' em ' + formatarDataHoraParaExibicao(comp.editadoEm);
-                } else if (comp.criadoPor) {
-                    editadoInfo = ' | 📝 ' + comp.criadoPor;
-                }
-
-                item.innerHTML = 
-                    '<div class="info">' +
-                        '<span class="titulo">' + (comp.titulo || 'Sem titulo') + '</span>' +
-                        '<span class="data">📅 ' + strDataAdmin + ' | 🕒 ' + horaExibicao + '</span>' +
-                        '<span class="data">📍 ' + (comp.local || 'Local nao informado') + '</span>' +
-                        '<span class="data" style="color: #009739; font-weight: 600;">' + (comp.status || 'Pendente') + '</span>' +
-                        '<span class="data" style="color: #888; font-size: 0.75rem;">' + editadoInfo + '</span>' +
-                    '</div>' +
-                    '<div class="acoes">' +
-                        '<button class="btn-editar" data-id="' + comp.id + '">✏️ Editar</button>' +
-                        '<button class="btn-excluir" data-id="' + comp.id + '">🗑️ Excluir</button>' +
-                    '</div>';
-                listaAdmin.appendChild(item);
-
-                item.querySelector('.btn-editar').addEventListener('click', function() { carregarParaEdicao(comp); });
-                item.querySelector('.btn-excluir').addEventListener('click', async function() {
-                    var confirm = await Swal.fire({
-                        title: 'Confirmar exclusão',
-                        text: 'Tem certeza que deseja excluir "' + comp.titulo + '"?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Sim, excluir',
-                        cancelButtonText: 'Cancelar',
-                        confirmButtonColor: '#dc2626'
-                    });
-
-                    if (!confirm.isConfirmed) return;
-
-                    Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-                    var result = await fetchGoogle('excluir', {id: comp.id});
-                    if (result.status === 'sucesso') {
-                        compromissos = compromissos.filter(function(c) { return String(c.id) !== String(comp.id); });
-                        renderDaysCarousel();
-                        aplicarFiltros();
-                        if (adminLogado) renderizarListaAdmin();
-                        Swal.fire({
-                            title: 'Excluído!',
-                            text: 'Compromisso excluído com sucesso!',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                    } else {
-                        Swal.fire('Erro!', result.mensagem || 'Erro ao excluir', 'error');
-                    }
-                });
-            });
-
-            if (compromissos.length === 0) {
-                listaAdmin.innerHTML = '<p style="color: #6b7280;">Nenhum compromisso cadastrado ainda.</p>';
-            }
-        }
-
-        function carregarParaEdicao(comp) {
-            if (!comp) return;
-
-            document.getElementById('adminEditId').value = comp.id;
-            document.getElementById('adminTitulo').value = comp.titulo || '';
-            document.getElementById('adminData').value = formatarDataVisao(comp.dia);
-            document.getElementById('adminDataFim').value = formatarDataVisao(comp.diaFim); 
-            document.getElementById('adminHora').value = formatarHoraVisao(comp.hora);
-            document.getElementById('adminHoraFim').value = formatarHoraVisao(comp.horaFim);
-            document.getElementById('adminLocal').value = comp.local || '';
-            document.getElementById('adminParticipantes').value = comp.participantes || '';
-            document.getElementById('adminDescricao').value = comp.descricao || ''; 
-            document.getElementById('adminStatus').value = comp.status || 'Pendente';
-
-            document.getElementById('btnSalvar').style.display = 'none';
-            document.getElementById('btnAtualizar').style.display = 'inline-block';
-            document.getElementById('editModeIndicator').style.display = 'inline-block';
-            
-            document.getElementById('formAdmin').style.display = 'block';
-            document.getElementById('btnToggleAdminForm').innerHTML = '➖ Ocultar Formulário';
-            
-            document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        // ==========================================
-        // POPUP
-        // ==========================================
-        function abrirPopup(comp) {
-            if (!comp) return;
-
-            compromissoAtual = comp;
-
-            document.getElementById('popupTitulo').textContent = comp.titulo || 'Sem título';
-            
-            var dataExibicao = formatarDataBR(comp.dia);
-            if (comp.diaFim) {
-                dataExibicao += ' até ' + formatarDataBR(comp.diaFim);
-            }
-            document.getElementById('popupDia').textContent = dataExibicao || '--/--/----';
-
-            var horaExibicao = formatarHoraVisao(comp.hora);
-            if (comp.horaFim) {
-                var horaFimExibicao = formatarHoraVisao(comp.horaFim);
-                horaExibicao = horaExibicao + ' às ' + horaFimExibicao;
-            }
-            document.getElementById('popupHora').textContent = horaExibicao;
-
-            document.getElementById('popupLocal').textContent = comp.local || 'Local não informado';
-            document.getElementById('popupParticipantes').textContent = comp.participantes || 'Não informado';
-
-            if (comp.descricao && comp.descricao.trim() !== '') {
-                document.getElementById('popupDescricaoContainer').style.display = 'block';
-                document.getElementById('popupDescricao').textContent = comp.descricao;
-            } else {
-                document.getElementById('popupDescricaoContainer').style.display = 'none';
-                document.getElementById('popupDescricao').textContent = '';
-            }
-
-            var ps = document.getElementById('popupStatus');
-            ps.textContent = comp.status || 'Pendente';
-            var bgColor = '#e8f5e9';
-            var textColor = '#009739';
-            
-            var statusLower = (comp.status || 'Pendente').toLowerCase();
-            if (statusLower === 'concluído' || statusLower === 'concluido') {
-                bgColor = '#dcfce7'; 
-                textColor = '#166534';
-            } else if (statusLower === 'cancelado') {
-                bgColor = '#fee2e2'; 
-                textColor = '#b91c1c';
-            } else if (statusLower === 'pendente' || statusLower === 'adiado') {
-                if (comp.dia) {
-                    var hoje = new Date();
-                    hoje.setHours(0, 0, 0, 0);
-                    var dataComp = new Date(formatarDataVisao(comp.dia) + 'T00:00:00');
-                    if (dataComp < hoje) {
-                        bgColor = '#fee2e2'; 
-                        textColor = '#b91c1c';
-                    } else {
-                        bgColor = '#fef9c3'; 
-                        textColor = '#92400e';
-                    }
-                } else {
-                    bgColor = '#fef9c3'; 
-                    textColor = '#92400e';
-                }
-            }
-            
-            ps.style.backgroundColor = bgColor;
-            ps.style.color = textColor;
-
-            // Mostrar quem editou/criou
-            var porDiv = document.getElementById('popupPor');
-            var porTexto = '';
-            if (comp.editadoPor) {
-                porTexto = '✏️ Editado por <strong>' + comp.editadoPor + '</strong> em ' + formatarDataHoraParaExibicao(comp.editadoEm);
-            } else if (comp.criadoPor) {
-                porTexto = '📝 Criado por <strong>' + comp.criadoPor + '</strong> em ' + formatarDataHoraParaExibicao(comp.criadoEm);
-            }
-            porDiv.innerHTML = porTexto;
-            porDiv.style.display = porTexto ? 'block' : 'none';
-
-            var temEndereco = comp.local && 
-                !comp.local.toLowerCase().includes('online') && 
-                !comp.local.toLowerCase().includes('virtual') &&
-                !comp.local.toLowerCase().includes('discord') &&
-                !comp.local.toLowerCase().includes('meet') &&
-                !comp.local.toLowerCase().includes('zoom');
-            
-            var btnMapaPopup = document.getElementById('btnMapaPopup');
-            btnMapaPopup.style.display = temEndereco ? 'inline-block' : 'none';
-            if (temEndereco) {
-                btnMapaPopup.onclick = function() { abrirGoogleMaps(comp.local); };
-            }
-
-            document.getElementById('popupOverlay').classList.add('ativo');
-        }
-
-        document.getElementById('popupClose').addEventListener('click', function() { document.getElementById('popupOverlay').classList.remove('ativo'); });
-        document.getElementById('btnFechar').addEventListener('click', function() { document.getElementById('popupOverlay').classList.remove('ativo'); });
-
-        function atualizarCompromissoNoArray(compAtualizado) {
-            var index = compromissos.findIndex(function(c) { return String(c.id) === String(compAtualizado.id); });
-            if (index !== -1) {
-                compromissos[index] = compAtualizado;
-            }
-            renderDaysCarousel();
-            aplicarFiltros();
-        }
-
-        async function acaoCancelar() {
-            if (!compromissoAtual) return;
-            if (!usuarioAtual) {
-                Swal.fire('Aviso', 'Você precisa estar logado para cancelar.', 'warning');
-                return;
-            }
-            if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Este compromisso já está cancelado.', 'warning');
-                return;
-            }
-            
-            var agora = obterDataHoraAtual();
-            compromissoAtual.status = 'Cancelado';
-            compromissoAtual.editadoPor = usuarioAtual;
-            compromissoAtual.editadoEm = agora;
-            
-            atualizarCompromissoNoArray(compromissoAtual);
-            document.getElementById('popupOverlay').classList.remove('ativo');
-
-            Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            await fetchGoogle('atualizar', compromissoAtual);
-            Swal.fire({ 
-                title: 'Cancelado!', 
-                text: 'Compromisso cancelado por ' + usuarioAtual, 
-                icon: 'success', 
-                timer: 1500, 
-                showConfirmButton: false 
-            });
-        }
-
-        async function acaoConcluir() {
-            if (!compromissoAtual) return;
-            if (!usuarioAtual) {
-                Swal.fire('Aviso', 'Você precisa estar logado para concluir.', 'warning');
-                return;
-            }
-            if (compromissoAtual.status === 'Concluído' || compromissoAtual.status === 'Concluido') {
-                Swal.fire('Aviso', 'Este compromisso já está concluído.', 'warning');
-                return;
-            }
-            if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Não é possível concluir um compromisso cancelado.', 'warning');
-                return;
-            }
-            
-            var agora = obterDataHoraAtual();
-            compromissoAtual.status = 'Concluído';
-            compromissoAtual.editadoPor = usuarioAtual;
-            compromissoAtual.editadoEm = agora;
-            
-            atualizarCompromissoNoArray(compromissoAtual);
-            document.getElementById('popupOverlay').classList.remove('ativo');
-
-            Swal.fire({ title: 'Salvando status...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            await fetchGoogle('atualizar', compromissoAtual);
-            Swal.fire({ 
-                title: 'Concluído!', 
-                text: 'Compromisso concluído por ' + usuarioAtual, 
-                icon: 'success', 
-                timer: 1500, 
-                showConfirmButton: false 
-            });
-        }
-
-        function acaoAdiar() {
-            if (!compromissoAtual) return;
-            if (!usuarioAtual) {
-                Swal.fire('Aviso', 'Você precisa estar logado para adiar.', 'warning');
-                return;
-            }
-            if (compromissoAtual.status === 'Cancelado') {
-                Swal.fire('Aviso', 'Não é possível adiar um compromisso cancelado.', 'warning');
-                return;
-            }
-
-            document.getElementById('adiarDataInput').value = formatarDataVisao(compromissoAtual.dia);
-            document.getElementById('adiarDataFimInput').value = formatarDataVisao(compromissoAtual.diaFim);
-            document.getElementById('adiarHoraInput').value = formatarHoraVisao(compromissoAtual.hora);
-            document.getElementById('adiarHoraFimInput').value = formatarHoraVisao(compromissoAtual.horaFim);
-            document.getElementById('adiarLocalInput').value = compromissoAtual.local || '';
-
-            document.getElementById('adiarOverlay').classList.add('ativo');
-        }
-
-        document.getElementById('btnFecharAdiar').addEventListener('click', function() {
-            document.getElementById('adiarOverlay').classList.remove('ativo');
-        });
-
-        document.getElementById('adiarOverlay').addEventListener('click', function(e) {
-            if (e.target === document.getElementById('adiarOverlay')) {
-                document.getElementById('adiarOverlay').classList.remove('ativo');
-            }
-        });
-
-        document.getElementById('btnConfirmarAdiar').addEventListener('click', async function() {
-            if (!compromissoAtual) return;
-
-            var novaData = document.getElementById('adiarDataInput').value;
-            var novaDataFim = document.getElementById('adiarDataFimInput').value;
-            var novaHora = document.getElementById('adiarHoraInput').value;
-            var novaHoraFim = document.getElementById('adiarHoraFimInput').value;
-            var novoLocal = document.getElementById('adiarLocalInput').value.trim();
-
-            if (!novaData) {
-                Swal.fire('Aviso', 'A data de início é obrigatória.', 'warning');
-                return;
-            }
-
-            var agora = obterDataHoraAtual();
-            compromissoAtual.dia = novaData;
-            compromissoAtual.diaFim = novaDataFim;
-            compromissoAtual.hora = novaHora;
-            compromissoAtual.horaFim = novaHoraFim;
-            if (novoLocal) compromissoAtual.local = novoLocal;
-            compromissoAtual.status = 'Adiado';
-            compromissoAtual.editadoPor = usuarioAtual;
-            compromissoAtual.editadoEm = agora;
-            
-            atualizarCompromissoNoArray(compromissoAtual);
-            document.getElementById('popupOverlay').classList.remove('ativo');
-            document.getElementById('adiarOverlay').classList.remove('ativo');
-
-            Swal.fire({ title: 'Salvando nova data...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            await fetchGoogle('atualizar', compromissoAtual);
-            Swal.fire({ 
-                title: 'Adiado!', 
-                text: 'O compromisso foi adiado por ' + usuarioAtual, 
-                icon: 'success', 
-                timer: 2000, 
-                showConfirmButton: false 
-            });
-        });
-
-        document.getElementById('btnCancelar').addEventListener('click', acaoCancelar);
-        document.getElementById('btnConcluir').addEventListener('click', acaoConcluir);
-        document.getElementById('btnAdiar').addEventListener('click', acaoAdiar);
-
-        // ==========================================
-        // FUNÇÕES DE COMPARTILHAMENTO
+        // COMPARTILHAMENTO
         // ==========================================
         function gerarTextoAgenda(periodo) {
             periodo = periodo || 'all';
             var lista = [];
-            if (periodo === 'all') {
-                lista = compromissos.slice();
-            } else if (periodo === 'month') {
+            if (periodo === 'all') lista = compromissos.slice();
+            else if (periodo === 'month') {
                 var mesAtual = document.getElementById('monthSelector').value;
-                lista = compromissos.filter(function(c) {
-                    var d = formatarDataVisao(c.dia);
-                    return d.startsWith(mesAtual);
-                });
-            } else {
-                lista = compromissosFiltrados;
-            }
-
-            if (lista.length === 0) {
-                return 'Nenhum compromisso encontrado para este período.';
-            }
-
+                lista = compromissos.filter(function(c) { var d = formatarDataVisao(c.dia); return d.startsWith(mesAtual); });
+            } else lista = compromissosFiltrados;
+            if (lista.length === 0) return 'Nenhum compromisso encontrado para este período.';
             lista.sort(function(a, b) {
-                var da = new Date(formatarDataVisao(a.dia) + 'T' + extrairHoraParaOrdenacao(a.hora)).getTime();
-                var db = new Date(formatarDataVisao(b.dia) + 'T' + extrairHoraParaOrdenacao(b.hora)).getTime();
+                var da = new Date(formatarDataVisao(a.dia) + 'T' + (formatarHoraVisao(a.hora) || '00:00')).getTime();
+                var db = new Date(formatarDataVisao(b.dia) + 'T' + (formatarHoraVisao(b.hora) || '00:00')).getTime();
                 return da - db;
             });
-
             var grupos = {};
-            lista.forEach(function(c) {
-                var dataKey = formatarDataVisao(c.dia);
-                if (!grupos[dataKey]) grupos[dataKey] = [];
-                grupos[dataKey].push(c);
-            });
-
+            lista.forEach(function(c) { var dataKey = formatarDataVisao(c.dia); if (!grupos[dataKey]) grupos[dataKey] = []; grupos[dataKey].push(c); });
             var texto = 'AGENDA - CHICO GUARNIERI\n\n';
             var diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-
             var keys = Object.keys(grupos).sort();
             keys.forEach(function(dataKey) {
                 var dataObj = new Date(dataKey + 'T12:00:00');
                 var diaSemana = diasSemana[dataObj.getDay()];
                 var dataFormatada = formatarDataBR(dataKey);
                 texto += diaSemana.toUpperCase() + ' - ' + dataFormatada + '\n';
-                
                 grupos[dataKey].forEach(function(c) {
                     var horario = formatarHoraVisao(c.hora);
                     var horaFim = c.horaFim ? ' às ' + formatarHoraVisao(c.horaFim) : '';
                     var statusIcon = c.status === 'Concluído' || c.status === 'Concluido' ? '✅' : c.status === 'Cancelado' ? '❌' : c.status === 'Adiado' ? '⏳' : '📌';
-                    
                     var linha = '   ' + statusIcon + ' ' + horario + horaFim + ' - ' + (c.titulo || 'Evento');
-                    if (c.local && c.local.trim() !== '') {
-                        linha += '\n   📍 ' + c.local;
-                    }
-                    if (c.descricao && c.descricao.trim() !== '') {
-                        linha += '\n   _' + c.descricao + '_';
-                    }
-                    if (c.participantes && c.participantes.trim() !== '' && c.participantes !== 'Não informado') {
-                        linha += '\n   👥 ' + c.participantes;
-                    }
-                    if (c.editadoPor) {
-                        linha += '\n   ✏️ Editado por ' + c.editadoPor;
-                    } else if (c.criadoPor) {
-                        linha += '\n   📝 Criado por ' + c.criadoPor;
-                    }
+                    if (c.local && c.local.trim() !== '') linha += '\n   📍 ' + c.local;
+                    if (c.descricao && c.descricao.trim() !== '') linha += '\n   _' + c.descricao + '_';
+                    if (c.participantes && c.participantes.trim() !== '' && c.participantes !== 'Não informado') linha += '\n   👥 ' + c.participantes;
+                    if (c.editadoPor && c.editadoPor.trim() !== '') linha += '\n   ✏️ Editado por ' + c.editadoPor;
+                    else if (c.criadoPor && c.criadoPor.trim() !== '') linha += '\n   📝 Criado por ' + c.criadoPor;
                     texto += linha + '\n';
                 });
                 texto += '\n';
             });
-
             return texto.trim();
         }
 
         document.getElementById('btnCompartilharWhatsApp').addEventListener('click', function() {
             var texto = gerarTextoAgenda('current');
-            
-            if (texto.includes('Nenhum compromisso')) {
-                Swal.fire('Aviso', 'Nenhum compromisso para compartilhar.', 'info');
-                return;
-            }
-
-            var url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(texto);
-            window.open(url, '_blank');
+            if (texto.includes('Nenhum compromisso')) { Swal.fire('Aviso', 'Nenhum compromisso para compartilhar.', 'info'); return; }
+            window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(texto), '_blank');
         });
 
         document.getElementById('btnCopiarAgenda').addEventListener('click', async function() {
             var texto = gerarTextoAgenda('current');
-            
-            if (texto.includes('Nenhum compromisso')) {
-                Swal.fire('Aviso', 'Nenhum compromisso para copiar.', 'info');
-                return;
-            }
-
+            if (texto.includes('Nenhum compromisso')) { Swal.fire('Aviso', 'Nenhum compromisso para copiar.', 'info'); return; }
             try {
                 await navigator.clipboard.writeText(texto);
                 showToast('📋 Agenda copiada para a área de transferência!', 3000);
@@ -1981,165 +1638,72 @@
 
         document.getElementById('btnCompartilharPDF').addEventListener('click', function() {
             var texto = gerarTextoAgenda('current');
-            
-            if (texto.includes('Nenhum compromisso')) {
-                Swal.fire('Aviso', 'Nenhum compromisso para gerar PDF.', 'info');
-                return;
-            }
-
+            if (texto.includes('Nenhum compromisso')) { Swal.fire('Aviso', 'Nenhum compromisso para gerar PDF.', 'info'); return; }
             try {
                 var { jsPDF } = window.jspdf;
-                var doc = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-                
-                var margin = 18;
-                var y = margin;
-
-                doc.setFontSize(20);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(0, 151, 57);
+                var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                var margin = 18, y = margin;
+                doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 151, 57);
                 doc.text('AGENDA', margin, y);
-                
-                doc.setFontSize(16);
-                doc.setTextColor(0, 0, 0);
-                doc.text('CHICO GUARNIERI', margin + 55, y);
-                y += 12;
-
-                doc.setDrawColor(0, 151, 57);
-                doc.setLineWidth(0.5);
-                doc.line(margin, y, 195, y);
-                y += 8;
-
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(120, 120, 120);
-                doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), margin, y);
-                y += 10;
-
-                doc.setFontSize(10.5);
-                doc.setTextColor(40, 40, 40);
-                doc.setFont('helvetica', 'normal');
-
+                doc.setFontSize(16); doc.setTextColor(0, 0, 0);
+                doc.text('CHICO GUARNIERI', margin + 55, y); y += 12;
+                doc.setDrawColor(0, 151, 57); doc.setLineWidth(0.5);
+                doc.line(margin, y, 195, y); y += 8;
+                doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 120, 120);
+                doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), margin, y); y += 10;
+                doc.setFontSize(10.5); doc.setTextColor(40, 40, 40); doc.setFont('helvetica', 'normal');
                 var lines = texto.split('\n');
                 var pageHeight = doc.internal.pageSize.height;
-
                 lines.forEach(function(line) {
-                    if (y > pageHeight - margin) {
-                        doc.addPage();
-                        y = margin;
-                        doc.setDrawColor(0, 151, 57);
-                        doc.setLineWidth(0.3);
-                        doc.line(margin, y, 195, y);
-                        y += 6;
-                    }
-                    
-                    var linhaLimpa = line.replace(/[^\w\s\-\.\,\:\!\?\(\)\*\/\@\#\&\+\=\%\$\"\'\;\>\<\[\]\{\}\|\\\~]/g, '');
-                    linhaLimpa = linhaLimpa.trim();
-                    
-                    if (linhaLimpa === '') {
-                        y += 3;
-                        return;
-                    }
-                    
+                    if (y > pageHeight - margin) { doc.addPage(); y = margin; doc.setDrawColor(0, 151, 57); doc.setLineWidth(0.3); doc.line(margin, y, 195, y); y += 6; }
+                    var linhaLimpa = line.replace(/[^\w\s\-\.\,\:\!\?\(\)\*\/\@\#\&\+\=\%\$\"\'\;\>\<\[\]\{\}\|\\\~]/g, '').trim();
+                    if (linhaLimpa === '') { y += 3; return; }
                     if (linhaLimpa.match(/^[A-ZÇÁÉÍÓÚÃÕÂÊÔÀ ]+ - \d{2}\/\d{2}\/\d{4}/) || linhaLimpa.includes('AGENDA')) {
                         var titulo = linhaLimpa;
-                        doc.setFontSize(13);
-                        doc.setFont('helvetica', 'bold');
-                        doc.setTextColor(0, 60, 30);
-                        
+                        doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 60, 30);
                         var textWidth = doc.getStringUnitWidth(titulo) * 13 / doc.internal.scaleFactor;
                         doc.setFillColor(240, 248, 240);
                         doc.rect(margin - 2, y - 4, textWidth + 12, 8, 'F');
-                        
-                        doc.text(titulo, margin + 2, y);
-                        y += 6;
-                        
-                        doc.setFontSize(10.5);
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(40, 40, 40);
-                    } 
-                    else if (linhaLimpa.match(/^\s*[📌✅❌⏳]/)) {
+                        doc.text(titulo, margin + 2, y); y += 6;
+                        doc.setFontSize(10.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(40, 40, 40);
+                    } else if (linhaLimpa.match(/^\s*[📌✅❌⏳]/)) {
                         var item = linhaLimpa.trim();
-                        
                         var horarioMatch = item.match(/(\d{1,2}:\d{2})/);
                         if (horarioMatch) {
-                            doc.setFont('helvetica', 'bold');
-                            doc.setTextColor(0, 100, 50);
+                            doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 100, 50);
                             doc.text(horarioMatch[0], margin + 4, y);
-                            
                             var horarioWidth = doc.getStringUnitWidth(horarioMatch[0]) * 10.5 / doc.internal.scaleFactor;
-                            doc.setFont('helvetica', 'normal');
-                            doc.setTextColor(40, 40, 40);
-                            
+                            doc.setFont('helvetica', 'normal'); doc.setTextColor(40, 40, 40);
                             var resto = item.replace(horarioMatch[0], '').trim();
-                            if (resto) {
-                                doc.text(resto, margin + 4 + horarioWidth + 3, y);
-                            }
-                        } else {
-                            doc.text(item, margin + 4, y);
-                        }
+                            if (resto) doc.text(resto, margin + 4 + horarioWidth + 3, y);
+                        } else { doc.text(item, margin + 4, y); }
                         y += 5.5;
-                    }
-                    else if (linhaLimpa.includes('📍')) {
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(80, 80, 80);
-                        doc.setFontSize(9.5);
+                    } else if (linhaLimpa.includes('📍')) {
+                        doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80); doc.setFontSize(9.5);
                         doc.text(linhaLimpa.trim(), margin + 6, y);
-                        doc.setFontSize(10.5);
-                        doc.setTextColor(40, 40, 40);
-                        y += 5;
-                    }
-                    else if (linhaLimpa.startsWith('_') || linhaLimpa.includes('_')) {
-                        doc.setFont('helvetica', 'italic');
-                        doc.setTextColor(100, 100, 100);
-                        doc.setFontSize(9.5);
+                        doc.setFontSize(10.5); doc.setTextColor(40, 40, 40); y += 5;
+                    } else if (linhaLimpa.startsWith('_') || linhaLimpa.includes('_')) {
+                        doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100); doc.setFontSize(9.5);
                         doc.text(linhaLimpa.replace(/_/g, '').trim(), margin + 6, y);
-                        doc.setFont('helvetica', 'normal');
-                        doc.setFontSize(10.5);
-                        doc.setTextColor(40, 40, 40);
-                        y += 5;
-                    }
-                    else if (linhaLimpa.includes('👥')) {
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(80, 80, 80);
-                        doc.setFontSize(9.5);
+                        doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(40, 40, 40); y += 5;
+                    } else if (linhaLimpa.includes('👥')) {
+                        doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80); doc.setFontSize(9.5);
                         doc.text(linhaLimpa.trim(), margin + 6, y);
-                        doc.setFontSize(10.5);
-                        doc.setTextColor(40, 40, 40);
-                        y += 5;
-                    }
-                    else if (linhaLimpa.includes('✏️') || linhaLimpa.includes('📝')) {
-                        doc.setFont('helvetica', 'italic');
-                        doc.setTextColor(120, 120, 120);
-                        doc.setFontSize(8.5);
+                        doc.setFontSize(10.5); doc.setTextColor(40, 40, 40); y += 5;
+                    } else if (linhaLimpa.includes('✏️') || linhaLimpa.includes('📝')) {
+                        doc.setFont('helvetica', 'italic'); doc.setTextColor(120, 120, 120); doc.setFontSize(8.5);
                         doc.text(linhaLimpa.trim(), margin + 6, y);
-                        doc.setFont('helvetica', 'normal');
-                        doc.setFontSize(10.5);
-                        doc.setTextColor(40, 40, 40);
-                        y += 4;
-                    }
-                    else {
-                        doc.text(linhaLimpa, margin + 2, y);
-                        y += 5.5;
-                    }
+                        doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(40, 40, 40); y += 4;
+                    } else { doc.text(linhaLimpa, margin + 2, y); y += 5.5; }
                 });
-
                 var totalPages = doc.internal.getNumberOfPages();
                 for (var i = 1; i <= totalPages; i++) {
                     doc.setPage(i);
-                    doc.setFontSize(8);
-                    doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(150, 150, 150);
+                    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(150, 150, 150);
                     doc.text('Página ' + i + ' de ' + totalPages, 180, 285);
-                    
-                    doc.setDrawColor(200, 200, 200);
-                    doc.setLineWidth(0.2);
+                    doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.2);
                     doc.line(margin, 282, 195, 282);
                 }
-
                 doc.save('Agenda_Chico_Guarnieri.pdf');
             } catch (err) {
                 console.error('Erro ao gerar PDF:', err);
@@ -2148,170 +1712,143 @@
         });
 
         document.getElementById('btnGerarRelatorio').addEventListener('click', function() {
-            if (compromissos.length === 0) {
-                Swal.fire('Aviso', 'Nenhum compromisso cadastrado para gerar relatório.', 'info');
-                return;
-            }
-
+            if (compromissos.length === 0) { Swal.fire('Aviso', 'Nenhum compromisso cadastrado.', 'info'); return; }
             Swal.fire({ title: 'Gerando PDF...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-
             setTimeout(function() {
                 try {
                     var { jsPDF } = window.jspdf;
                     var doc = new jsPDF('landscape', 'mm', 'a4');
-
                     doc.setFontSize(16);
                     doc.text('Relatório de Agendas - Chico Guarnieri', 14, 15);
                     doc.setFontSize(10);
                     doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), 14, 22);
-
                     var ordenados = compromissos.slice().sort(function(a, b) {
                         var da = new Date(a.dia || '9999-12-31').getTime();
                         var db = new Date(b.dia || '9999-12-31').getTime();
                         return da - db;
                     });
-
                     var colunas = ["Data", "Título", "Hora", "Local", "Participantes", "Status", "Criado/Editado"];
                     var linhas = ordenados.map(function(c) {
                         var dataCurta = formatarDataBR(c.dia);
-                        if(dataCurta && dataCurta.length === 10) {
-                            dataCurta = dataCurta.substring(0, 5);
-                        }
-
+                        if(dataCurta && dataCurta.length === 10) dataCurta = dataCurta.substring(0, 5);
                         var horaExibicao = formatarHoraVisao(c.hora);
-                        if (c.horaFim) {
-                            horaExibicao = 'das ' + horaExibicao + ' até ' + formatarHoraVisao(c.horaFim);
-                        }
-
+                        if (c.horaFim) horaExibicao = 'das ' + horaExibicao + ' até ' + formatarHoraVisao(c.horaFim);
                         var criadoEditado = '';
-                        if (c.editadoPor) {
-                            criadoEditado = 'Editado: ' + c.editadoPor;
-                        } else if (c.criadoPor) {
-                            criadoEditado = 'Criado: ' + c.criadoPor;
-                        }
-
-                        return [
-                            dataCurta,
-                            c.titulo || '',
-                            horaExibicao,
-                            c.local || '',
-                            c.participantes || '',
-                            c.status || '',
-                            criadoEditado
-                        ];
+                        if (c.editadoPor && c.editadoPor.trim() !== '') criadoEditado = 'Editado: ' + c.editadoPor;
+                        else if (c.criadoPor && c.criadoPor.trim() !== '') criadoEditado = 'Criado: ' + c.criadoPor;
+                        return [dataCurta, c.titulo || '', horaExibicao, c.local || '', c.participantes || '', c.status || '', criadoEditado];
                     });
-
-                    doc.autoTable({
-                        startY: 28,
-                        head: [colunas],
-                        body: linhas,
-                        theme: 'grid',
-                        headStyles: { fillColor: [0, 151, 57] },
-                        styles: { fontSize: 8, cellPadding: 2 },
-                        columnStyles: { 
-                            1: { cellWidth: 35 },
-                            2: { cellWidth: 25 },
-                            3: { cellWidth: 35 },
-                            6: { cellWidth: 40 }
-                        }
-                    });
-
+                    doc.autoTable({ startY: 28, head: [colunas], body: linhas, theme: 'grid', headStyles: { fillColor: [0, 151, 57] }, styles: { fontSize: 8, cellPadding: 2 }, columnStyles: { 1: { cellWidth: 35 }, 2: { cellWidth: 25 }, 3: { cellWidth: 35 }, 6: { cellWidth: 40 } } });
                     doc.save('Relatorio_Agenda_Chico_Guarnieri.pdf');
                     Swal.close();
-                } catch (err) {
-                    console.error(err);
-                    Swal.fire('Erro', 'Ocorreu um erro ao gerar o PDF.', 'error');
-                }
+                } catch (err) { console.error(err); Swal.fire('Erro', 'Ocorreu um erro ao gerar o PDF.', 'error'); }
             }, 500);
         });
 
-        document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
-            var form = document.getElementById('formAdmin');
-            if (form.style.display === 'none' || form.style.display === '') {
-                form.style.display = 'block';
-                this.innerHTML = '➖ Ocultar Formulário';
-                this.style.background = '#f3f4f6';
-                this.style.color = '#555';
-                this.style.borderColor = '#d1d5db';
-            } else {
-                form.style.display = 'none';
-                this.innerHTML = '➕ Adicionar Novo Compromisso';
-                this.style.background = '#e8f5e9';
-                this.style.color = '#009739';
-                this.style.borderColor = '#009739';
+        // ==========================================
+        // SISTEMA DE ATUALIZAÇÃO
+        // ==========================================
+        function verificarAtualizacao() {
+            const versaoSalva = localStorage.getItem('app_version');
+            if (!versaoSalva) { localStorage.setItem('app_version', APP_VERSION); return; }
+            if (versaoSalva !== APP_VERSION) { document.getElementById('updateBanner').classList.add('visible'); }
+        }
+
+        function limparCacheERecarregar() {
+            if ('caches' in window) { caches.keys().then(function(keys) { keys.forEach(function(key) { caches.delete(key); }); }); }
+            localStorage.clear(); sessionStorage.clear();
+            document.getElementById('updateBanner').classList.remove('visible');
+            localStorage.setItem('app_version', APP_VERSION);
+            Swal.fire({ title: '🔄 Atualizando...', text: 'O aplicativo será reiniciado com a nova versão.', icon: 'info', timer: 2000, showConfirmButton: false }).then(function() { window.location.reload(true); });
+        }
+
+        document.getElementById('btnAtualizarApp').addEventListener('click', limparCacheERecarregar);
+        document.getElementById('btnIgnorarAtualizacao').addEventListener('click', function() {
+            document.getElementById('updateBanner').classList.remove('visible');
+            localStorage.setItem('app_version', APP_VERSION);
+        });
+
+        // ==========================================
+        // NOTIFICAÇÕES
+        // ==========================================
+        function urlBase64ToUint8Array(base64String) {
+            var padding = '='.repeat((4 - base64String.length % 4) % 4);
+            var base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            var rawData = window.atob(base64);
+            var outputArray = new Uint8Array(rawData.length);
+            for (var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+            return outputArray;
+        }
+
+        class SistemaNotificacao {
+            constructor() { this.permissoes = { notificacao: false }; this.inicializar(); }
+            async inicializar() {
+                if ('Notification' in window) {
+                    if (Notification.permission === 'granted') { this.permissoes.notificacao = true; document.getElementById('btnNotificacao').style.display = 'none'; }
+                    else if (Notification.permission === 'default') { document.getElementById('btnNotificacao').style.display = 'flex'; }
+                }
             }
-        });
-
-        document.getElementById('btnLimparForm').addEventListener('click', limparFormAdmin);
-        document.getElementById('formAdmin').addEventListener('submit', cadastrarCompromisso);
-        document.getElementById('btnAtualizar').addEventListener('click', atualizarCompromissoAdmin);
-
-        document.querySelectorAll('.tab-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('ativo'); });
-                document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('ativo'); });
-                btn.classList.add('ativo');
-                document.getElementById(btn.dataset.tab).classList.add('ativo');
-                if (btn.dataset.tab === 'tabChat' && adminLogado) atualizarChatAdmin();
-            });
-        });
-
-        // ==========================================
-        // GOOGLE MAPS
-        // ==========================================
-        function abrirGoogleMaps(endereco) {
-            if (!endereco) return;
-            var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(endereco);
-            window.open(url, '_blank');
+            async solicitarPermissao() {
+                if (!('Notification' in window)) { Swal.fire('Aviso', 'Seu navegador não suporta notificações nativas.', 'info'); return; }
+                var permissao = await Notification.requestPermission();
+                if (permissao === 'granted') {
+                    this.permissoes.notificacao = true;
+                    document.getElementById('btnNotificacao').style.display = 'none';
+                    await this.inscreverWebPush();
+                    Swal.fire('Sucesso!', 'As notificações estão ativadas.', 'success');
+                } else { Swal.fire('Bloqueado', 'Você bloqueou as notificações.', 'warning'); }
+            }
+            async inscreverWebPush() {
+                if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+                try {
+                    if (publicVapidKey.includes('coloque_sua_chave')) return;
+                    var registration = await navigator.serviceWorker.ready;
+                    var subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey) });
+                    await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: 'salvar_inscricao_push', dados: subscription }) });
+                } catch (e) { console.warn('Erro ao inscrever no PushManager:', e); }
+            }
+            enviar(titulo, mensagem, dados) {
+                dados = dados || {};
+                if (this.permissoes.notificacao && 'Notification' in window) {
+                    try {
+                        var notification = new Notification(titulo, { body: mensagem, icon: '/icons/icon-192x192.png', badge: '/icons/icon-72x72.png', tag: dados.tag || 'notification', data: dados, requireInteraction: true, vibrate: [200, 100, 200], silent: false });
+                        notification.onclick = function() { window.focus(); if (dados.url) window.location.href = dados.url; notification.close(); };
+                    } catch (error) { console.warn('Erro na notificação nativa:', error); }
+                }
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                this.mostrarToast(titulo, mensagem);
+            }
+            mostrarToast(titulo, mensagem) {
+                Swal.fire({ title: titulo, text: mensagem, icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 5000, timerProgressBar: true, background: '#f0fdf4', iconColor: '#009739', customClass: { popup: 'notification-toast' } });
+            }
         }
 
-        // ==========================================
-        // FUNÇÃO AUXILIAR PARA ORDENAÇÃO DE HORA
-        // ==========================================
-        function extrairHoraParaOrdenacao(horaStr) {
-            if (!horaStr) return '00:00';
-            var h = formatarHoraVisao(horaStr);
-            if (h === '--:--') return '00:00';
-            return h;
-        }
+        var sistemaNotificacao = new SistemaNotificacao();
+        document.getElementById('btnNotificacao').addEventListener('click', function() { sistemaNotificacao.solicitarPermissao(); });
 
         // ==========================================
-        // SINCRONIZAÇÃO AUTOMÁTICA
+        // SINCRONIZAÇÃO
         // ==========================================
-        var isSincronizandoAgenda = false;
+        let isSincronizandoAgenda = false;
 
         async function sincronizarAgenda() {
             if (isSincronizandoAgenda) return;
             isSincronizandoAgenda = true;
-            
             try {
-                console.log('[SYNC] Sincronizando agenda...');
                 var agendaServer = await fetchGoogle('listar');
-                
                 if (agendaServer && agendaServer.status === 'sucesso') {
                     var data = agendaServer.dados || [];
-                    console.log('[SYNC] Dados recebidos:', data.length);
-                    
                     var maxId = 0;
-                    if (data.length > 0) {
-                        maxId = Math.max.apply(null, data.map(function(c) { return parseInt(c.id) || 0; }));
-                    }
+                    if (data.length > 0) maxId = Math.max.apply(null, data.map(function(c) { return parseInt(c.id) || 0; }));
                     proximoId = maxId + 1;
-
                     if (JSON.stringify(data) !== JSON.stringify(compromissos)) {
                         compromissos = data;
-                        console.log('[SYNC] Compromissos atualizados:', compromissos.length);
                         renderDaysCarousel();
                         aplicarFiltros();
                         if (adminLogado) renderizarListaAdmin();
                     }
-                } else {
-                    console.warn('[SYNC] Erro na resposta:', agendaServer);
                 }
-            } catch (error) {
-                console.error('[SYNC] Erro:', error);
-            }
-            
+            } catch (error) { console.error('[SYNC] Erro:', error); }
             isSincronizandoAgenda = false;
         }
 
@@ -2320,126 +1857,68 @@
         // ==========================================
         async function inicializar() {
             console.log('[INIT] Iniciando aplicação...');
-            
             verificarAtualizacao();
+
+            // Verifica se já tem usuário na sessão
+            var userSalvo = sessionStorage.getItem('usuarioAtual');
+            if (userSalvo) {
+                usuarioAtual = userSalvo;
+                adminLogado = true;
+                document.getElementById('loginOverlayPrincipal').classList.add('oculto');
+                document.getElementById('conteudo-principal').classList.add('visivel');
+                document.getElementById('nomeUsuarioExibido').textContent = userSalvo;
+                document.getElementById('adminUserName').textContent = '👤 ' + userSalvo;
+                document.getElementById('adminPanel').classList.add('ativo');
+                document.getElementById('lockBtn').innerHTML = '🔓';
+                document.getElementById('chatButton').style.display = 'none';
+            }
 
             var grid = document.getElementById('agendaGrid');
             grid.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><p style="color: #6b7280;">Carregando compromissos...</p></div>';
 
             try {
                 initCalendar();
-
-                console.log('[INIT] Carregando compromissos...');
                 var comp = await fetchGoogle('listar');
-                console.log('[INIT] Resposta listar:', comp);
-                
-                if (comp && comp.status === 'sucesso') {
+                if (comp && comp.status === 'sucesso' && comp.dados && comp.dados.length > 0) {
                     compromissos = comp.dados || [];
-                    console.log('[INIT] Compromissos carregados:', compromissos.length);
-                    
                     var maxId = 0;
-                    if (compromissos.length > 0) {
-                        maxId = Math.max.apply(null, compromissos.map(function(c) { return parseInt(c.id) || 0; }));
-                    }
+                    if (compromissos.length > 0) maxId = Math.max.apply(null, compromissos.map(function(c) { return parseInt(c.id) || 0; }));
                     proximoId = maxId + 1;
                 } else {
-                    compromissos = [];
-                    proximoId = 1;
-                    console.warn('[INIT] Nenhum compromisso encontrado ou erro:', comp);
+                    compromissos = DADOS_EXEMPLO;
+                    proximoId = 4;
+                    if (document.getElementById('conteudo-principal').classList.contains('visivel')) {
+                        showToast('📱 Modo offline - usando dados de exemplo', 4000);
+                    }
                 }
 
                 var msg = await fetchGoogle('listar_chat');
-                if (msg && msg.status === 'sucesso') {
-                    mensagensChat = msg.dados || [];
-                } else {
-                    mensagensChat = [];
-                }
+                if (msg && msg.status === 'sucesso' && msg.dados) mensagensChat = msg.dados || [];
+                else mensagensChat = [];
 
                 renderDaysCarousel();
                 aplicarFiltros();
                 atualizarChatUsuario();
 
-                // Verificar se usuário já está logado via sessionStorage
-                var userSalvo = sessionStorage.getItem('usuarioAtual');
-                if (userSalvo) {
-                    usuarioAtual = userSalvo;
-                    adminLogado = true;
-                    document.getElementById('adminPanel').classList.add('ativo');
-                    document.getElementById('lockBtn').innerHTML = '🔓';
-                    document.getElementById('adminUserName').textContent = '👤 ' + usuarioAtual;
-                    document.getElementById('chatButton').style.display = 'none';
+                if (adminLogado) {
                     renderizarListaAdmin();
                     atualizarChatAdmin();
                 }
 
-                setInterval(function() {
-                    sincronizarChat();
-                    sincronizarAgenda();
-                }, 10000);
-
-                // Salvar usuário na sessão ao logar
-                var loginForm = document.getElementById('formLogin');
-                loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    var user = document.getElementById('loginUser').value.trim();
-                    if (user) {
-                        sessionStorage.setItem('usuarioAtual', user);
-                    }
-                });
+                setInterval(function() { sincronizarChat(); sincronizarAgenda(); }, 15000);
 
                 console.log('[INIT] ✅ Agenda Chico Guarnieri pronta!');
-                
             } catch (error) {
                 console.error('[INIT] ❌ Erro:', error);
-                var grid = document.getElementById('agendaGrid');
-                grid.innerHTML = '<div class="sem-resultados" style="color: #dc2626;">❌ Erro ao carregar dados.<br><br><small>' + error.message + '</small><br><br><button onclick="location.reload()" style="padding:0.5rem 1.5rem;background:#009739;color:white;border:none;border-radius:8px;cursor:pointer;">Tentar novamente</button></div>';
-                
-                Swal.fire({
-                    title: 'Erro ao carregar dados',
-                    text: 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.',
-                    icon: 'error',
-                    confirmButtonText: 'Tentar novamente'
-                }).then(function() { 
-                    location.reload(); 
-                });
+                compromissos = DADOS_EXEMPLO;
+                proximoId = 4;
+                renderDaysCarousel();
+                aplicarFiltros();
+                if (document.getElementById('conteudo-principal').classList.contains('visivel')) {
+                    grid.innerHTML = '<div class="erro-conexao"><div class="icone">📡</div><p><strong>Modo offline</strong></p><p style="color: #6b7280; font-size: 0.95rem;">Exibindo dados de exemplo. Conecte-se à internet para sincronizar.</p><button class="btn-tentar" onclick="location.reload()">🔄 Tentar novamente</button></div>';
+                }
             }
         }
-
-        // Adicionar o overlay de adiar que estava faltando
-        var adiarOverlayHTML = document.createElement('div');
-        adiarOverlayHTML.className = 'login-overlay';
-        adiarOverlayHTML.id = 'adiarOverlay';
-        adiarOverlayHTML.innerHTML = `
-            <div class="login-modal">
-                <h2>⏳ Adiar Compromisso</h2>
-                <p class="subtitle">Selecione os novos dados para o compromisso.</p>
-                <div class="form-group">
-                    <label>Nova Data Início</label>
-                    <input type="date" id="adiarDataInput">
-                </div>
-                <div class="form-group">
-                    <label>Nova Data Fim (Opcional)</label>
-                    <input type="date" id="adiarDataFimInput">
-                </div>
-                <div class="form-group">
-                    <label>Nova Hora Início</label>
-                    <input type="time" id="adiarHoraInput">
-                </div>
-                <div class="form-group">
-                    <label>Nova Hora Fim (Opcional)</label>
-                    <input type="time" id="adiarHoraFimInput">
-                </div>
-                <div class="form-group">
-                    <label>Novo Local (Opcional)</label>
-                    <input type="text" id="adiarLocalInput" placeholder="Ex: Sala 302">
-                </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button class="btn btn-concluir" id="btnConfirmarAdiar" style="flex: 1;">✓ Salvar</button>
-                    <button class="btn btn-cancelar" id="btnFecharAdiar" style="flex: 1; text-align: center;">✕ Cancelar</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(adiarOverlayHTML);
 
         document.addEventListener('DOMContentLoaded', inicializar);
     </script>
