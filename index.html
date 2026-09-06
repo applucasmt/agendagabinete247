@@ -252,7 +252,6 @@
         
         .toast-message { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 500; z-index: 9999; animation: slideUp 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         
-        /* LOADING */
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 0; width: 100%; }
         .loading-spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: #009739; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -553,11 +552,14 @@
         }
 
         // ==========================================
-        // FUNÇÕES DE FORMATAÇÃO
+        // FUNÇÕES DE FORMATAÇÃO - CORRIGIDAS
         // ==========================================
         function formatarDataVisao(dataStr) {
             if (!dataStr) return '';
+            // Se já estiver no formato YYYY-MM-DD, retorna só a data
             if (dataStr.includes('T')) return dataStr.split('T')[0];
+            // Se tiver espaço (ex: "2026-09-06 12:00"), pega só a data
+            if (dataStr.includes(' ')) return dataStr.split(' ')[0];
             return dataStr;
         }
 
@@ -569,18 +571,52 @@
             return d;
         }
 
+        // CORREÇÃO PRINCIPAL: Extrai a hora exata sem conversão de fuso
         function formatarHoraVisao(horaStr) {
             if (!horaStr) return '--:--';
+            
+            // Se já tiver no formato HH:MM, retorna direto
+            if (horaStr.match(/^\d{2}:\d{2}$/)) {
+                return horaStr;
+            }
+            
+            // Se veio como data completa (com T)
             if (horaStr.includes('T')) {
                 var d = new Date(horaStr);
-                return d.getUTCHours().toString().padStart(2, '0') + ':' + d.getUTCMinutes().toString().padStart(2, '0');
+                // Usa getUTCHours para evitar conversão de fuso
+                var h = d.getUTCHours().toString().padStart(2, '0');
+                var m = d.getUTCMinutes().toString().padStart(2, '0');
+                return h + ':' + m;
             }
+            
+            // Se veio como "2026-09-06 12:00" (espaço)
+            if (horaStr.includes(' ')) {
+                var partes = horaStr.split(' ');
+                var horaParte = partes[1] || partes[0];
+                if (horaParte.match(/^\d{2}:\d{2}$/)) {
+                    return horaParte;
+                }
+            }
+            
+            // Tenta extrair qualquer padrão HH:MM
+            var match = horaStr.match(/(\d{2}):(\d{2})/);
+            if (match) {
+                return match[1] + ':' + match[2];
+            }
+            
             return horaStr;
+        }
+
+        // CORREÇÃO: Extrai a hora pura para ordenação
+        function extrairHoraParaOrdenacao(horaStr) {
+            var h = formatarHoraVisao(horaStr);
+            if (h === '--:--') return '00:00';
+            return h;
         }
 
         function abrirGoogleMaps(endereco) {
             if (!endereco || endereco.trim() === '') {
-                alert('Endereco nao disponivel para este compromisso.');
+                alert('Endereço não disponível para este compromisso.');
                 return;
             }
             var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(endereco);
@@ -597,7 +633,6 @@
                 console.log('[FETCH] Enviando para:', SCRIPT_URL);
                 console.log('[FETCH] Payload:', JSON.stringify(payload));
                 
-                // Força timeout para evitar erro de rede no celular
                 var controller = new AbortController();
                 var timeoutId = setTimeout(function() { controller.abort(); }, 30000);
                 
@@ -840,9 +875,11 @@
 
                 var iconeDescricao = comp.descricao ? '<span title="Contém descrição" style="font-size: 0.8rem;">📝</span>' : '';
                 
+                // CORREÇÃO: Usa a nova função formatarHoraVisao que preserva o horário exato
                 var horaExibicao = formatarHoraVisao(comp.hora);
                 if (comp.horaFim) {
-                    horaExibicao = horaExibicao + ' às ' + formatarHoraVisao(comp.horaFim);
+                    var horaFimExibicao = formatarHoraVisao(comp.horaFim);
+                    horaExibicao = horaExibicao + ' às ' + horaFimExibicao;
                 }
 
                 card.innerHTML = 
@@ -1203,7 +1240,7 @@
                 limparFormAdmin();
                 
                 document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = 'Adicionar Novo Compromisso';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
                 
                 Swal.fire({
                     title: 'Sucesso!',
@@ -1275,7 +1312,7 @@
                 limparFormAdmin();
                 
                 document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = 'Adicionar Novo Compromisso';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
                 
                 Swal.fire({
                     title: 'Sucesso!',
@@ -1322,7 +1359,8 @@
 
                 var horaExibicao = formatarHoraVisao(comp.hora);
                 if (comp.horaFim) {
-                    horaExibicao = horaExibicao + ' as ' + formatarHoraVisao(comp.horaFim);
+                    var horaFimExibicao = formatarHoraVisao(comp.horaFim);
+                    horaExibicao = horaExibicao + ' as ' + horaFimExibicao;
                 }
 
                 item.innerHTML = 
@@ -1396,7 +1434,7 @@
             document.getElementById('editModeIndicator').style.display = 'inline-block';
             
             document.getElementById('formAdmin').style.display = 'block';
-            document.getElementById('btnToggleAdminForm').innerHTML = 'Ocultar Formulário';
+            document.getElementById('btnToggleAdminForm').innerHTML = '➖ Ocultar Formulário';
             
             document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -1419,7 +1457,8 @@
 
             var horaExibicao = formatarHoraVisao(comp.hora);
             if (comp.horaFim) {
-                horaExibicao = horaExibicao + ' às ' + formatarHoraVisao(comp.horaFim);
+                var horaFimExibicao = formatarHoraVisao(comp.horaFim);
+                horaExibicao = horaExibicao + ' às ' + horaFimExibicao;
             }
             document.getElementById('popupHora').textContent = horaExibicao;
 
@@ -1718,8 +1757,8 @@
             }
 
             lista.sort(function(a, b) {
-                var da = new Date(formatarDataVisao(a.dia) + 'T' + (a.hora || '00:00')).getTime();
-                var db = new Date(formatarDataVisao(b.dia) + 'T' + (b.hora || '00:00')).getTime();
+                var da = new Date(formatarDataVisao(a.dia) + 'T' + extrairHoraParaOrdenacao(a.hora)).getTime();
+                var db = new Date(formatarDataVisao(b.dia) + 'T' + extrairHoraParaOrdenacao(b.hora)).getTime();
                 return da - db;
             });
 
@@ -2088,7 +2127,6 @@
         async function inicializar() {
             console.log('[INIT] Iniciando aplicação...');
             
-            // Mostra loading
             var grid = document.getElementById('agendaGrid');
             grid.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><p style="color: #6b7280;">Carregando compromissos...</p></div>';
 
@@ -2114,7 +2152,6 @@
                     console.warn('[INIT] Nenhum compromisso encontrado ou erro:', comp);
                 }
 
-                // Carrega mensagens do chat
                 var msg = await fetchGoogle('listar_chat');
                 if (msg && msg.status === 'sucesso') {
                     mensagensChat = msg.dados || [];
@@ -2126,7 +2163,6 @@
                 aplicarFiltros();
                 atualizarChatUsuario();
 
-                // Inicia sincronização automática
                 setInterval(function() {
                     sincronizarChat();
                     sincronizarAgenda();
