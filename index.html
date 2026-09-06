@@ -18,189 +18,29 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado com sucesso!');
+                    })
+                    .catch(error => {
+                        console.log('Falha ao registrar Service Worker:', error);
+                    });
+            });
+        }
+    </script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; position: relative; }
-        
-        /* ESCONDE TODO O CONTEÚDO INICIALMENTE */
-        #conteudo-principal { display: none; }
-        #conteudo-principal.visivel { display: block; width: 100%; }
-        
-        .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
-        h1 { color: #1a1a2e; font-weight: 700; letter-spacing: -0.5px; font-size: 1.8rem; }
-        h1 .destaque { color: #009739; }
-        
-        .usuario-logado {
-            background: #e8f5e9;
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: #009739;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .usuario-logado .sair-btn {
-            background: none;
-            border: none;
-            color: #dc2626;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-        .usuario-logado .sair-btn:hover { background: #fee2e2; }
-        
-        .btn-notificacoes { background: #fef08a; color: #854d0e; border: 1px solid #fde047; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; display: none; }
-        .btn-notificacoes:hover { background: #fde047; transform: scale(1.05); }
-        
-        .btn-toggle-ui { background: #ffffff; color: #1a1a2e; border: 1.5px solid #d1d5db; padding: 0.7rem 1.5rem; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 1rem; width: 100%; max-width: 1200px; }
-        .btn-toggle-ui:hover { background: #f9fafb; border-color: #009739; color: #009739; }
-        
-        .share-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; width: 100%; max-width: 1200px; margin-bottom: 1rem; }
-        .share-buttons .btn-share { 
-            padding: 0.6rem 1.5rem; 
-            border-radius: 12px; 
-            border: none; 
-            font-weight: 600; 
-            font-size: 0.9rem; 
-            cursor: pointer; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 0.5rem; 
-            transition: all 0.2s; 
-            flex: 1;
-            justify-content: center;
-            background: #ffffff;
-            color: #1a1a2e;
-            border: 1.5px solid #d1d5db;
-        }
-        .share-buttons .btn-share:hover { transform: scale(1.02); }
-        .share-buttons .btn-share.whatsapp { background: #25D366; color: white; border-color: #25D366; }
-        .share-buttons .btn-share.whatsapp:hover { background: #1da851; }
-        .share-buttons .btn-share.pdf { background: #dc2626; color: white; border-color: #dc2626; }
-        .share-buttons .btn-share.pdf:hover { background: #b91c1c; }
-        .share-buttons .btn-share.copiar { background: #3b82f6; color: white; border-color: #3b82f6; }
-        .share-buttons .btn-share.copiar:hover { background: #2563eb; }
 
-        .calendar-nav { display: flex; flex-direction: column; width: 100%; max-width: 1200px; background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
-        .month-selector-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem; }
-        .month-selector-container input[type="month"] { border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #1a1a2e; outline: none; cursor: pointer; color: #009739; }
-        .contador { font-size: 0.9rem; color: #6b7280; background: #f3f4f6; padding: 0.3rem 1rem; border-radius: 20px; font-weight: 600; }
-        .days-carousel { display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .days-carousel::-webkit-scrollbar { height: 6px; }
-        .days-carousel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-        .day-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 65px; height: 80px; padding: 0.5rem; border-radius: 14px; border: 1.5px solid #e5e7eb; background: #ffffff; cursor: pointer; transition: all 0.2s; position: relative; flex-shrink: 0; }
-        .day-tab:hover { border-color: #009739; background: #f0fdf4; }
-        .day-tab.active { background: #009739; border-color: #009739; color: #ffffff; box-shadow: 0 4px 10px rgba(0,151,57,0.3); }
-        .day-tab .day-name { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
-        .day-tab.active .day-name { color: #dcfce7; }
-        .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
-        .day-tab.active .day-num { color: #ffffff; }
-        .day-tab .event-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; position: absolute; bottom: 6px; display: none; }
-        .day-tab.has-event .event-dot { display: block; }
-        .day-tab.active.has-event .event-dot { background: #ffffff; }
-        .day-tab .hoje-label { font-size: 0.5rem; font-weight: 700; color: #009739; margin-top: -2px; }
-        .day-tab.active .hoje-label { color: #dcfce7; }
-        .agenda-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1200px; margin-top: 1rem; }
-        
-        .card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start; }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
-        
-        .card.status-concluido { border-left-color: #16a34a; }
-        .card.status-concluido .card-date-box { color: #16a34a; border-color: #16a34a40; background: #16a34a10; }
-        .card.status-concluido .card-status-badge { background: #16a34a15; color: #16a34a; }
-        .card.status-concluido .card-horario { color: #16a34a; }
-        
-        .card.status-pendente { border-left-color: #f59e0b; }
-        .card.status-pendente .card-date-box { color: #f59e0b; border-color: #f59e0b40; background: #f59e0b10; }
-        .card.status-pendente .card-status-badge { background: #f59e0b15; color: #f59e0b; }
-        .card.status-pendente .card-horario { color: #f59e0b; }
-        
-        .card.status-cancelado { border-left-color: #dc2626; }
-        .card.status-cancelado .card-date-box { color: #dc2626; border-color: #dc262640; background: #dc262610; }
-        .card.status-cancelado .card-status-badge { background: #dc262615; color: #dc2626; }
-        .card.status-cancelado .card-horario { color: #dc2626; }
-        
-        .card.status-padrao { border-left-color: #009739; }
-        .card.status-padrao .card-date-box { color: #009739; border-color: #00973940; background: #00973910; }
-        .card.status-padrao .card-status-badge { background: #00973915; color: #009739; }
-        .card.status-padrao .card-horario { color: #009739; }
+        /* === NOVO: Esconde conteúdo até login === */
+        #conteudo-principal { display: none; width: 100%; }
+        #conteudo-principal.visivel { display: block; }
 
-        .card-date-box { min-width: 70px; height: 75px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #c8e6c9; }
-        .card-date-box .dia { font-size: 2rem; font-weight: 800; line-height: 1; }
-        .card-date-box .mes { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-top: 3px; letter-spacing: 1px; }
-        .card-content { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
-        .card-titulo { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-data-range { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 0.3rem; }
-        .card-horario { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
-        .card-local { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; flex-wrap: wrap; }
-        .card-actions .btn-mapa { padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739; border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
-        .card-actions .btn-mapa:hover { background: #009739; color: white; transform: scale(1.05); }
-        .card-status-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.8rem; border-radius: 20px; align-self: flex-start; }
-        .card-por { font-size: 0.7rem; color: #888; font-style: italic; margin-top: 0.2rem; }
-        .sem-resultados { grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: #6b7280; font-size: 1.1rem; }
-        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999; padding: 1rem; }
-        .popup-overlay.ativo { display: flex; }
-        .popup { background: #ffffff; border-radius: 24px; max-width: 480px; width: 100%; padding: 2rem 2rem 1.8rem; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.2s ease; position: relative; max-height: 90vh; overflow-y: auto; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .popup-close { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.8rem; line-height: 1; background: none; border: none; color: #888; cursor: pointer; transition: color 0.1s; }
-        .popup-close:hover { color: #1a1a2e; }
-        .popup h2 { color: #1a1a2e; font-size: 1.6rem; margin-bottom: 1.2rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 0.6rem; padding-right: 2rem; }
-        .popup-info { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.8rem; }
-        .popup-info p { display: flex; align-items: baseline; gap: 0.5rem; font-size: 1rem; color: #222; }
-        .popup-info strong { min-width: 90px; color: #555; font-weight: 500; flex-shrink: 0; }
-        .popup-descricao-text { background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem; }
-        .popup-status { display: inline-block; padding: 0.2rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
-        .popup-por { font-size: 0.8rem; color: #888; font-style: italic; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #e5e7eb; }
-        .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem; }
-        .btn { padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; flex: 1 0 auto; background: #f0f2f5; color: #1a1a2e; }
-        .btn:hover { transform: scale(0.97); }
-        .btn-cancelar { background: #fee2e2; color: #b91c1c; }
-        .btn-cancelar:hover { background: #fecaca; }
-        .btn-adiar { background: #fef9c3; color: #92400e; }
-        .btn-adiar:hover { background: #fde68a; }
-        .btn-concluir { background: #dcfce7; color: #166534; }
-        .btn-concluir:hover { background: #bbf7d0; }
-        .btn-fechar { background: #e5e7eb; color: #1f2937; flex: 0.5; }
-        .btn-fechar:hover { background: #d1d5db; }
-        .btn-mapa-popup { background: #e8f5e9; color: #009739; border: 2px solid #009739; flex: 1; }
-        .btn-mapa-popup:hover { background: #009739; color: white; }
-        .chat-button { position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%; background: #009739; color: white; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); transition: all 0.3s ease; z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .chat-button:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5); }
-        .chat-button .badge { position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-        .chat-window { position: fixed; bottom: 5.5rem; right: 2rem; width: 380px; max-width: calc(100vw - 2rem); height: 500px; max-height: calc(100vh - 8rem); background: #ffffff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); display: none; flex-direction: column; z-index: 1001; overflow: hidden; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .chat-window.aberto { display: flex; }
-        .chat-header { background: #009739; color: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .chat-header h3 { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
-        .chat-header .status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 400; opacity: 0.9; }
-        .chat-header .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .chat-header .close-chat { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; padding: 0 0.3rem; }
-        .chat-header .close-chat:hover { opacity: 1; }
-        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; background: #f9fafb; }
-        .chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; animation: messageIn 0.3s ease; }
-        .chat-messages .message.bot { background: #e8f5e9; color: #1a1a2e; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .chat-messages .message.user { background: #009739; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .chat-messages .message .time { font-size: 0.65rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
-        .chat-messages .message.bot .time { color: #555; }
-        .chat-messages .message.user .time { color: rgba(255,255,255,0.7); }
-        .chat-input-area { padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; flex-shrink: 0; }
-        .chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
-        .chat-input-area input:focus { border-color: #009739; }
-        .chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap; }
-        .chat-input-area button:hover { background: #007a2f; }
-        .footer { margin-top: 3rem; padding: 1.5rem 0 0.5rem 0; width: 100%; max-width: 1200px; border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .footer .lock-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem 0.8rem; border-radius: 8px; transition: background 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; }
-        .footer .lock-btn:hover { background: #f3f4f6; color: #1a1a2e; }
-        .footer .copyright { color: #9ca3af; font-size: 0.85rem; }
-        
-        /* LOGIN OBRIGATÓRIO - MAIOR E MAIS DESTAQUE */
+        /* === NOVO: Login Obrigatório === */
         .login-overlay-principal {
             position: fixed;
             top: 0;
@@ -288,7 +128,236 @@
             display: none;
         }
         .login-modal-principal .erro.visible { display: block; }
+
+        /* === NOVO: Badge usuário logado === */
+        .usuario-logado {
+            background: #e8f5e9;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #009739;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .usuario-logado .sair-btn {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .usuario-logado .sair-btn:hover { background: #fee2e2; }
+
+        /* === NOVO: Banner de atualização === */
+        .update-banner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #fef9c3;
+            color: #854d0e;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            z-index: 9998;
+            border-bottom: 3px solid #f59e0b;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-weight: 500;
+            animation: slideDown 0.5s ease;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .update-banner.visible { display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .update-banner .btn-atualizar {
+            background: #009739;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .update-banner .btn-atualizar:hover { background: #007a2f; }
+        .update-banner .btn-ignorar {
+            background: transparent;
+            color: #854d0e;
+            border: 1.5px solid #854d0e;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .update-banner .btn-ignorar:hover { background: #854d0e; color: white; }
+
+        /* === MANTER EXATAMENTE O SEU CSS ORIGINAL ABAIXO === */
+        .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
+        h1 { color: #1a1a2e; font-weight: 700; letter-spacing: -0.5px; font-size: 1.8rem; }
+        h1 .destaque { color: #009739; }
+        .btn-notificacoes { background: #fef08a; color: #854d0e; border: 1px solid #fde047; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; display: none; }
+        .btn-notificacoes:hover { background: #fde047; transform: scale(1.05); }
+        .btn-toggle-ui { background: #ffffff; color: #1a1a2e; border: 1.5px solid #d1d5db; padding: 0.7rem 1.5rem; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 1rem; width: 100%; max-width: 1200px; }
+        .btn-toggle-ui:hover { background: #f9fafb; border-color: #009739; color: #009739; }
         
+        .share-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; width: 100%; max-width: 1200px; margin-bottom: 1rem; }
+        .share-buttons .btn-share { 
+            padding: 0.6rem 1.5rem; 
+            border-radius: 12px; 
+            border: none; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            cursor: pointer; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            transition: all 0.2s; 
+            flex: 1;
+            justify-content: center;
+            background: #ffffff;
+            color: #1a1a2e;
+            border: 1.5px solid #d1d5db;
+        }
+        .share-buttons .btn-share:hover { transform: scale(1.02); }
+        .share-buttons .btn-share.whatsapp { background: #25D366; color: white; border-color: #25D366; }
+        .share-buttons .btn-share.whatsapp:hover { background: #1da851; }
+        .share-buttons .btn-share.pdf { background: #dc2626; color: white; border-color: #dc2626; }
+        .share-buttons .btn-share.pdf:hover { background: #b91c1c; }
+        .share-buttons .btn-share.copiar { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .share-buttons .btn-share.copiar:hover { background: #2563eb; }
+
+        .calendar-nav { display: flex; flex-direction: column; width: 100%; max-width: 1200px; background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+        .month-selector-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem; }
+        .month-selector-container input[type="month"] { border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #1a1a2e; outline: none; cursor: pointer; color: #009739; }
+        .contador { font-size: 0.9rem; color: #6b7280; background: #f3f4f6; padding: 0.3rem 1rem; border-radius: 20px; font-weight: 600; }
+        .days-carousel { display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        .days-carousel::-webkit-scrollbar { height: 6px; }
+        .days-carousel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .day-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 65px; height: 80px; padding: 0.5rem; border-radius: 14px; border: 1.5px solid #e5e7eb; background: #ffffff; cursor: pointer; transition: all 0.2s; position: relative; flex-shrink: 0; }
+        .day-tab:hover { border-color: #009739; background: #f0fdf4; }
+        .day-tab.active { background: #009739; border-color: #009739; color: #ffffff; box-shadow: 0 4px 10px rgba(0,151,57,0.3); }
+        .day-tab .day-name { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
+        .day-tab.active .day-name { color: #dcfce7; }
+        .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
+        .day-tab.active .day-num { color: #ffffff; }
+        .day-tab .event-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; position: absolute; bottom: 6px; display: none; }
+        .day-tab.has-event .event-dot { display: block; }
+        .day-tab.active.has-event .event-dot { background: #ffffff; }
+        .day-tab .hoje-label { font-size: 0.5rem; font-weight: 700; color: #009739; margin-top: -2px; }
+        .day-tab.active .hoje-label { color: #dcfce7; }
+        .agenda-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1200px; margin-top: 1rem; }
+        
+        .card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
+        
+        .card.status-concluido { border-left-color: #16a34a; }
+        .card.status-concluido .card-date-box { color: #16a34a; border-color: #16a34a40; background: #16a34a10; }
+        .card.status-concluido .card-status-badge { background: #16a34a15; color: #16a34a; }
+        .card.status-concluido .card-horario { color: #16a34a; }
+        
+        .card.status-pendente { border-left-color: #f59e0b; }
+        .card.status-pendente .card-date-box { color: #f59e0b; border-color: #f59e0b40; background: #f59e0b10; }
+        .card.status-pendente .card-status-badge { background: #f59e0b15; color: #f59e0b; }
+        .card.status-pendente .card-horario { color: #f59e0b; }
+        
+        .card.status-cancelado { border-left-color: #dc2626; }
+        .card.status-cancelado .card-date-box { color: #dc2626; border-color: #dc262640; background: #dc262610; }
+        .card.status-cancelado .card-status-badge { background: #dc262615; color: #dc2626; }
+        .card.status-cancelado .card-horario { color: #dc2626; }
+        
+        .card.status-padrao { border-left-color: #009739; }
+        .card.status-padrao .card-date-box { color: #009739; border-color: #00973940; background: #00973910; }
+        .card.status-padrao .card-status-badge { background: #00973915; color: #009739; }
+        .card.status-padrao .card-horario { color: #009739; }
+
+        .card-date-box { min-width: 70px; height: 75px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #c8e6c9; }
+        .card-date-box .dia { font-size: 2rem; font-weight: 800; line-height: 1; }
+        .card-date-box .mes { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-top: 3px; letter-spacing: 1px; }
+        .card-content { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+        .card-titulo { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-data-range { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 0.3rem; }
+        .card-horario { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+        .card-local { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; flex-wrap: wrap; }
+        .card-actions .btn-mapa { padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739; border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .card-actions .btn-mapa:hover { background: #009739; color: white; transform: scale(1.05); }
+        .card-status-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.8rem; border-radius: 20px; align-self: flex-start; }
+        .sem-resultados { grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: #6b7280; font-size: 1.1rem; }
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999; padding: 1rem; }
+        .popup-overlay.ativo { display: flex; }
+        .popup { background: #ffffff; border-radius: 24px; max-width: 480px; width: 100%; padding: 2rem 2rem 1.8rem; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.2s ease; position: relative; max-height: 90vh; overflow-y: auto; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .popup-close { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.8rem; line-height: 1; background: none; border: none; color: #888; cursor: pointer; transition: color 0.1s; }
+        .popup-close:hover { color: #1a1a2e; }
+        .popup h2 { color: #1a1a2e; font-size: 1.6rem; margin-bottom: 1.2rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 0.6rem; padding-right: 2rem; }
+        .popup-info { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.8rem; }
+        .popup-info p { display: flex; align-items: baseline; gap: 0.5rem; font-size: 1rem; color: #222; }
+        .popup-info strong { min-width: 90px; color: #555; font-weight: 500; flex-shrink: 0; }
+        .popup-descricao-text { background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem; }
+        .popup-status { display: inline-block; padding: 0.2rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+        .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem; }
+        .btn { padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; flex: 1 0 auto; background: #f0f2f5; color: #1a1a2e; }
+        .btn:hover { transform: scale(0.97); }
+        .btn-cancelar { background: #fee2e2; color: #b91c1c; }
+        .btn-cancelar:hover { background: #fecaca; }
+        .btn-adiar { background: #fef9c3; color: #92400e; }
+        .btn-adiar:hover { background: #fde68a; }
+        .btn-concluir { background: #dcfce7; color: #166534; }
+        .btn-concluir:hover { background: #bbf7d0; }
+        .btn-fechar { background: #e5e7eb; color: #1f2937; flex: 0.5; }
+        .btn-fechar:hover { background: #d1d5db; }
+        .btn-mapa-popup { background: #e8f5e9; color: #009739; border: 2px solid #009739; flex: 1; }
+        .btn-mapa-popup:hover { background: #009739; color: white; }
+        .chat-button { position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%; background: #009739; color: white; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); transition: all 0.3s ease; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .chat-button:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5); }
+        .chat-button .badge { position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .chat-window { position: fixed; bottom: 5.5rem; right: 2rem; width: 380px; max-width: calc(100vw - 2rem); height: 500px; max-height: calc(100vh - 8rem); background: #ffffff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); display: none; flex-direction: column; z-index: 1001; overflow: hidden; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .chat-window.aberto { display: flex; }
+        .chat-header { background: #009739; color: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .chat-header h3 { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .chat-header .status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 400; opacity: 0.9; }
+        .chat-header .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .chat-header .close-chat { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; padding: 0 0.3rem; }
+        .chat-header .close-chat:hover { opacity: 1; }
+        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; background: #f9fafb; }
+        .chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; animation: messageIn 0.3s ease; }
+        .chat-messages .message.bot { background: #e8f5e9; color: #1a1a2e; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-messages .message.user { background: #009739; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-messages .message .time { font-size: 0.65rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
+        .chat-messages .message.bot .time { color: #555; }
+        .chat-messages .message.user .time { color: rgba(255,255,255,0.7); }
+        .chat-input-area { padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; flex-shrink: 0; }
+        .chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .chat-input-area input:focus { border-color: #009739; }
+        .chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap; }
+        .chat-input-area button:hover { background: #007a2f; }
+        .footer { margin-top: 3rem; padding: 1.5rem 0 0.5rem 0; width: 100%; max-width: 1200px; border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .footer .lock-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem 0.8rem; border-radius: 8px; transition: background 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; }
+        .footer .lock-btn:hover { background: #f3f4f6; color: #1a1a2e; }
+        .footer .copyright { color: #9ca3af; font-size: 0.85rem; }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 1rem; }
+        .login-overlay.ativo { display: flex; }
+        .login-modal { background: white; border-radius: 24px; padding: 2.5rem 2rem; max-width: 420px; width: 100%; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.3s ease; position: relative; }
+        .login-modal h2 { color: #1a1a2e; font-size: 1.5rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+        .login-modal .subtitle { color: #6b7280; font-size: 0.9rem; margin-bottom: 1.8rem; }
+        .login-modal .form-group { margin-bottom: 1.2rem; }
+        .login-modal .form-group label { display: block; font-weight: 500; color: #333; font-size: 0.9rem; margin-bottom: 0.3rem; }
+        .login-modal .form-group input { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none; background: #fafafa; }
+        .login-modal .form-group input:focus { border-color: #009739; box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15); background: white; }
+        .login-modal .btn-login { width: 100%; padding: 0.8rem; background: #009739; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem; }
+        .login-modal .btn-login:hover { background: #007a2f; }
+        .login-modal .erro { color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
+        .login-modal .erro.visible { display: block; }
         .admin-panel { display: none; background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 1200px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); animation: fadeIn 0.3s ease; }
         .admin-panel.ativo { display: block; }
         .admin-panel .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; flex-wrap: wrap; }
@@ -351,51 +420,9 @@
         .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 0; width: 100%; }
         .loading-spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: #009739; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .update-banner {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: #fef9c3;
-            color: #854d0e;
-            padding: 1rem 1.5rem;
-            text-align: center;
-            z-index: 9998;
-            border-bottom: 3px solid #f59e0b;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            font-weight: 500;
-            animation: slideDown 0.5s ease;
-        }
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .update-banner.visible { display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .update-banner .btn-atualizar {
-            background: #009739;
-            color: white;
-            border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .update-banner .btn-atualizar:hover { background: #007a2f; }
-        .update-banner .btn-ignorar {
-            background: transparent;
-            color: #854d0e;
-            border: 1.5px solid #854d0e;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .update-banner .btn-ignorar:hover { background: #854d0e; color: white; }
         
+        .notification-toast { border-radius: 12px !important; border-left: 4px solid #009739 !important; }
+
         .erro-conexao {
             text-align: center;
             padding: 3rem 1rem;
@@ -417,7 +444,7 @@
             font-size: 1rem;
         }
         .erro-conexao .btn-tentar:hover { background: #007a2f; }
-        
+
         @media (max-width: 640px) {
             .month-selector-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
             .popup { padding: 1.5rem; }
@@ -445,19 +472,18 @@
             .update-banner { padding: 0.8rem 1rem; font-size: 0.9rem; }
             .update-banner .btn-atualizar, .update-banner .btn-ignorar { padding: 0.4rem 1rem; font-size: 0.85rem; }
         }
-        .notification-toast { border-radius: 12px !important; border-left: 4px solid #009739 !important; }
     </style>
 </head>
 <body>
 
-    <!-- Banner de Atualização -->
+    <!-- BANNER DE ATUALIZAÇÃO -->
     <div class="update-banner" id="updateBanner">
         <span>🔄 Há uma nova versão disponível!</span>
         <button class="btn-atualizar" id="btnAtualizarApp">Atualizar e Reiniciar</button>
         <button class="btn-ignorar" id="btnIgnorarAtualizacao">Ignorar</button>
     </div>
 
-    <!-- LOGIN OBRIGATÓRIO - Aparece assim que a página carrega -->
+    <!-- LOGIN OBRIGATÓRIO PARA TODOS OS USUÁRIOS -->
     <div class="login-overlay-principal" id="loginOverlayPrincipal">
         <div class="login-modal-principal">
             <div class="logo">📅</div>
@@ -466,10 +492,10 @@
             <form id="formLoginPrincipal">
                 <div class="form-group">
                     <label>👤 Seu Nome</label>
-                    <input type="text" id="loginUserPrincipal" placeholder="Digite seu nome completo" required autofocus>
+                    <input type="text" id="loginUserPrincipal" placeholder="Digite seu nome" required autofocus>
                 </div>
                 <div class="erro" id="loginErroPrincipal">❌ Por favor, digite seu nome</div>
-                <button type="submit" class="btn-login">✅ Entrar na Agenda</button>
+                <button type="submit" class="btn-login">✅ Entrar</button>
             </form>
         </div>
     </div>
@@ -481,6 +507,7 @@
                 <span>Agenda</span>
                 <span class="destaque">Chico Guarnieri</span>
             </h1>
+            <!-- BADGE DO USUÁRIO LOGADO -->
             <span class="usuario-logado" id="usuarioLogadoBadge">
                 👤 <span id="nomeUsuarioExibido"></span>
                 <button class="sair-btn" id="btnSair">✕ Sair</button>
@@ -503,13 +530,15 @@
                 <input type="month" id="monthSelector" title="Escolha o Mês e Ano">
                 <span class="contador" id="contadorCompromissos">0 compromissos</span>
             </div>
-            <div class="days-carousel" id="daysCarousel"></div>
+            <div class="days-carousel" id="daysCarousel">
+                <!-- Preenchido via JavaScript -->
+            </div>
         </div>
 
         <div class="admin-panel" id="adminPanel">
             <h2>
                 🛠️ Painel Administrativo
-                <span class="admin-badge" id="adminUserName">Admin</span>
+                <span class="admin-badge">Admin</span>
                 <span id="editModeIndicator" style="display:none;" class="edit-indicator">✏️ Modo Edição</span>
             </h2>
 
@@ -622,7 +651,6 @@
                         <div class="popup-descricao-text" id="popupDescricao">—</div>
                     </div>
                     <p style="margin-top: 0.5rem;"><strong>📌 Status:</strong> <span class="popup-status" id="popupStatus">Pendente</span></p>
-                    <div class="popup-por" id="popupPor"></div>
                 </div>
                 <div class="popup-acoes">
                     <button class="btn btn-mapa-popup" id="btnMapaPopup">📍 Ver no Google Maps</button>
@@ -666,7 +694,7 @@
         </div>
 
         <div class="footer">
-            <button class="lock-btn" id="lockBtn" title="Clique para abrir o painel administrativo">🔒</button>
+            <button class="lock-btn" id="lockBtn">🔒</button>
             <span class="copyright">© 2026 Agenda Chico Guarnieri - Todos os direitos reservados</span>
         </div>
     </div>
@@ -694,6 +722,25 @@
         </div>
     </div>
 
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-modal">
+            <h2>🔐 Acesso Administrativo</h2>
+            <p class="subtitle">Digite suas credenciais para gerenciar a agenda</p>
+            <form id="formLogin">
+                <div class="form-group">
+                    <label>Usuário</label>
+                    <input type="text" id="loginUser" placeholder="Digite seu usuário">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="loginPassword" placeholder="Digite sua senha">
+                </div>
+                <div class="erro" id="loginErro">❌ Usuário ou senha incorretos</div>
+                <button type="submit" class="btn-login">🔓 Entrar no Painel</button>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
@@ -701,7 +748,7 @@
         // ==========================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4';
-        const APP_VERSION = '2.0.2';
+        const APP_VERSION = '2.0.3';
 
         // ==========================================
         // DADOS GLOBAIS
@@ -764,6 +811,67 @@
         ];
 
         // ==========================================
+        // SISTEMA DE ATUALIZAÇÃO (NOVO)
+        // ==========================================
+        function verificarAtualizacao() {
+            const versaoSalva = localStorage.getItem('app_version');
+            if (!versaoSalva) {
+                localStorage.setItem('app_version', APP_VERSION);
+                return;
+            }
+            if (versaoSalva !== APP_VERSION) {
+                document.getElementById('updateBanner').classList.add('visible');
+            }
+        }
+
+        function limparCacheERecarregar() {
+            // Limpa cache do Service Worker
+            if ('caches' in window) {
+                caches.keys().then(function(keys) {
+                    keys.forEach(function(key) {
+                        caches.delete(key);
+                    });
+                });
+            }
+            // Limpa localStorage e sessionStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            document.getElementById('updateBanner').classList.remove('visible');
+            localStorage.setItem('app_version', APP_VERSION);
+            
+            Swal.fire({
+                title: '🔄 Atualizando...',
+                text: 'O aplicativo será reiniciado com a nova versão.',
+                icon: 'info',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(function() {
+                window.location.reload(true);
+            });
+        }
+
+        document.getElementById('btnAtualizarApp').addEventListener('click', limparCacheERecarregar);
+        document.getElementById('btnIgnorarAtualizacao').addEventListener('click', function() {
+            document.getElementById('updateBanner').classList.remove('visible');
+            localStorage.setItem('app_version', APP_VERSION);
+        });
+
+        // ==========================================
+        // TOAST
+        // ==========================================
+        function showToast(mensagem, duracao) {
+            duracao = duracao || 3000;
+            var existing = document.querySelector('.toast-message');
+            if (existing) existing.remove();
+            var toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = mensagem;
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, duracao);
+        }
+
+        // ==========================================
         // FUNÇÕES DE FORMATAÇÃO
         // ==========================================
         function formatarDataVisao(dataStr) {
@@ -823,17 +931,6 @@
             return { ano: ano, mes: mes, dia: dia, yyyymm: ano + '-' + mes, yyyymmdd: ano + '-' + mes + '-' + dia };
         }
 
-        function showToast(mensagem, duracao) {
-            duracao = duracao || 3000;
-            var existing = document.querySelector('.toast-message');
-            if (existing) existing.remove();
-            var toast = document.createElement('div');
-            toast.className = 'toast-message';
-            toast.textContent = mensagem;
-            document.body.appendChild(toast);
-            setTimeout(function() { toast.remove(); }, duracao);
-        }
-
         // ==========================================
         // COMUNICAÇÃO GOOGLE SHEETS
         // ==========================================
@@ -860,7 +957,7 @@
         }
 
         // ==========================================
-        // LOGIN OBRIGATÓRIO
+        // LOGIN OBRIGATÓRIO (NOVO)
         // ==========================================
         function fazerLoginPrincipal(e) {
             e.preventDefault();
@@ -874,7 +971,6 @@
             }
 
             usuarioAtual = user;
-            adminLogado = true;
             
             // Esconde login e mostra conteúdo
             document.getElementById('loginOverlayPrincipal').classList.add('oculto');
@@ -882,28 +978,15 @@
             
             // Atualiza badge do usuário
             document.getElementById('nomeUsuarioExibido').textContent = user;
-            document.getElementById('adminUserName').textContent = '👤 ' + user;
             
-            // Abre painel admin automaticamente
-            document.getElementById('adminPanel').classList.add('ativo');
-            document.getElementById('lockBtn').innerHTML = '🔓';
-            
-            // Esconde chat button (admin não precisa)
-            document.getElementById('chatButton').style.display = 'none';
-            document.getElementById('chatWindow').classList.remove('aberto');
-
             // Salva na sessão
             sessionStorage.setItem('usuarioAtual', user);
-
-            // Renderiza lista admin
-            renderizarListaAdmin();
-            atualizarChatAdmin();
             
             Swal.fire({
                 title: 'Bem-vindo, ' + user + '!',
-                text: 'Você está logado como administrador.',
+                text: 'Você está visualizando a agenda.',
                 icon: 'success',
-                timer: 2000,
+                timer: 1500,
                 showConfirmButton: false,
                 toast: true,
                 position: 'top-end'
@@ -913,18 +996,99 @@
         function fazerLogout() {
             if (!confirm('Tem certeza que deseja sair?')) return;
             
-            adminLogado = false;
             usuarioAtual = '';
             sessionStorage.removeItem('usuarioAtual');
             
-            document.getElementById('adminPanel').classList.remove('ativo');
-            document.getElementById('lockBtn').innerHTML = '🔒';
             document.getElementById('conteudo-principal').classList.remove('visivel');
             document.getElementById('loginOverlayPrincipal').classList.remove('oculto');
             document.getElementById('loginUserPrincipal').value = '';
             document.getElementById('loginUserPrincipal').focus();
-            document.getElementById('chatButton').style.display = 'flex';
             
+            // Se admin estiver logado, desloga também
+            if (adminLogado) {
+                adminLogado = false;
+                document.getElementById('adminPanel').classList.remove('ativo');
+                document.getElementById('lockBtn').innerHTML = '🔒';
+                document.getElementById('chatButton').style.display = 'flex';
+            }
+        }
+
+        document.getElementById('formLoginPrincipal').addEventListener('submit', fazerLoginPrincipal);
+        document.getElementById('loginUserPrincipal').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('formLoginPrincipal').dispatchEvent(new Event('submit'));
+        });
+        document.getElementById('btnSair').addEventListener('click', fazerLogout);
+
+        // ==========================================
+        // LOGIN ADMIN (ORIGINAL - MANTER)
+        // ==========================================
+        function abrirLogin() {
+            document.getElementById('loginOverlay').classList.add('ativo');
+            document.getElementById('loginErro').classList.remove('visible');
+            document.getElementById('loginUser').value = 'gabinete247';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginUser').focus();
+        }
+
+        function fecharLogin() {
+            document.getElementById('loginOverlay').classList.remove('ativo');
+            document.getElementById('loginErro').classList.remove('visible');
+        }
+
+        async function fazerLogin(e) {
+            e.preventDefault();
+            var user = document.getElementById('loginUser').value.trim();
+            var pass = document.getElementById('loginPassword').value.trim();
+
+            if (!user || !pass) {
+                var erro = document.getElementById('loginErro');
+                erro.textContent = 'Preencha usuário e senha';
+                erro.classList.add('visible');
+                return;
+            }
+
+            Swal.fire({ title: 'Verificando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('login', { usuario: user, senha: pass });
+            
+            if (result.status === 'sucesso') {
+                adminLogado = true;
+                fecharLogin();
+                document.getElementById('adminPanel').classList.add('ativo');
+                document.getElementById('lockBtn').innerHTML = '🔓';
+                
+                document.getElementById('chatButton').style.display = 'none';
+                document.getElementById('chatWindow').classList.remove('aberto');
+
+                renderizarListaAdmin();
+                await atualizarChatAdmin();
+                document.getElementById('loginUser').value = '';
+                document.getElementById('loginPassword').value = '';
+                
+                Swal.fire({
+                    title: 'Bem-vindo!',
+                    text: 'Login realizado com sucesso!',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.close();
+                var erro2 = document.getElementById('loginErro');
+                erro2.textContent = result.mensagem || 'Usuário ou senha incorretos';
+                erro2.classList.add('visible');
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginPassword').focus();
+            }
+        }
+
+        function fecharAdmin() {
+            if (!confirm('Tem certeza que deseja sair do painel administrativo?')) return;
+            adminLogado = false;
+            document.getElementById('adminPanel').classList.remove('ativo');
+            document.getElementById('lockBtn').innerHTML = '🔒';
+            
+            document.getElementById('chatButton').style.display = 'flex';
+
             limparFormAdmin();
             var tabBtns = document.querySelectorAll('.tab-btn');
             var tabContents = document.querySelectorAll('.tab-content');
@@ -934,11 +1098,19 @@
             document.getElementById('tabAgenda').classList.add('ativo');
         }
 
-        document.getElementById('formLoginPrincipal').addEventListener('submit', fazerLoginPrincipal);
-        document.getElementById('loginUserPrincipal').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('formLoginPrincipal').dispatchEvent(new Event('submit'));
+        document.getElementById('lockBtn').addEventListener('click', function() {
+            if (adminLogado) {
+                document.getElementById('adminPanel').classList.add('ativo');
+                renderizarListaAdmin();
+                atualizarChatAdmin();
+            } else {
+                abrirLogin();
+            }
         });
-        document.getElementById('btnSair').addEventListener('click', fazerLogout);
+
+        document.getElementById('formLogin').addEventListener('submit', fazerLogin);
+        document.getElementById('loginOverlay').addEventListener('click', function(e) { if (e.target === document.getElementById('loginOverlay')) fecharLogin(); });
+        document.getElementById('btnFecharAdmin').addEventListener('click', fecharAdmin);
 
         // ==========================================
         // CALENDARIO
@@ -1089,8 +1261,171 @@
         }
 
         // ==========================================
-        // ADMIN CRUD
+        // ADMIN CRUD (ORIGINAL - MANTIDO)
         // ==========================================
+        async function cadastrarCompromisso(e) {
+            e.preventDefault();
+
+            var titulo = document.getElementById('adminTitulo').value.trim();
+            var dia = document.getElementById('adminData').value;
+            var diaFim = document.getElementById('adminDataFim').value; 
+            var hora = document.getElementById('adminHora').value;
+            var horaFim = document.getElementById('adminHoraFim').value;
+            var local = document.getElementById('adminLocal').value.trim();
+            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
+            var descricao = document.getElementById('adminDescricao').value.trim() || ''; 
+            var status = document.getElementById('adminStatus').value;
+
+            if (!titulo || !dia || !hora || !local) {
+                Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                return;
+            }
+
+            var agora = obterDataHoraAtual();
+
+            var novo = {
+                id: proximoId++,
+                titulo: titulo,
+                dia: dia,
+                diaFim: diaFim, 
+                hora: hora,
+                horaFim: horaFim,
+                local: local,
+                participantes: participantes,
+                descricao: descricao, 
+                status: status,
+                criadoPor: usuarioAtual || 'Admin',
+                criadoEm: agora,
+                editadoPor: '',
+                editadoEm: ''
+            };
+
+            Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('adicionar', novo);
+            
+            if (result.status === 'sucesso') {
+                novo.id = result.id; 
+                compromissos.push(novo);
+                renderDaysCarousel();
+                aplicarFiltros();
+                if (adminLogado) renderizarListaAdmin();
+                limparFormAdmin();
+                
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                
+                Swal.fire({
+                    title: 'Sucesso!',
+                    text: 'Compromisso cadastrado com sucesso!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                compromissos.push(novo);
+                renderDaysCarousel();
+                aplicarFiltros();
+                if (adminLogado) renderizarListaAdmin();
+                limparFormAdmin();
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                
+                Swal.fire({
+                    title: '⚠️ Modo Offline',
+                    text: 'Compromisso salvo localmente.',
+                    icon: 'warning',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        async function atualizarCompromissoAdmin(e) {
+            e.preventDefault();
+
+            var id = parseInt(document.getElementById('adminEditId').value);
+            if (!id) {
+                Swal.fire('Erro', 'Nenhum compromisso selecionado para edição.', 'warning');
+                return;
+            }
+
+            var titulo = document.getElementById('adminTitulo').value.trim();
+            var dia = document.getElementById('adminData').value;
+            var diaFim = document.getElementById('adminDataFim').value; 
+            var hora = document.getElementById('adminHora').value;
+            var horaFim = document.getElementById('adminHoraFim').value;
+            var local = document.getElementById('adminLocal').value.trim();
+            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
+            var descricao = document.getElementById('adminDescricao').value.trim() || ''; 
+            var status = document.getElementById('adminStatus').value;
+
+            if (!titulo || !dia || !hora || !local) {
+                Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning');
+                return;
+            }
+
+            var index = compromissos.findIndex(function(c) { return String(c.id) === String(id); });
+            if (index === -1) {
+                Swal.fire('Erro', 'Compromisso não encontrado.', 'error');
+                return;
+            }
+
+            var agora = obterDataHoraAtual();
+
+            var dadosAtualizados = {
+                id: id,
+                titulo: titulo,
+                dia: dia,
+                diaFim: diaFim, 
+                hora: hora,
+                horaFim: horaFim,
+                local: local,
+                participantes: participantes,
+                descricao: descricao, 
+                status: status,
+                editadoPor: usuarioAtual || 'Admin',
+                editadoEm: agora
+            };
+
+            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var result = await fetchGoogle('atualizar', dadosAtualizados);
+            
+            if (result.status === 'sucesso') {
+                compromissos[index] = dadosAtualizados;
+                renderDaysCarousel();
+                aplicarFiltros();
+                if (adminLogado) renderizarListaAdmin();
+                limparFormAdmin();
+                
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                
+                Swal.fire({
+                    title: 'Sucesso!',
+                    text: 'Compromisso atualizado com sucesso!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                compromissos[index] = dadosAtualizados;
+                renderDaysCarousel();
+                aplicarFiltros();
+                if (adminLogado) renderizarListaAdmin();
+                limparFormAdmin();
+                document.getElementById('formAdmin').style.display = 'none';
+                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
+                
+                Swal.fire({
+                    title: '⚠️ Modo Offline',
+                    text: 'Compromisso atualizado localmente.',
+                    icon: 'warning',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
+        }
+
         function limparFormAdmin() {
             document.getElementById('adminEditId').value = '';
             document.getElementById('adminTitulo').value = '';
@@ -1172,8 +1507,39 @@
             document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        document.getElementById('btnLimparForm').addEventListener('click', limparFormAdmin);
+        document.getElementById('formAdmin').addEventListener('submit', cadastrarCompromisso);
+        document.getElementById('btnAtualizar').addEventListener('click', atualizarCompromissoAdmin);
+
+        document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
+            var form = document.getElementById('formAdmin');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+                this.innerHTML = '➖ Ocultar Formulário';
+                this.style.background = '#f3f4f6';
+                this.style.color = '#555';
+                this.style.borderColor = '#d1d5db';
+            } else {
+                form.style.display = 'none';
+                this.innerHTML = '➕ Adicionar Novo Compromisso';
+                this.style.background = '#e8f5e9';
+                this.style.color = '#009739';
+                this.style.borderColor = '#009739';
+            }
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('ativo'); });
+                document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('ativo'); });
+                btn.classList.add('ativo');
+                document.getElementById(btn.dataset.tab).classList.add('ativo');
+                if (btn.dataset.tab === 'tabChat' && adminLogado) atualizarChatAdmin();
+            });
+        });
+
         // ==========================================
-        // POPUP
+        // POPUP (ORIGINAL - MANTIDO)
         // ==========================================
         function abrirPopup(comp) {
             if (!comp) return;
@@ -1208,15 +1574,6 @@
                 } else { bgColor = '#fef9c3'; textColor = '#92400e'; }
             }
             ps.style.backgroundColor = bgColor; ps.style.color = textColor;
-            var porDiv = document.getElementById('popupPor');
-            var porTexto = '';
-            if (comp.editadoPor && comp.editadoPor.trim() !== '') {
-                porTexto = '✏️ Editado por <strong>' + comp.editadoPor + '</strong> em ' + formatarDataHoraParaExibicao(comp.editadoEm);
-            } else if (comp.criadoPor && comp.criadoPor.trim() !== '') {
-                porTexto = '📝 Criado por <strong>' + comp.criadoPor + '</strong> em ' + formatarDataHoraParaExibicao(comp.criadoEm);
-            }
-            porDiv.innerHTML = porTexto;
-            porDiv.style.display = porTexto ? 'block' : 'none';
             var temEndereco = comp.local && !comp.local.toLowerCase().includes('online') && !comp.local.toLowerCase().includes('virtual') && !comp.local.toLowerCase().includes('discord') && !comp.local.toLowerCase().includes('meet') && !comp.local.toLowerCase().includes('zoom');
             var btnMapaPopup = document.getElementById('btnMapaPopup');
             btnMapaPopup.style.display = temEndereco ? 'inline-block' : 'none';
@@ -1234,11 +1591,11 @@
         }
 
         async function acaoCancelar() {
-            if (!compromissoAtual || !usuarioAtual) return;
+            if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Cancelado') { Swal.fire('Aviso', 'Este compromisso já está cancelado.', 'warning'); return; }
             var agora = obterDataHoraAtual();
             compromissoAtual.status = 'Cancelado';
-            compromissoAtual.editadoPor = usuarioAtual;
+            compromissoAtual.editadoPor = usuarioAtual || 'Admin';
             compromissoAtual.editadoEm = agora;
             atualizarCompromissoNoArray(compromissoAtual);
             document.getElementById('popupOverlay').classList.remove('ativo');
@@ -1247,17 +1604,17 @@
             if (result.status !== 'sucesso') {
                 Swal.fire({ title: '⚠️ Modo Offline', text: 'Alteração salva localmente.', icon: 'warning', timer: 2000, showConfirmButton: false });
             } else {
-                Swal.fire({ title: 'Cancelado!', text: 'Compromisso cancelado por ' + usuarioAtual, icon: 'success', timer: 1500, showConfirmButton: false });
+                Swal.fire({ title: 'Cancelado!', text: 'Compromisso cancelado.', icon: 'success', timer: 1500, showConfirmButton: false });
             }
         }
 
         async function acaoConcluir() {
-            if (!compromissoAtual || !usuarioAtual) return;
+            if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Concluído' || compromissoAtual.status === 'Concluido') { Swal.fire('Aviso', 'Este compromisso já está concluído.', 'warning'); return; }
             if (compromissoAtual.status === 'Cancelado') { Swal.fire('Aviso', 'Não é possível concluir um compromisso cancelado.', 'warning'); return; }
             var agora = obterDataHoraAtual();
             compromissoAtual.status = 'Concluído';
-            compromissoAtual.editadoPor = usuarioAtual;
+            compromissoAtual.editadoPor = usuarioAtual || 'Admin';
             compromissoAtual.editadoEm = agora;
             atualizarCompromissoNoArray(compromissoAtual);
             document.getElementById('popupOverlay').classList.remove('ativo');
@@ -1266,12 +1623,12 @@
             if (result.status !== 'sucesso') {
                 Swal.fire({ title: '⚠️ Modo Offline', text: 'Alteração salva localmente.', icon: 'warning', timer: 2000, showConfirmButton: false });
             } else {
-                Swal.fire({ title: 'Concluído!', text: 'Compromisso concluído por ' + usuarioAtual, icon: 'success', timer: 1500, showConfirmButton: false });
+                Swal.fire({ title: 'Concluído!', text: 'Compromisso concluído.', icon: 'success', timer: 1500, showConfirmButton: false });
             }
         }
 
         function acaoAdiar() {
-            if (!compromissoAtual || !usuarioAtual) return;
+            if (!compromissoAtual) return;
             if (compromissoAtual.status === 'Cancelado') { Swal.fire('Aviso', 'Não é possível adiar um compromisso cancelado.', 'warning'); return; }
             document.getElementById('adiarDataInput').value = formatarDataVisao(compromissoAtual.dia);
             document.getElementById('adiarDataFimInput').value = formatarDataVisao(compromissoAtual.diaFim);
@@ -1299,7 +1656,7 @@
             compromissoAtual.horaFim = novaHoraFim;
             if (novoLocal) compromissoAtual.local = novoLocal;
             compromissoAtual.status = 'Adiado';
-            compromissoAtual.editadoPor = usuarioAtual;
+            compromissoAtual.editadoPor = usuarioAtual || 'Admin';
             compromissoAtual.editadoEm = agora;
             atualizarCompromissoNoArray(compromissoAtual);
             document.getElementById('popupOverlay').classList.remove('ativo');
@@ -1309,7 +1666,7 @@
             if (result.status !== 'sucesso') {
                 Swal.fire({ title: '⚠️ Modo Offline', text: 'Alteração salva localmente.', icon: 'warning', timer: 2000, showConfirmButton: false });
             } else {
-                Swal.fire({ title: 'Adiado!', text: 'O compromisso foi adiado por ' + usuarioAtual, icon: 'success', timer: 2000, showConfirmButton: false });
+                Swal.fire({ title: 'Adiado!', text: 'O compromisso foi adiado.', icon: 'success', timer: 2000, showConfirmButton: false });
             }
         });
 
@@ -1318,259 +1675,7 @@
         document.getElementById('btnAdiar').addEventListener('click', acaoAdiar);
 
         // ==========================================
-        // ADMIN FORM
-        // ==========================================
-        document.getElementById('btnToggleAdminForm').addEventListener('click', function() {
-            var form = document.getElementById('formAdmin');
-            if (form.style.display === 'none' || form.style.display === '') {
-                form.style.display = 'block';
-                this.innerHTML = '➖ Ocultar Formulário';
-                this.style.background = '#f3f4f6'; this.style.color = '#555'; this.style.borderColor = '#d1d5db';
-            } else {
-                form.style.display = 'none';
-                this.innerHTML = '➕ Adicionar Novo Compromisso';
-                this.style.background = '#e8f5e9'; this.style.color = '#009739'; this.style.borderColor = '#009739';
-            }
-        });
-
-        document.getElementById('btnLimparForm').addEventListener('click', limparFormAdmin);
-
-        document.getElementById('formAdmin').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            if (!usuarioAtual) { Swal.fire('Aviso', 'Você precisa estar logado.', 'warning'); return; }
-            var titulo = document.getElementById('adminTitulo').value.trim();
-            var dia = document.getElementById('adminData').value;
-            var diaFim = document.getElementById('adminDataFim').value;
-            var hora = document.getElementById('adminHora').value;
-            var horaFim = document.getElementById('adminHoraFim').value;
-            var local = document.getElementById('adminLocal').value.trim();
-            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
-            var descricao = document.getElementById('adminDescricao').value.trim() || '';
-            var status = document.getElementById('adminStatus').value;
-            if (!titulo || !dia || !hora || !local) { Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning'); return; }
-            var agora = obterDataHoraAtual();
-            var novo = { id: proximoId++, titulo: titulo, dia: dia, diaFim: diaFim, hora: hora, horaFim: horaFim, local: local, participantes: participantes, descricao: descricao, status: status, criadoPor: usuarioAtual, criadoEm: agora, editadoPor: '', editadoEm: '' };
-            Swal.fire({ title: 'Cadastrando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            var result = await fetchGoogle('adicionar', novo);
-            if (result.status === 'sucesso') {
-                novo.id = result.id; compromissos.push(novo); renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin(); limparFormAdmin();
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
-                Swal.fire({ title: 'Sucesso!', text: 'Compromisso cadastrado por ' + usuarioAtual, icon: 'success', timer: 2000, showConfirmButton: false });
-            } else {
-                compromissos.push(novo); renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin(); limparFormAdmin();
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
-                Swal.fire({ title: '⚠️ Modo Offline', text: 'Compromisso salvo localmente.', icon: 'warning', timer: 3000, showConfirmButton: false });
-            }
-        });
-
-        document.getElementById('btnAtualizar').addEventListener('click', async function(e) {
-            e.preventDefault();
-            if (!usuarioAtual) { Swal.fire('Aviso', 'Você precisa estar logado.', 'warning'); return; }
-            var id = parseInt(document.getElementById('adminEditId').value);
-            if (!id) { Swal.fire('Erro', 'Nenhum compromisso selecionado.', 'warning'); return; }
-            var titulo = document.getElementById('adminTitulo').value.trim();
-            var dia = document.getElementById('adminData').value;
-            var diaFim = document.getElementById('adminDataFim').value;
-            var hora = document.getElementById('adminHora').value;
-            var horaFim = document.getElementById('adminHoraFim').value;
-            var local = document.getElementById('adminLocal').value.trim();
-            var participantes = document.getElementById('adminParticipantes').value.trim() || 'Não informado';
-            var descricao = document.getElementById('adminDescricao').value.trim() || '';
-            var status = document.getElementById('adminStatus').value;
-            if (!titulo || !dia || !hora || !local) { Swal.fire('Campos obrigatórios', 'Preencha todos os campos marcados com *', 'warning'); return; }
-            var index = compromissos.findIndex(function(c) { return String(c.id) === String(id); });
-            if (index === -1) { Swal.fire('Erro', 'Compromisso não encontrado.', 'error'); return; }
-            var agora = obterDataHoraAtual();
-            var dadosAtualizados = { id: id, titulo: titulo, dia: dia, diaFim: diaFim, hora: hora, horaFim: horaFim, local: local, participantes: participantes, descricao: descricao, status: status, editadoPor: usuarioAtual, editadoEm: agora };
-            Swal.fire({ title: 'Atualizando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-            var result = await fetchGoogle('atualizar', dadosAtualizados);
-            if (result.status === 'sucesso') {
-                compromissos[index] = dadosAtualizados; renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin(); limparFormAdmin();
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
-                Swal.fire({ title: 'Sucesso!', text: 'Compromisso atualizado por ' + usuarioAtual, icon: 'success', timer: 2000, showConfirmButton: false });
-            } else {
-                compromissos[index] = dadosAtualizados; renderDaysCarousel(); aplicarFiltros(); if (adminLogado) renderizarListaAdmin(); limparFormAdmin();
-                document.getElementById('formAdmin').style.display = 'none';
-                document.getElementById('btnToggleAdminForm').innerHTML = '➕ Adicionar Novo Compromisso';
-                Swal.fire({ title: '⚠️ Modo Offline', text: 'Compromisso atualizado localmente.', icon: 'warning', timer: 3000, showConfirmButton: false });
-            }
-        });
-
-        document.getElementById('btnFecharAdmin').addEventListener('click', function() {
-            if (!confirm('Tem certeza que deseja fechar o painel administrativo?')) return;
-            document.getElementById('adminPanel').classList.remove('ativo');
-            document.getElementById('lockBtn').innerHTML = '🔒';
-        });
-
-        document.getElementById('lockBtn').addEventListener('click', function() {
-            if (adminLogado) {
-                document.getElementById('adminPanel').classList.toggle('ativo');
-                if (document.getElementById('adminPanel').classList.contains('ativo')) {
-                    renderizarListaAdmin();
-                    atualizarChatAdmin();
-                }
-            }
-        });
-
-        document.querySelectorAll('.tab-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('ativo'); });
-                document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('ativo'); });
-                btn.classList.add('ativo');
-                document.getElementById(btn.dataset.tab).classList.add('ativo');
-                if (btn.dataset.tab === 'tabChat' && adminLogado) atualizarChatAdmin();
-            });
-        });
-
-        // ==========================================
-        // CHAT
-        // ==========================================
-        let isSincronizandoChat = false;
-
-        async function sincronizarChat() {
-            if (isSincronizandoChat) return;
-            isSincronizandoChat = true;
-            try {
-                var msgsServer = await fetchGoogle('listar_chat');
-                if (!msgsServer || msgsServer.status !== 'sucesso' || !msgsServer.dados || msgsServer.dados.length === 0) {
-                    isSincronizandoChat = false; return;
-                }
-                var dadosServidor = msgsServer.dados;
-                var msgsLocaisReais = mensagensChat.filter(function(m) { return !String(m.id).startsWith('temp_'); });
-                if (dadosServidor.length > msgsLocaisReais.length) {
-                    var qtdNovas = dadosServidor.length - msgsLocaisReais.length;
-                    var novasMensagens = dadosServidor.slice(-qtdNovas);
-                    var msgsTemporarias = mensagensChat.filter(function(m) { return String(m.id).startsWith('temp_'); });
-                    mensagensChat = dadosServidor.concat(msgsTemporarias);
-                    var dispararNotificacao = false, tituloNotif = '', bodyNotif = '';
-                    novasMensagens.forEach(function(msg) {
-                        if (!adminLogado && msg.remetente === 'admin') {
-                            dispararNotificacao = true;
-                            tituloNotif = 'Nova resposta do administrador';
-                            bodyNotif = msg.texto.substring(0, 100);
-                            if (!document.getElementById('chatWindow').classList.contains('aberto')) {
-                                var badge = document.getElementById('userChatBadge');
-                                badge.style.display = 'flex';
-                                badge.textContent = parseInt(badge.textContent || 0) + 1;
-                            }
-                        } else if (adminLogado && msg.remetente === 'user') {
-                            dispararNotificacao = true;
-                            tituloNotif = 'Nova mensagem de um usuário';
-                            bodyNotif = msg.texto.substring(0, 100);
-                        }
-                    });
-                    if (dispararNotificacao) {
-                        sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
-                    }
-                    atualizarChatUsuario();
-                    if (adminLogado) atualizarChatAdmin();
-                }
-            } catch (error) { console.error("Erro na sincronização do chat:", error); }
-            isSincronizandoChat = false;
-        }
-
-        async function adicionarMensagemChat(remetente, texto) {
-            var agora = new Date().toISOString();
-            var tempId = 'temp_' + Date.now();
-            var mensagemTemp = { id: tempId, remetente: remetente, texto: texto, data: agora, lida: false, lidaUser: false };
-            mensagensChat.push(mensagemTemp);
-            atualizarChatUsuario();
-            if (adminLogado) atualizarChatAdmin();
-            var result = await fetchGoogle('adicionar_chat', { remetente: remetente, texto: texto, data: agora, lida: false });
-            if (result.status === 'sucesso') {
-                mensagensChat = mensagensChat.filter(function(m) { return m.id !== tempId; });
-                await sincronizarChat();
-            }
-        }
-
-        function atualizarChatUsuario() {
-            var cx = document.getElementById('chatMessages');
-            cx.innerHTML = '';
-            if (mensagensChat.length === 0) {
-                cx.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:2rem;">💬 Nenhuma mensagem ainda.<br>Envie uma mensagem para o suporte.</div>';
-                return;
-            }
-            mensagensChat.forEach(function(msg) {
-                var div = document.createElement('div');
-                div.className = 'message ' + (msg.remetente === 'user' ? 'user' : 'bot');
-                var time = new Date(msg.data);
-                var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                div.innerHTML = msg.texto + ' <span class="time">' + timeStr + '</span>';
-                cx.appendChild(div);
-            });
-            cx.scrollTop = cx.scrollHeight;
-        }
-
-        async function atualizarChatAdmin() {
-            if (!adminLogado) return;
-            var cx = document.getElementById('adminChatMessages');
-            cx.innerHTML = '';
-            if (mensagensChat.length === 0) {
-                cx.innerHTML = '<div class="admin-chat-empty"><div class="icon">💬</div><p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p></div>';
-                return;
-            }
-            mensagensChat.forEach(function(msg) {
-                var div = document.createElement('div');
-                div.className = 'message ' + (msg.remetente === 'user' ? 'user' : 'admin');
-                var time = new Date(msg.data);
-                var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
-                var remetenteLabel = msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin';
-                div.innerHTML = '<strong>' + remetenteLabel + ':</strong> ' + msg.texto + ' <span class="time">' + timeStr + '</span>';
-                cx.appendChild(div);
-                if (msg.remetente === 'user') msg.lida = true;
-            });
-            cx.scrollTop = cx.scrollHeight;
-            contarMensagensNaoLidas();
-        }
-
-        function contarMensagensNaoLidas() {
-            if (!adminLogado) return;
-            var naoLidas = mensagensChat.filter(function(m) { return m.remetente === 'user' && !m.lida; }).length;
-            var badge = document.getElementById('adminChatBadge');
-            if (naoLidas > 0) { badge.textContent = naoLidas; badge.style.display = 'inline'; } else { badge.style.display = 'none'; }
-        }
-
-        document.getElementById('chatButton').addEventListener('click', function() {
-            var cw = document.getElementById('chatWindow');
-            cw.classList.toggle('aberto');
-            if (cw.classList.contains('aberto')) {
-                document.getElementById('chatInput').focus();
-                var badge = document.getElementById('userChatBadge');
-                badge.style.display = 'none';
-                badge.textContent = '0';
-            }
-        });
-
-        document.getElementById('closeChat').addEventListener('click', function() { document.getElementById('chatWindow').classList.remove('aberto'); });
-
-        document.getElementById('chatSend').addEventListener('click', function() {
-            var input = document.getElementById('chatInput');
-            var texto = input.value.trim();
-            if (!texto) return;
-            adicionarMensagemChat('user', texto);
-            input.value = '';
-        });
-
-        document.getElementById('chatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('chatSend').click(); });
-
-        document.getElementById('adminChatSend').addEventListener('click', function() {
-            var input = document.getElementById('adminChatInput');
-            var texto = input.value.trim();
-            if (!texto) return;
-            adicionarMensagemChat('admin', texto);
-            input.value = '';
-            var badge = document.getElementById('adminChatBadge');
-            badge.style.display = 'none';
-            badge.textContent = '0';
-        });
-
-        document.getElementById('adminChatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('adminChatSend').click(); });
-
-        // ==========================================
-        // COMPARTILHAMENTO
+        // FUNÇÕES DE COMPARTILHAMENTO (ORIGINAL)
         // ==========================================
         function gerarTextoAgenda(periodo) {
             periodo = periodo || 'all';
@@ -1746,30 +1851,7 @@
         });
 
         // ==========================================
-        // SISTEMA DE ATUALIZAÇÃO
-        // ==========================================
-        function verificarAtualizacao() {
-            const versaoSalva = localStorage.getItem('app_version');
-            if (!versaoSalva) { localStorage.setItem('app_version', APP_VERSION); return; }
-            if (versaoSalva !== APP_VERSION) { document.getElementById('updateBanner').classList.add('visible'); }
-        }
-
-        function limparCacheERecarregar() {
-            if ('caches' in window) { caches.keys().then(function(keys) { keys.forEach(function(key) { caches.delete(key); }); }); }
-            localStorage.clear(); sessionStorage.clear();
-            document.getElementById('updateBanner').classList.remove('visible');
-            localStorage.setItem('app_version', APP_VERSION);
-            Swal.fire({ title: '🔄 Atualizando...', text: 'O aplicativo será reiniciado com a nova versão.', icon: 'info', timer: 2000, showConfirmButton: false }).then(function() { window.location.reload(true); });
-        }
-
-        document.getElementById('btnAtualizarApp').addEventListener('click', limparCacheERecarregar);
-        document.getElementById('btnIgnorarAtualizacao').addEventListener('click', function() {
-            document.getElementById('updateBanner').classList.remove('visible');
-            localStorage.setItem('app_version', APP_VERSION);
-        });
-
-        // ==========================================
-        // NOTIFICAÇÕES
+        // SISTEMA DE NOTIFICACOES (ORIGINAL)
         // ==========================================
         function urlBase64ToUint8Array(base64String) {
             var padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -1827,7 +1909,151 @@
         document.getElementById('btnNotificacao').addEventListener('click', function() { sistemaNotificacao.solicitarPermissao(); });
 
         // ==========================================
-        // SINCRONIZAÇÃO
+        // CHAT (ORIGINAL)
+        // ==========================================
+        let isSincronizandoChat = false;
+
+        async function sincronizarChat() {
+            if (isSincronizandoChat) return;
+            isSincronizandoChat = true;
+            try {
+                var msgsServer = await fetchGoogle('listar_chat');
+                if (!msgsServer || msgsServer.status !== 'sucesso' || !msgsServer.dados || msgsServer.dados.length === 0) {
+                    isSincronizandoChat = false; return;
+                }
+                var dadosServidor = msgsServer.dados;
+                var msgsLocaisReais = mensagensChat.filter(function(m) { return !String(m.id).startsWith('temp_'); });
+                if (dadosServidor.length > msgsLocaisReais.length) {
+                    var qtdNovas = dadosServidor.length - msgsLocaisReais.length;
+                    var novasMensagens = dadosServidor.slice(-qtdNovas);
+                    var msgsTemporarias = mensagensChat.filter(function(m) { return String(m.id).startsWith('temp_'); });
+                    mensagensChat = dadosServidor.concat(msgsTemporarias);
+                    var dispararNotificacao = false, tituloNotif = '', bodyNotif = '';
+                    novasMensagens.forEach(function(msg) {
+                        if (!adminLogado && msg.remetente === 'admin') {
+                            dispararNotificacao = true;
+                            tituloNotif = 'Nova resposta do administrador';
+                            bodyNotif = msg.texto.substring(0, 100);
+                            if (!document.getElementById('chatWindow').classList.contains('aberto')) {
+                                var badge = document.getElementById('userChatBadge');
+                                badge.style.display = 'flex';
+                                badge.textContent = parseInt(badge.textContent || 0) + 1;
+                            }
+                        } else if (adminLogado && msg.remetente === 'user') {
+                            dispararNotificacao = true;
+                            tituloNotif = 'Nova mensagem de um usuário';
+                            bodyNotif = msg.texto.substring(0, 100);
+                        }
+                    });
+                    if (dispararNotificacao) {
+                        sistemaNotificacao.enviar(tituloNotif, bodyNotif, { url: window.location.href });
+                    }
+                    atualizarChatUsuario();
+                    if (adminLogado) atualizarChatAdmin();
+                }
+            } catch (error) { console.error("Erro na sincronização do chat:", error); }
+            isSincronizandoChat = false;
+        }
+
+        async function adicionarMensagemChat(remetente, texto) {
+            var agora = new Date().toISOString();
+            var tempId = 'temp_' + Date.now();
+            var mensagemTemp = { id: tempId, remetente: remetente, texto: texto, data: agora, lida: false, lidaUser: false };
+            mensagensChat.push(mensagemTemp);
+            atualizarChatUsuario();
+            if (adminLogado) atualizarChatAdmin();
+            var result = await fetchGoogle('adicionar_chat', { remetente: remetente, texto: texto, data: agora, lida: false });
+            if (result.status === 'sucesso') {
+                mensagensChat = mensagensChat.filter(function(m) { return m.id !== tempId; });
+                await sincronizarChat();
+            }
+        }
+
+        function atualizarChatUsuario() {
+            var cx = document.getElementById('chatMessages');
+            cx.innerHTML = '';
+            if (mensagensChat.length === 0) {
+                cx.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:2rem;">💬 Nenhuma mensagem ainda.<br>Envie uma mensagem para o suporte.</div>';
+                return;
+            }
+            mensagensChat.forEach(function(msg) {
+                var div = document.createElement('div');
+                div.className = 'message ' + (msg.remetente === 'user' ? 'user' : 'bot');
+                var time = new Date(msg.data);
+                var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+                div.innerHTML = msg.texto + ' <span class="time">' + timeStr + '</span>';
+                cx.appendChild(div);
+            });
+            cx.scrollTop = cx.scrollHeight;
+        }
+
+        async function atualizarChatAdmin() {
+            if (!adminLogado) return;
+            var cx = document.getElementById('adminChatMessages');
+            cx.innerHTML = '';
+            if (mensagensChat.length === 0) {
+                cx.innerHTML = '<div class="admin-chat-empty"><div class="icon">💬</div><p>Nenhuma mensagem ainda.<br>Os usuários entrarão em contato por aqui.</p></div>';
+                return;
+            }
+            mensagensChat.forEach(function(msg) {
+                var div = document.createElement('div');
+                div.className = 'message ' + (msg.remetente === 'user' ? 'user' : 'admin');
+                var time = new Date(msg.data);
+                var timeStr = time.getHours().toString().padStart(2, '0') + ':' + time.getMinutes().toString().padStart(2, '0');
+                var remetenteLabel = msg.remetente === 'user' ? '👤 Usuário' : '👨‍💼 Admin';
+                div.innerHTML = '<strong>' + remetenteLabel + ':</strong> ' + msg.texto + ' <span class="time">' + timeStr + '</span>';
+                cx.appendChild(div);
+                if (msg.remetente === 'user') msg.lida = true;
+            });
+            cx.scrollTop = cx.scrollHeight;
+            contarMensagensNaoLidas();
+        }
+
+        function contarMensagensNaoLidas() {
+            if (!adminLogado) return;
+            var naoLidas = mensagensChat.filter(function(m) { return m.remetente === 'user' && !m.lida; }).length;
+            var badge = document.getElementById('adminChatBadge');
+            if (naoLidas > 0) { badge.textContent = naoLidas; badge.style.display = 'inline'; } else { badge.style.display = 'none'; }
+        }
+
+        document.getElementById('chatButton').addEventListener('click', function() {
+            var cw = document.getElementById('chatWindow');
+            cw.classList.toggle('aberto');
+            if (cw.classList.contains('aberto')) {
+                document.getElementById('chatInput').focus();
+                var badge = document.getElementById('userChatBadge');
+                badge.style.display = 'none';
+                badge.textContent = '0';
+            }
+        });
+
+        document.getElementById('closeChat').addEventListener('click', function() { document.getElementById('chatWindow').classList.remove('aberto'); });
+
+        document.getElementById('chatSend').addEventListener('click', function() {
+            var input = document.getElementById('chatInput');
+            var texto = input.value.trim();
+            if (!texto) return;
+            adicionarMensagemChat('user', texto);
+            input.value = '';
+        });
+
+        document.getElementById('chatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('chatSend').click(); });
+
+        document.getElementById('adminChatSend').addEventListener('click', function() {
+            var input = document.getElementById('adminChatInput');
+            var texto = input.value.trim();
+            if (!texto) return;
+            adicionarMensagemChat('admin', texto);
+            input.value = '';
+            var badge = document.getElementById('adminChatBadge');
+            badge.style.display = 'none';
+            badge.textContent = '0';
+        });
+
+        document.getElementById('adminChatInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('adminChatSend').click(); });
+
+        // ==========================================
+        // SINCRONIZAÇÃO AUTOMÁTICA
         // ==========================================
         let isSincronizandoAgenda = false;
 
@@ -1857,34 +2083,28 @@
         // ==========================================
         async function inicializar() {
             console.log('[INIT] Iniciando aplicação...');
+            
+            // Verifica atualização
             verificarAtualizacao();
-
-            // Verifica se já tem usuário na sessão
-            var userSalvo = sessionStorage.getItem('usuarioAtual');
-            if (userSalvo) {
-                usuarioAtual = userSalvo;
-                adminLogado = true;
-                document.getElementById('loginOverlayPrincipal').classList.add('oculto');
-                document.getElementById('conteudo-principal').classList.add('visivel');
-                document.getElementById('nomeUsuarioExibido').textContent = userSalvo;
-                document.getElementById('adminUserName').textContent = '👤 ' + userSalvo;
-                document.getElementById('adminPanel').classList.add('ativo');
-                document.getElementById('lockBtn').innerHTML = '🔓';
-                document.getElementById('chatButton').style.display = 'none';
-            }
 
             var grid = document.getElementById('agendaGrid');
             grid.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><p style="color: #6b7280;">Carregando compromissos...</p></div>';
 
             try {
                 initCalendar();
+
+                console.log('[INIT] Carregando compromissos...');
                 var comp = await fetchGoogle('listar');
+                console.log('[INIT] Resposta listar:', comp);
+                
                 if (comp && comp.status === 'sucesso' && comp.dados && comp.dados.length > 0) {
                     compromissos = comp.dados || [];
+                    console.log('[INIT] Compromissos carregados do servidor:', compromissos.length);
                     var maxId = 0;
                     if (compromissos.length > 0) maxId = Math.max.apply(null, compromissos.map(function(c) { return parseInt(c.id) || 0; }));
                     proximoId = maxId + 1;
                 } else {
+                    console.log('[INIT] Nenhum dado do servidor, usando dados de exemplo...');
                     compromissos = DADOS_EXEMPLO;
                     proximoId = 4;
                     if (document.getElementById('conteudo-principal').classList.contains('visivel')) {
@@ -1893,30 +2113,50 @@
                 }
 
                 var msg = await fetchGoogle('listar_chat');
-                if (msg && msg.status === 'sucesso' && msg.dados) mensagensChat = msg.dados || [];
-                else mensagensChat = [];
+                if (msg && msg.status === 'sucesso' && msg.dados) {
+                    mensagensChat = msg.dados || [];
+                } else {
+                    mensagensChat = [];
+                }
 
                 renderDaysCarousel();
                 aplicarFiltros();
                 atualizarChatUsuario();
 
-                if (adminLogado) {
-                    renderizarListaAdmin();
-                    atualizarChatAdmin();
+                // Verifica se já tem usuário na sessão (login obrigatório)
+                var userSalvo = sessionStorage.getItem('usuarioAtual');
+                if (userSalvo) {
+                    usuarioAtual = userSalvo;
+                    document.getElementById('loginOverlayPrincipal').classList.add('oculto');
+                    document.getElementById('conteudo-principal').classList.add('visivel');
+                    document.getElementById('nomeUsuarioExibido').textContent = userSalvo;
                 }
 
-                setInterval(function() { sincronizarChat(); sincronizarAgenda(); }, 15000);
+                setInterval(function() {
+                    sincronizarChat();
+                    sincronizarAgenda();
+                }, 15000);
 
                 console.log('[INIT] ✅ Agenda Chico Guarnieri pronta!');
+                
             } catch (error) {
                 console.error('[INIT] ❌ Erro:', error);
                 compromissos = DADOS_EXEMPLO;
                 proximoId = 4;
                 renderDaysCarousel();
                 aplicarFiltros();
+                
                 if (document.getElementById('conteudo-principal').classList.contains('visivel')) {
+                    var grid = document.getElementById('agendaGrid');
                     grid.innerHTML = '<div class="erro-conexao"><div class="icone">📡</div><p><strong>Modo offline</strong></p><p style="color: #6b7280; font-size: 0.95rem;">Exibindo dados de exemplo. Conecte-se à internet para sincronizar.</p><button class="btn-tentar" onclick="location.reload()">🔄 Tentar novamente</button></div>';
                 }
+                
+                Swal.fire({
+                    title: '⚠️ Modo Offline',
+                    text: 'Não foi possível conectar ao servidor. Exibindo dados de exemplo.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
             }
         }
 
