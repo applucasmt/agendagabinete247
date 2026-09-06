@@ -28,7 +28,6 @@
         if (window.performance) {
             var navEntries = window.performance.getEntriesByType('navigation');
             if (navEntries.length > 0 && navEntries[0].type === 'reload') {
-                // Se for um reload, força limpeza de cache
                 if ('caches' in window) {
                     caches.keys().then(function(keys) {
                         keys.forEach(function(key) {
@@ -40,16 +39,12 @@
         }
         
         // SISTEMA DE ATUALIZAÇÃO FORÇADA
-        const APP_VERSION = '3.0.0';
+        const APP_VERSION = '3.0.2';
         const versaoSalva = localStorage.getItem('app_version');
         
-        // Se a versão salva for diferente ou não existir, limpa tudo
         if (!versaoSalva || versaoSalva !== APP_VERSION) {
-            // Limpa localStorage
             localStorage.clear();
             sessionStorage.clear();
-            
-            // Limpa cache do Service Worker
             if ('caches' in window) {
                 caches.keys().then(function(keys) {
                     keys.forEach(function(key) {
@@ -57,13 +52,8 @@
                     });
                 });
             }
-            
-            // Salva nova versão
             localStorage.setItem('app_version', APP_VERSION);
-            
-            // Recarrega a página se ainda não estiver na versão correta
             if (versaoSalva && versaoSalva !== APP_VERSION) {
-                // Mostra mensagem e recarrega
                 setTimeout(function() {
                     window.location.reload(true);
                 }, 500);
@@ -541,13 +531,13 @@
             <div class="logo">📅</div>
             <h2>Agenda <span style="color:#009739;">Chico Guarnieri</span></h2>
             <p class="subtitle">Identifique-se para acessar a agenda</p>
-            <form id="formLoginPrincipal">
+            <form id="formLoginPrincipal" onsubmit="return false;">
                 <div class="form-group">
                     <label>👤 Seu Nome</label>
                     <input type="text" id="loginUserPrincipal" placeholder="Digite seu nome" required autofocus>
                 </div>
                 <div class="erro" id="loginErroPrincipal">❌ Por favor, digite seu nome</div>
-                <button type="submit" class="btn-login">✅ Entrar</button>
+                <button type="button" class="btn-login" id="btnLoginPrincipal">✅ Entrar</button>
             </form>
         </div>
     </div>
@@ -796,47 +786,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ==========================================
-        // VERSÃO DO APP - MUDE PARA FORÇAR ATUALIZAÇÃO
+        // VERSÃO DO APP
         // ==========================================
-        const APP_VERSION = '3.0.1';
+        const APP_VERSION = '3.0.2';
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4';
-
-        // ==========================================
-        // FORÇA LIMPEZA DE CACHE
-        // ==========================================
-        (function forcarLimpezaCache() {
-            // Verifica se é a versão correta
-            var versaoSalva = localStorage.getItem('app_version');
-            
-            // Se não tiver versão ou for diferente, limpa tudo
-            if (!versaoSalva || versaoSalva !== APP_VERSION) {
-                console.log('[CACHE] Nova versão detectada! Limpando cache...');
-                
-                // Limpa localStorage e sessionStorage
-                localStorage.clear();
-                sessionStorage.clear();
-                
-                // Limpa cache do navegador
-                if ('caches' in window) {
-                    caches.keys().then(function(keys) {
-                        keys.forEach(function(key) {
-                            caches.delete(key);
-                        });
-                    });
-                }
-                
-                // Salva a nova versão
-                localStorage.setItem('app_version', APP_VERSION);
-                
-                // Recarrega a página forçadamente
-                if (versaoSalva && versaoSalva !== APP_VERSION) {
-                    setTimeout(function() {
-                        window.location.reload(true);
-                    }, 300);
-                }
-            }
-        })();
 
         // ==========================================
         // DADOS GLOBAIS
@@ -913,7 +867,6 @@
         }
 
         function limparCacheERecarregar() {
-            // Limpa cache do Service Worker
             if ('caches' in window) {
                 caches.keys().then(function(keys) {
                     keys.forEach(function(key) {
@@ -921,7 +874,6 @@
                     });
                 });
             }
-            // Limpa localStorage e sessionStorage
             localStorage.clear();
             sessionStorage.clear();
             
@@ -1045,10 +997,9 @@
         }
 
         // ==========================================
-        // LOGIN OBRIGATÓRIO
+        // LOGIN OBRIGATÓRIO - CORRIGIDO
         // ==========================================
-        function fazerLoginPrincipal(e) {
-            e.preventDefault();
+        function fazerLoginPrincipal() {
             var user = document.getElementById('loginUserPrincipal').value.trim();
 
             if (!user) {
@@ -1092,7 +1043,6 @@
             document.getElementById('loginUserPrincipal').value = '';
             document.getElementById('loginUserPrincipal').focus();
             
-            // Se admin estiver logado, desloga também
             if (adminLogado) {
                 adminLogado = false;
                 document.getElementById('adminPanel').classList.remove('ativo');
@@ -1101,10 +1051,17 @@
             }
         }
 
-        document.getElementById('formLoginPrincipal').addEventListener('submit', fazerLoginPrincipal);
+        // Evento do botão de login (NÃO USA SUBMIT)
+        document.getElementById('btnLoginPrincipal').addEventListener('click', fazerLoginPrincipal);
+        
+        // Enter no campo de login também funciona
         document.getElementById('loginUserPrincipal').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('formLoginPrincipal').dispatchEvent(new Event('submit'));
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                fazerLoginPrincipal();
+            }
         });
+        
         document.getElementById('btnSair').addEventListener('click', fazerLogout);
 
         // ==========================================
@@ -2172,7 +2129,6 @@
         async function inicializar() {
             console.log('[INIT] Iniciando aplicação versão ' + APP_VERSION);
             
-            // Verifica atualização
             verificarAtualizacao();
 
             var grid = document.getElementById('agendaGrid');
