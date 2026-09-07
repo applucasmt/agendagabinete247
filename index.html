@@ -900,7 +900,7 @@
         // ==========================================
         // FUNÇÕES DE FORMATAÇÃO
         // ==========================================
-        function formatarDataVisao(dataStr) {
+       function formatarDataVisao(dataStr) {
     if (!dataStr) return '';
     
     // Se for string no formato GMT
@@ -918,6 +918,15 @@
     if (dataStr.includes(' ')) return dataStr.split(' ')[0];
     return dataStr;
 }
+
+        function formatarDataBR(dataStr) {
+            var d = formatarDataVisao(dataStr);
+            if (!d) return '';
+            var partes = d.split('-');
+            if (partes.length === 3) return partes[2] + '/' + partes[1] + '/' + partes[0];
+            return d;
+        }
+
         function formatarHoraVisao(horaStr) {
             if (!horaStr) return '--:--';
             if (horaStr === null || horaStr === undefined) return '--:--';
