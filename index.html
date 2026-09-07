@@ -26,7 +26,7 @@
     <script>
         // FORÇA O NAVEGADOR A NÃO USAR CACHE ANTIGO
         (function forcarLimpezaCache() {
-            const APP_VERSION = '3.0.4';
+            const APP_VERSION = '3.0.5';
             const versaoSalva = localStorage.getItem('app_version');
             
             if (!versaoSalva || versaoSalva !== APP_VERSION) {
@@ -65,11 +65,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; position: relative; }
 
-        /* === NOVO: Esconde conteúdo até login === */
-        #conteudo-principal { display: none; width: 100%; }
+        /* === CONTEÚDO PRINCIPAL === */
+        #conteudo-principal { display: none; width: 100%; max-width: 1200px; }
         #conteudo-principal.visivel { display: block; }
 
-        /* === NOVO: Login Obrigatório === */
+        /* === LOGIN OBRIGATÓRIO === */
         .login-overlay-principal {
             position: fixed;
             top: 0;
@@ -95,31 +95,11 @@
             animation: fadeIn 0.4s ease;
             text-align: center;
         }
-        .login-modal-principal .logo {
-            font-size: 3.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .login-modal-principal h2 {
-            color: #1a1a2e;
-            font-size: 1.8rem;
-            margin-bottom: 0.3rem;
-        }
-        .login-modal-principal .subtitle {
-            color: #6b7280;
-            font-size: 0.95rem;
-            margin-bottom: 2rem;
-        }
-        .login-modal-principal .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .login-modal-principal .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            font-size: 0.95rem;
-            margin-bottom: 0.5rem;
-            text-align: left;
-        }
+        .login-modal-principal .logo { font-size: 3.5rem; margin-bottom: 0.5rem; }
+        .login-modal-principal h2 { color: #1a1a2e; font-size: 1.8rem; margin-bottom: 0.3rem; }
+        .login-modal-principal .subtitle { color: #6b7280; font-size: 0.95rem; margin-bottom: 2rem; }
+        .login-modal-principal .form-group { margin-bottom: 1.5rem; }
+        .login-modal-principal .form-group label { display: block; font-weight: 600; color: #333; font-size: 0.95rem; margin-bottom: 0.5rem; text-align: left; }
         .login-modal-principal .form-group input {
             width: 100%;
             padding: 0.9rem 1.2rem;
@@ -150,15 +130,10 @@
             margin-top: 0.5rem;
         }
         .login-modal-principal .btn-login:hover { background: #007a2f; }
-        .login-modal-principal .erro {
-            color: #dc2626;
-            font-size: 0.9rem;
-            margin-top: 0.8rem;
-            display: none;
-        }
+        .login-modal-principal .erro { color: #dc2626; font-size: 0.9rem; margin-top: 0.8rem; display: none; }
         .login-modal-principal .erro.visible { display: block; }
 
-        /* === NOVO: Badge usuário logado === */
+        /* === BADGE USUÁRIO === */
         .usuario-logado {
             background: #e8f5e9;
             padding: 0.3rem 1rem;
@@ -183,7 +158,7 @@
         }
         .usuario-logado .sair-btn:hover { background: #fee2e2; }
 
-        /* === NOVO: Banner de atualização === */
+        /* === BANNER DE ATUALIZAÇÃO === */
         .update-banner {
             display: none;
             position: fixed;
@@ -228,27 +203,105 @@
         }
         .update-banner .btn-ignorar:hover { background: #854d0e; color: white; }
 
-        /* === MANTER EXATAMENTE O SEU CSS ORIGINAL ABAIXO === */
-        .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
+        /* === CONTADOR DE ATUALIZAÇÃO === */
+        .atualizacao-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: transparent;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        .atualizacao-container .contador {
+            background: #ffffff;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #009739;
+        }
+        .atualizacao-container .contador .tempo {
+            font-variant-numeric: tabular-nums;
+            min-width: 50px;
+            display: inline-block;
+            text-align: center;
+        }
+        .atualizacao-container .btn-atualizar-manual {
+            background: #e8f5e9;
+            color: #009739;
+            border: 1.5px solid #009739;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+        }
+        .atualizacao-container .btn-atualizar-manual:hover {
+            background: #009739;
+            color: white;
+        }
+
+        /* === HEADER === */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .header-right { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
         h1 { color: #1a1a2e; font-weight: 700; letter-spacing: -0.5px; font-size: 1.8rem; }
         h1 .destaque { color: #009739; }
-        .btn-notificacoes { background: #fef08a; color: #854d0e; border: 1px solid #fde047; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; display: none; }
+        .btn-notificacoes {
+            background: #fef08a; color: #854d0e; border: 1px solid #fde047;
+            padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; display: flex; align-items: center;
+            gap: 0.4rem; transition: all 0.2s; display: none;
+        }
         .btn-notificacoes:hover { background: #fde047; transform: scale(1.05); }
-        .btn-toggle-ui { background: #ffffff; color: #1a1a2e; border: 1.5px solid #d1d5db; padding: 0.7rem 1.5rem; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 1rem; width: 100%; max-width: 1200px; }
+
+        /* === BOTÕES TOGGLE === */
+        .btn-toggle-ui {
+            background: #ffffff; color: #1a1a2e; border: 1.5px solid #d1d5db;
+            padding: 0.7rem 1.5rem; border-radius: 12px; font-size: 0.95rem;
+            font-weight: 600; cursor: pointer; display: inline-flex; align-items: center;
+            justify-content: center; gap: 0.5rem; transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 1rem;
+            width: 100%;
+        }
         .btn-toggle-ui:hover { background: #f9fafb; border-color: #009739; color: #009739; }
-        
-        .share-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; width: 100%; max-width: 1200px; margin-bottom: 1rem; }
-        .share-buttons .btn-share { 
-            padding: 0.6rem 1.5rem; 
-            border-radius: 12px; 
-            border: none; 
-            font-weight: 600; 
-            font-size: 0.9rem; 
-            cursor: pointer; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 0.5rem; 
-            transition: all 0.2s; 
+
+        /* === SHARE BUTTONS === */
+        .share-buttons {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .share-buttons .btn-share {
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
             flex: 1;
             justify-content: center;
             background: #ffffff;
@@ -263,28 +316,110 @@
         .share-buttons .btn-share.copiar { background: #3b82f6; color: white; border-color: #3b82f6; }
         .share-buttons .btn-share.copiar:hover { background: #2563eb; }
 
-        .calendar-nav { display: flex; flex-direction: column; width: 100%; max-width: 1200px; background: #ffffff; border-radius: 16px; padding: 1.2rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
-        .month-selector-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #f0f2f5; padding-bottom: 1rem; }
-        .month-selector-container input[type="month"] { border: none; background: transparent; font-size: 1.3rem; font-weight: 700; color: #1a1a2e; outline: none; cursor: pointer; color: #009739; }
-        .contador { font-size: 0.9rem; color: #6b7280; background: #f3f4f6; padding: 0.3rem 1rem; border-radius: 20px; font-weight: 600; }
-        .days-carousel { display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        /* === CALENDÁRIO === */
+        .calendar-nav {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+        .month-selector-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #f0f2f5;
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .month-selector-container input[type="month"] {
+            border: none;
+            background: transparent;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            outline: none;
+            cursor: pointer;
+            color: #009739;
+        }
+        .contador {
+            font-size: 0.9rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .days-carousel {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            flex-wrap: nowrap;
+        }
         .days-carousel::-webkit-scrollbar { height: 6px; }
         .days-carousel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-        .day-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 65px; height: 80px; padding: 0.5rem; border-radius: 14px; border: 1.5px solid #e5e7eb; background: #ffffff; cursor: pointer; transition: all 0.2s; position: relative; flex-shrink: 0; }
+        .day-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 55px;
+            height: 70px;
+            padding: 0.4rem;
+            border-radius: 12px;
+            border: 1.5px solid #e5e7eb;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            flex-shrink: 0;
+        }
         .day-tab:hover { border-color: #009739; background: #f0fdf4; }
         .day-tab.active { background: #009739; border-color: #009739; color: #ffffff; box-shadow: 0 4px 10px rgba(0,151,57,0.3); }
-        .day-tab .day-name { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
+        .day-tab .day-name { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: #6b7280; }
         .day-tab.active .day-name { color: #dcfce7; }
-        .day-tab .day-num { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
+        .day-tab .day-num { font-size: 1.2rem; font-weight: 800; color: #1a1a2e; margin-top: 2px; line-height: 1; }
         .day-tab.active .day-num { color: #ffffff; }
-        .day-tab .event-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; position: absolute; bottom: 6px; display: none; }
+        .day-tab .event-dot {
+            width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;
+            position: absolute; bottom: 4px; display: none;
+        }
         .day-tab.has-event .event-dot { display: block; }
         .day-tab.active.has-event .event-dot { background: #ffffff; }
-        .day-tab .hoje-label { font-size: 0.5rem; font-weight: 700; color: #009739; margin-top: -2px; }
+        .day-tab .hoje-label { font-size: 0.45rem; font-weight: 700; color: #009739; margin-top: -2px; }
         .day-tab.active .hoje-label { color: #dcfce7; }
-        .agenda-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1200px; margin-top: 1rem; }
-        
-        .card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 1.2rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; border-left: 6px solid #009739; display: flex; gap: 1.2rem; align-items: flex-start; }
+
+        /* === GRID DE AGENDA === */
+        .agenda-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* === CARDS === */
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            border-left: 6px solid #009739;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            width: 100%;
+        }
         .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12); }
         
         .card.status-concluido { border-left-color: #16a34a; }
@@ -307,34 +442,116 @@
         .card.status-padrao .card-status-badge { background: #00973915; color: #009739; }
         .card.status-padrao .card-horario { color: #009739; }
 
-        .card-date-box { min-width: 70px; height: 75px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #c8e6c9; }
-        .card-date-box .dia { font-size: 2rem; font-weight: 800; line-height: 1; }
-        .card-date-box .mes { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-top: 3px; letter-spacing: 1px; }
-        .card-content { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
-        .card-titulo { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-data-range { font-size: 0.85rem; color: #555; display: flex; align-items: center; gap: 0.3rem; }
-        .card-horario { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
-        .card-local { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-date-box {
+            min-width: 60px;
+            height: 65px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #c8e6c9;
+        }
+        .card-date-box .dia { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+        .card-date-box .mes { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px; }
+        .card-content { flex: 1; display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+        .card-titulo { font-size: 1rem; font-weight: 700; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-data-range { font-size: 0.8rem; color: #555; display: flex; align-items: center; gap: 0.3rem; }
+        .card-horario { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+        .card-local { font-size: 0.8rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; flex-wrap: wrap; }
-        .card-actions .btn-mapa { padding: 0.3rem 0.8rem; background: #e8f5e9; color: #009739; border: 1.5px solid #009739; border-radius: 20px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .card-actions .btn-mapa {
+            padding: 0.2rem 0.8rem;
+            background: #e8f5e9;
+            color: #009739;
+            border: 1.5px solid #009739;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
         .card-actions .btn-mapa:hover { background: #009739; color: white; transform: scale(1.05); }
-        .card-status-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.8rem; border-radius: 20px; align-self: flex-start; }
-        .card-por { font-size: 0.7rem; color: #888; font-style: italic; margin-top: 0.2rem; }
+        .card-status-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.15rem 0.7rem;
+            border-radius: 20px;
+            align-self: flex-start;
+        }
+        .card-por { font-size: 0.65rem; color: #888; font-style: italic; margin-top: 0.1rem; }
         .sem-resultados { grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: #6b7280; font-size: 1.1rem; }
-        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 999; padding: 1rem; }
+
+        /* === POPUP === */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            padding: 1rem;
+        }
         .popup-overlay.ativo { display: flex; }
-        .popup { background: #ffffff; border-radius: 24px; max-width: 480px; width: 100%; padding: 2rem 2rem 1.8rem; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.2s ease; position: relative; max-height: 90vh; overflow-y: auto; }
+        .popup {
+            background: #ffffff;
+            border-radius: 24px;
+            max-width: 480px;
+            width: 100%;
+            padding: 2rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.2s ease;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .popup-close { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.8rem; line-height: 1; background: none; border: none; color: #888; cursor: pointer; transition: color 0.1s; }
+        .popup-close {
+            position: absolute;
+            top: 0.8rem;
+            right: 1rem;
+            font-size: 1.8rem;
+            line-height: 1;
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.1s;
+        }
         .popup-close:hover { color: #1a1a2e; }
-        .popup h2 { color: #1a1a2e; font-size: 1.6rem; margin-bottom: 1.2rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 0.6rem; padding-right: 2rem; }
-        .popup-info { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.8rem; }
-        .popup-info p { display: flex; align-items: baseline; gap: 0.5rem; font-size: 1rem; color: #222; }
-        .popup-info strong { min-width: 90px; color: #555; font-weight: 500; flex-shrink: 0; }
-        .popup-descricao-text { background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem; }
-        .popup-status { display: inline-block; padding: 0.2rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
-        .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1.5rem; }
-        .btn { padding: 0.6rem 1.4rem; border-radius: 30px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.15s, transform 0.1s; flex: 1 0 auto; background: #f0f2f5; color: #1a1a2e; }
+        .popup h2 { color: #1a1a2e; font-size: 1.4rem; margin-bottom: 1rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 0.5rem; padding-right: 2rem; }
+        .popup-info { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .popup-info p { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.95rem; color: #222; flex-wrap: wrap; }
+        .popup-info strong { min-width: 80px; color: #555; font-weight: 500; flex-shrink: 0; }
+        .popup-descricao-text { background: #f9fafb; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.9rem; color: #374151; white-space: pre-wrap; margin-top: 0.2rem; }
+        .popup-status { display: inline-block; padding: 0.15rem 1rem; border-radius: 30px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .popup-por { font-size: 0.75rem; color: #888; font-style: italic; margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px dashed #e5e7eb; }
+        .popup-acoes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 1rem; }
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            flex: 1 0 auto;
+            background: #f0f2f5;
+            color: #1a1a2e;
+        }
         .btn:hover { transform: scale(0.97); }
         .btn-cancelar { background: #fee2e2; color: #b91c1c; }
         .btn-cancelar:hover { background: #fecaca; }
@@ -346,113 +563,516 @@
         .btn-fechar:hover { background: #d1d5db; }
         .btn-mapa-popup { background: #e8f5e9; color: #009739; border: 2px solid #009739; flex: 1; }
         .btn-mapa-popup:hover { background: #009739; color: white; }
-        .chat-button { position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 50%; background: #009739; color: white; border: none; font-size: 1.8rem; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); transition: all 0.3s ease; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+
+        /* === CHAT === */
+        .chat-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #009739;
+            color: white;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .chat-button:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5); }
-        .chat-button .badge { position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-        .chat-window { position: fixed; bottom: 5.5rem; right: 2rem; width: 380px; max-width: calc(100vw - 2rem); height: 500px; max-height: calc(100vh - 8rem); background: #ffffff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); display: none; flex-direction: column; z-index: 1001; overflow: hidden; animation: slideUp 0.3s ease; }
+        .chat-button .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .chat-window {
+            position: fixed;
+            bottom: 5.5rem;
+            right: 2rem;
+            width: 380px;
+            max-width: calc(100vw - 2rem);
+            height: 500px;
+            max-height: calc(100vh - 8rem);
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 1001;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .chat-window.aberto { display: flex; }
-        .chat-header { background: #009739; color: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .chat-header {
+            background: #009739;
+            color: white;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
         .chat-header h3 { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
-        .chat-header .status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 400; opacity: 0.9; }
+        .chat-header .status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; font-weight: 400; opacity: 0.9; }
         .chat-header .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         .chat-header .close-chat { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; padding: 0 0.3rem; }
         .chat-header .close-chat:hover { opacity: 1; }
-        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; background: #f9fafb; }
-        .chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; animation: messageIn 0.3s ease; }
+        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; background: #f9fafb; }
+        .chat-messages .message { max-width: 85%; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
         .chat-messages .message.bot { background: #e8f5e9; color: #1a1a2e; align-self: flex-start; border-bottom-left-radius: 4px; }
         .chat-messages .message.user { background: #009739; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .chat-messages .message .time { font-size: 0.65rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
+        .chat-messages .message .time { font-size: 0.6rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
         .chat-messages .message.bot .time { color: #555; }
         .chat-messages .message.user .time { color: rgba(255,255,255,0.7); }
-        .chat-input-area { padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; flex-shrink: 0; }
-        .chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .chat-input-area {
+            padding: 0.6rem 1rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 0.6rem;
+            background: white;
+            flex-shrink: 0;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
         .chat-input-area input:focus { border-color: #009739; }
-        .chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap; }
+        .chat-input-area button {
+            padding: 0.5rem 1.2rem;
+            background: #009739;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
         .chat-input-area button:hover { background: #007a2f; }
-        .footer { margin-top: 3rem; padding: 1.5rem 0 0.5rem 0; width: 100%; max-width: 1200px; border-top: 2px solid #e5e7eb; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .footer .lock-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem 0.8rem; border-radius: 8px; transition: background 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; }
+
+        /* === FOOTER === */
+        .footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0 0.5rem 0;
+            width: 100%;
+            border-top: 2px solid #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .footer .lock-btn {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
         .footer .lock-btn:hover { background: #f3f4f6; color: #1a1a2e; }
-        .footer .copyright { color: #9ca3af; font-size: 0.85rem; }
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 1rem; }
+        .footer .copyright { color: #9ca3af; font-size: 0.8rem; }
+
+        /* === LOGIN ADMIN === */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
         .login-overlay.ativo { display: flex; }
-        .login-modal { background: white; border-radius: 24px; padding: 2.5rem 2rem; max-width: 420px; width: 100%; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); animation: fadeIn 0.3s ease; position: relative; }
+        .login-modal {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease;
+            position: relative;
+        }
         .login-modal h2 { color: #1a1a2e; font-size: 1.5rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
         .login-modal .subtitle { color: #6b7280; font-size: 0.9rem; margin-bottom: 1.8rem; }
         .login-modal .form-group { margin-bottom: 1.2rem; }
         .login-modal .form-group label { display: block; font-weight: 500; color: #333; font-size: 0.9rem; margin-bottom: 0.3rem; }
-        .login-modal .form-group input { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none; background: #fafafa; }
+        .login-modal .form-group input {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            outline: none;
+            background: #fafafa;
+        }
         .login-modal .form-group input:focus { border-color: #009739; box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15); background: white; }
-        .login-modal .btn-login { width: 100%; padding: 0.8rem; background: #009739; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem; }
+        .login-modal .btn-login {
+            width: 100%;
+            padding: 0.8rem;
+            background: #009739;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+        }
         .login-modal .btn-login:hover { background: #007a2f; }
         .login-modal .erro { color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
         .login-modal .erro.visible { display: block; }
-        .admin-panel { display: none; background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 1200px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); animation: fadeIn 0.3s ease; }
+
+        /* === ADMIN PANEL === */
+        .admin-panel {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 100%;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            animation: fadeIn 0.3s ease;
+        }
         .admin-panel.ativo { display: block; }
-        .admin-panel .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; flex-wrap: wrap; }
-        .admin-panel .tab-btn { padding: 0.6rem 1.5rem; background: none; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; color: #6b7280; display: flex; align-items: center; gap: 0.5rem; }
+        .admin-panel .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .admin-panel .tab-btn {
+            padding: 0.5rem 1.5rem;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
         .admin-panel .tab-btn:hover { background: #f3f4f6; color: #1a1a2e; }
         .admin-panel .tab-btn.ativo { background: #e8f5e9; color: #009739; }
         .admin-panel .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .admin-panel .tab-content.ativo { display: block; }
-        .admin-panel h2 { color: #1a1a2e; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
-        .admin-panel h2 .admin-badge { background: #009739; color: white; font-size: 0.7rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-weight: 600; }
-        .admin-panel .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .admin-panel h2 {
+            color: #1a1a2e;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            font-size: 1.3rem;
+        }
+        .admin-panel h2 .admin-badge {
+            background: #009739;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .admin-panel .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
         .admin-panel .form-group { margin-bottom: 1rem; }
-        .admin-panel .form-group label { display: block; font-weight: 500; color: #333; font-size: 0.9rem; margin-bottom: 0.3rem; }
-        .admin-panel .form-group input, .admin-panel .form-group select, .admin-panel .form-group textarea { width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 0.95rem; transition: border-color 0.2s; outline: none; background: #fafafa; }
-        .admin-panel .form-group input:focus, .admin-panel .form-group select:focus, .admin-panel .form-group textarea:focus { border-color: #009739; box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15); background: white; }
+        .admin-panel .form-group label { display: block; font-weight: 500; color: #333; font-size: 0.85rem; margin-bottom: 0.3rem; }
+        .admin-panel .form-group input,
+        .admin-panel .form-group select,
+        .admin-panel .form-group textarea {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+            outline: none;
+            background: #fafafa;
+        }
+        .admin-panel .form-group input:focus,
+        .admin-panel .form-group select:focus,
+        .admin-panel .form-group textarea:focus {
+            border-color: #009739;
+            box-shadow: 0 0 0 3px rgba(0, 151, 57, 0.15);
+            background: white;
+        }
         .admin-panel .form-group textarea { resize: vertical; min-height: 60px; }
         .admin-panel .form-actions { display: flex; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; align-items: center; }
-        .admin-panel .btn-salvar { padding: 0.7rem 2rem; background: #009739; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
+        .admin-panel .btn-salvar {
+            padding: 0.6rem 2rem;
+            background: #009739;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
         .admin-panel .btn-salvar:hover { background: #007a2f; }
-        .admin-panel .btn-atualizar { padding: 0.7rem 2rem; background: #f59e0b; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
+        .admin-panel .btn-atualizar {
+            padding: 0.6rem 2rem;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
         .admin-panel .btn-atualizar:hover { background: #d97706; }
-        .admin-panel .btn-cancelar-admin { padding: 0.7rem 2rem; background: #f3f4f6; color: #555; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
+        .admin-panel .btn-cancelar-admin {
+            padding: 0.6rem 2rem;
+            background: #f3f4f6;
+            color: #555;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
         .admin-panel .btn-cancelar-admin:hover { background: #e5e7eb; }
-        .admin-panel .btn-fechar-admin { padding: 0.7rem 2rem; background: #ef4444; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; margin-left: auto; }
+        .admin-panel .btn-fechar-admin {
+            padding: 0.6rem 2rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+            margin-left: auto;
+        }
         .admin-panel .btn-fechar-admin:hover { background: #dc2626; }
-        .admin-panel .btn-editar { padding: 0.3rem 1rem; background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.8rem; }
-        .admin-panel .btn-editar:hover { background: #bfdbfe; }
-        .admin-panel .btn-excluir { padding: 0.3rem 1rem; background: #fee2e2; color: #b91c1c; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.8rem; }
-        .admin-panel .btn-excluir:hover { background: #fecaca; }
-        .admin-panel .lista-compromissos-admin { margin-top: 1rem; border-top: 2px solid #f0f2f5; padding-top: 1.5rem; }
-        .admin-panel .lista-compromissos-admin h3 { color: #1a1a2e; margin-bottom: 1rem; font-size: 1.1rem; }
-        .admin-panel .item-admin { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 1rem; background: #f9fafb; border-radius: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
-        .admin-panel .item-admin .info { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; flex: 1; }
-        .admin-panel .item-admin .info .titulo { font-weight: 600; color: #1a1a2e; }
-        .admin-panel .item-admin .info .data { color: #6b7280; font-size: 0.85rem; }
-        .admin-panel .item-admin .acoes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .admin-panel .full-width { grid-column: 1 / -1; }
-        .admin-panel .edit-indicator { background: #fef9c3; color: #92400e; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; margin-left: 0.5rem; }
-        .admin-chat-container { display: flex; flex-direction: column; height: 450px; background: #f9fafb; border-radius: 12px; overflow: hidden; }
-        .admin-chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; }
-        .admin-chat-messages .message { max-width: 85%; padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
+        .admin-panel .edit-indicator {
+            background: #fef9c3;
+            color: #92400e;
+            padding: 0.15rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+        .admin-panel .lista-compromissos-admin {
+            margin-top: 1rem;
+            border-top: 2px solid #f0f2f5;
+            padding-top: 1.5rem;
+        }
+        .admin-panel .lista-compromissos-admin h3 { color: #1a1a2e; margin-bottom: 1rem; font-size: 1rem; }
+        .admin-panel .item-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .admin-panel .item-admin .info { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; flex: 1; }
+        .admin-panel .item-admin .info .titulo { font-weight: 600; color: #1a1a2e; font-size: 0.9rem; }
+        .admin-panel .item-admin .info .data { color: #6b7280; font-size: 0.8rem; }
+        .admin-panel .item-admin .acoes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .admin-panel .btn-editar {
+            padding: 0.2rem 1rem;
+            background: #dbeafe;
+            color: #1e40af;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.75rem;
+        }
+        .admin-panel .btn-editar:hover { background: #bfdbfe; }
+        .admin-panel .btn-excluir {
+            padding: 0.2rem 1rem;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.75rem;
+        }
+        .admin-panel .btn-excluir:hover { background: #fecaca; }
+
+        /* === ADMIN CHAT === */
+        .admin-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            background: #f9fafb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .admin-chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+        .admin-chat-messages .message {
+            max-width: 85%;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
         .admin-chat-messages .message.user { background: #009739; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
         .admin-chat-messages .message.admin { background: #dbeafe; color: #1a1a2e; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .admin-chat-messages .message .time { font-size: 0.65rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
+        .admin-chat-messages .message .time { font-size: 0.6rem; opacity: 0.6; margin-top: 0.2rem; display: block; }
         .admin-chat-messages .message.user .time { color: rgba(255,255,255,0.7); }
         .admin-chat-messages .message.admin .time { color: #6b7280; }
-        .admin-chat-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af; text-align: center; padding: 2rem; }
+        .admin-chat-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            text-align: center;
+            padding: 2rem;
+        }
         .admin-chat-empty .icon { font-size: 3rem; margin-bottom: 0.5rem; }
-        .admin-chat-input-area { padding: 0.8rem 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.6rem; background: white; }
-        .admin-chat-input-area input { flex: 1; padding: 0.6rem 1rem; border: 1.5px solid #d1d5db; border-radius: 24px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .admin-chat-input-area {
+            padding: 0.6rem 1rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 0.6rem;
+            background: white;
+        }
+        .admin-chat-input-area input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
         .admin-chat-input-area input:focus { border-color: #009739; }
-        .admin-chat-input-area button { padding: 0.6rem 1.2rem; background: #009739; color: white; border: none; border-radius: 24px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap; }
+        .admin-chat-input-area button {
+            padding: 0.5rem 1.2rem;
+            background: #009739;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
         .admin-chat-input-area button:hover { background: #007a2f; }
-        .install-pwa { position: fixed; bottom: 6rem; right: 2rem; background: #009739; color: white; border: none; border-radius: 50px; padding: 0.8rem 1.5rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4); z-index: 999; display: none; align-items: center; gap: 0.5rem; animation: slideUp 0.3s ease; font-size: 0.9rem; }
+
+        /* === INSTALL PWA === */
+        .install-pwa {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            background: #009739;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 151, 57, 0.4);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideUp 0.3s ease;
+            font-size: 0.85rem;
+        }
         .install-pwa:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(0, 151, 57, 0.5); }
         .install-pwa.visible { display: flex !important; }
-        
-        .toast-message { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 500; z-index: 9999; animation: slideUp 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        
-        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 0; width: 100%; }
-        .loading-spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: #009739; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .notification-toast { border-radius: 12px !important; border-left: 4px solid #009739 !important; }
 
+        /* === TOAST === */
+        .toast-message {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 0.7rem 2rem;
+            border-radius: 12px;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* === LOADING === */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 0;
+            width: 100%;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #009739;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* === ERRO CONEXÃO === */
         .erro-conexao {
             text-align: center;
             padding: 3rem 1rem;
@@ -475,32 +1095,49 @@
         }
         .erro-conexao .btn-tentar:hover { background: #007a2f; }
 
-        @media (max-width: 640px) {
-            .month-selector-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
-            .popup { padding: 1.5rem; }
-            .popup-info p { flex-wrap: wrap; }
-            .popup-info strong { min-width: 70px; }
-            .header { flex-direction: column; align-items: center; text-align: center; }
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: stretch; text-align: center; }
+            .header-left, .header-right { justify-content: center; }
             h1 { font-size: 1.4rem; }
-            .chat-window { width: calc(100vw - 1.5rem); right: 0.75rem; bottom: 5rem; height: 70vh; }
-            .chat-button { width: 52px; height: 52px; font-size: 1.5rem; bottom: 1.2rem; right: 1.2rem; }
-            .admin-panel .form-row { grid-template-columns: 1fr; }
-            .admin-panel { padding: 1.2rem; }
-            .login-modal-principal { padding: 2rem 1.5rem; }
-            .login-modal-principal h2 { font-size: 1.4rem; }
-            .admin-panel .item-admin { flex-direction: column; align-items: flex-start; }
-            .admin-panel .item-admin .acoes { align-self: flex-end; }
-            .admin-panel .form-actions { flex-direction: column; }
-            .admin-panel .btn-fechar-admin { margin-left: 0; }
-            .card-actions { width: 100%; }
-            .card-actions .btn-mapa { flex: 1; justify-content: center; }
-            .admin-panel .tabs { flex-direction: column; }
-            .admin-panel .tab-btn { justify-content: center; }
-            .install-pwa { bottom: 5rem; right: 1rem; left: 1rem; justify-content: center; }
+            .month-selector-container { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+            .month-selector-container input[type="month"] { text-align: center; }
             .share-buttons { flex-direction: column; }
             .share-buttons .btn-share { flex: none; width: 100%; }
-            .update-banner { padding: 0.8rem 1rem; font-size: 0.9rem; }
-            .update-banner .btn-atualizar, .update-banner .btn-ignorar { padding: 0.4rem 1rem; font-size: 0.85rem; }
+            .admin-panel .form-row { grid-template-columns: 1fr; }
+            .admin-panel { padding: 1.2rem; }
+            .admin-panel .form-actions { flex-direction: column; }
+            .admin-panel .btn-fechar-admin { margin-left: 0; }
+            .admin-panel .tabs { flex-direction: column; }
+            .admin-panel .tab-btn { justify-content: center; }
+            .admin-panel .item-admin { flex-direction: column; align-items: flex-start; }
+            .admin-panel .item-admin .acoes { align-self: flex-end; }
+            .card { flex-direction: column; align-items: stretch; }
+            .card-date-box { align-self: center; min-width: 80px; height: 70px; }
+            .agenda-grid { grid-template-columns: 1fr; }
+            .popup { padding: 1.5rem; }
+            .popup-info p { flex-wrap: wrap; }
+            .popup-info strong { min-width: 60px; }
+            .chat-window { width: calc(100vw - 1.5rem); right: 0.75rem; bottom: 5rem; height: 70vh; }
+            .chat-button { width: 52px; height: 52px; font-size: 1.4rem; bottom: 1.2rem; right: 1.2rem; }
+            .login-modal-principal { padding: 2rem 1.5rem; }
+            .login-modal-principal h2 { font-size: 1.4rem; }
+            .day-tab { min-width: 45px; height: 60px; }
+            .day-tab .day-num { font-size: 1rem; }
+            .day-tab .day-name { font-size: 0.55rem; }
+            .atualizacao-container { font-size: 0.75rem; flex-wrap: wrap; justify-content: center; }
+            .install-pwa { bottom: 5rem; right: 1rem; left: 1rem; justify-content: center; }
+            .update-banner { padding: 0.8rem 1rem; font-size: 0.85rem; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 1rem 0.5rem; }
+            .calendar-nav { padding: 0.8rem 1rem; }
+            .card { padding: 0.8rem; }
+            .card-date-box { min-width: 60px; height: 60px; }
+            .card-date-box .dia { font-size: 1.3rem; }
+            .card-titulo { font-size: 0.9rem; }
+            .admin-panel { padding: 0.8rem; }
+            .popup { padding: 1rem; }
         }
     </style>
 </head>
@@ -513,7 +1150,7 @@
         <button class="btn-ignorar" id="btnIgnorarAtualizacao">Ignorar</button>
     </div>
 
-    <!-- LOGIN OBRIGATÓRIO PARA TODOS OS USUÁRIOS -->
+    <!-- LOGIN OBRIGATÓRIO -->
     <div class="login-overlay-principal" id="loginOverlayPrincipal">
         <div class="login-modal-principal">
             <div class="logo">📅</div>
@@ -528,21 +1165,32 @@
         </div>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL (escondido até o login) -->
+    <!-- CONTEÚDO PRINCIPAL -->
     <div id="conteudo-principal">
-        <div class="header">
-            <h1>
-                <span>Agenda</span>
-                <span class="destaque">Chico Guarnieri</span>
-            </h1>
-            <!-- BADGE DO USUÁRIO LOGADO -->
-            <span class="usuario-logado" id="usuarioLogadoBadge">
-                👤 <span id="nomeUsuarioExibido"></span>
-                <button class="sair-btn" id="btnSair">✕ Sair</button>
+        <div class="atualizacao-container">
+            <span style="color:#9ca3af;">🔄 Atualização automática em</span>
+            <span class="contador">
+                ⏱️ <span class="tempo" id="tempoAtualizacao">30:00</span>
             </span>
-            <button id="btnNotificacao" class="btn-notificacoes" title="Ativar Notificações no celular">
-                🔔 Ativar Notificações
-            </button>
+            <button class="btn-atualizar-manual" id="btnAtualizarManual">🔄 Atualizar agora</button>
+        </div>
+
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    <span>Agenda</span>
+                    <span class="destaque">Chico Guarnieri</span>
+                </h1>
+            </div>
+            <div class="header-right">
+                <span class="usuario-logado" id="usuarioLogadoBadge">
+                    👤 <span id="nomeUsuarioExibido"></span>
+                    <button class="sair-btn" id="btnSair">✕ Sair</button>
+                </span>
+                <button id="btnNotificacao" class="btn-notificacoes" title="Ativar Notificações no celular">
+                    🔔 Ativar Notificações
+                </button>
+            </div>
         </div>
 
         <button class="install-pwa" id="installPWA">📱 Instalar App</button>
@@ -558,9 +1206,7 @@
                 <input type="month" id="monthSelector" title="Escolha o Mês e Ano">
                 <span class="contador" id="contadorCompromissos">0 compromissos</span>
             </div>
-            <div class="days-carousel" id="daysCarousel">
-                <!-- Preenchido via JavaScript -->
-            </div>
+            <div class="days-carousel" id="daysCarousel"></div>
         </div>
 
         <div class="admin-panel" id="adminPanel">
@@ -576,7 +1222,6 @@
             </div>
 
             <div class="tab-content ativo" id="tabAgenda">
-                
                 <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
                     <button id="btnToggleAdminForm" class="btn-toggle-ui" style="margin-bottom:0; background: #e8f5e9; border-color: #009739; color: #009739;">➕ Adicionar Novo Compromisso</button>
                     <button id="btnGerarRelatorio" class="btn-toggle-ui" style="margin-bottom:0; background: #eef2ff; border-color: #3b82f6; color: #1d4ed8;">📄 Gerar Relatório PDF</button>
@@ -628,10 +1273,10 @@
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn-salvar" id="btnSalvar">➕ Adicionar Compromisso</button>
-                        <button type="button" class="btn-atualizar" id="btnAtualizar" style="display:none;">✏️ Atualizar Compromisso</button>
-                        <button type="button" class="btn-cancelar-admin" id="btnLimparForm">🔄 Limpar Formulário</button>
-                        <button type="button" class="btn-fechar-admin" id="btnFecharAdmin">🚪 Fechar Painel</button>
+                        <button type="submit" class="btn-salvar" id="btnSalvar">➕ Adicionar</button>
+                        <button type="button" class="btn-atualizar" id="btnAtualizar" style="display:none;">✏️ Atualizar</button>
+                        <button type="button" class="btn-cancelar-admin" id="btnLimparForm">🔄 Limpar</button>
+                        <button type="button" class="btn-fechar-admin" id="btnFecharAdmin">🚪 Fechar</button>
                     </div>
                 </form>
 
@@ -659,12 +1304,13 @@
         </div>
 
         <div class="agenda-grid" id="agendaGrid">
-            <div class="loading-container" id="loadingContainer">
+            <div class="loading-container">
                 <div class="loading-spinner"></div>
                 <p style="color: #6b7280;">Carregando compromissos...</p>
             </div>
         </div>
 
+        <!-- POPUP -->
         <div class="popup-overlay" id="popupOverlay">
             <div class="popup" id="popupCard">
                 <button class="popup-close" id="popupClose">&times;</button>
@@ -678,10 +1324,11 @@
                         <strong>📝 Descrição:</strong>
                         <div class="popup-descricao-text" id="popupDescricao">—</div>
                     </div>
-                    <p style="margin-top: 0.5rem;"><strong>📌 Status:</strong> <span class="popup-status" id="popupStatus">Pendente</span></p>
+                    <p style="margin-top: 0.3rem;"><strong>📌 Status:</strong> <span class="popup-status" id="popupStatus">Pendente</span></p>
+                    <div class="popup-por" id="popupPor"></div>
                 </div>
                 <div class="popup-acoes">
-                    <button class="btn btn-mapa-popup" id="btnMapaPopup">📍 Ver no Google Maps</button>
+                    <button class="btn btn-mapa-popup" id="btnMapaPopup">📍 Ver Mapa</button>
                     <button class="btn btn-cancelar" id="btnCancelar">✕ Cancelar</button>
                     <button class="btn btn-adiar" id="btnAdiar">⏳ Adiar</button>
                     <button class="btn btn-concluir" id="btnConcluir">✓ Concluir</button>
@@ -690,6 +1337,7 @@
             </div>
         </div>
 
+        <!-- ADIAR OVERLAY -->
         <div class="login-overlay" id="adiarOverlay">
             <div class="login-modal">
                 <h2>⏳ Adiar Compromisso</h2>
@@ -721,12 +1369,14 @@
             </div>
         </div>
 
+        <!-- FOOTER -->
         <div class="footer">
             <button class="lock-btn" id="lockBtn">🔒</button>
             <span class="copyright">© 2026 Agenda Chico Guarnieri - Todos os direitos reservados</span>
         </div>
     </div>
 
+    <!-- CHAT -->
     <button class="chat-button" id="chatButton" aria-label="Abrir chat de suporte">
         💬
         <span class="badge" id="userChatBadge" style="display:none;">1</span>
@@ -734,13 +1384,7 @@
 
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
-            <h3>
-                💬 Suporte
-                <span class="status">
-                    <span class="dot"></span>
-                    Online
-                </span>
-            </h3>
+            <h3>💬 Suporte <span class="status"><span class="dot"></span> Online</span></h3>
             <button class="close-chat" id="closeChat">✕</button>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
@@ -750,6 +1394,7 @@
         </div>
     </div>
 
+    <!-- LOGIN ADMIN -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-modal">
             <h2>🔐 Acesso Administrativo</h2>
@@ -774,9 +1419,10 @@
         // ==========================================
         // VERSÃO DO APP
         // ==========================================
-        const APP_VERSION = '3.0.4';
+        const APP_VERSION = '3.0.5';
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4';
+        const TEMPO_ATUALIZACAO = 30 * 60; // 30 minutos em segundos
 
         // ==========================================
         // DADOS GLOBAIS
@@ -789,6 +1435,9 @@
         let proximoId = 1;
         let compromissoAtual = null;
         let currentSelectedDate = 'ALL';
+        let tempoRestante = TEMPO_ATUALIZACAO;
+        let timerInterval = null;
+        let atualizando = false;
 
         const DADOS_EXEMPLO = [
             {
@@ -839,12 +1488,10 @@
         ];
 
         // ==========================================
-        // FUNÇÕES DE FORMATAÇÃO - DEFINIDAS PRIMEIRO
+        // FUNÇÕES DE FORMATAÇÃO
         // ==========================================
         function formatarDataVisao(dataStr) {
             if (!dataStr) return '';
-            
-            // Se for string no formato GMT
             if (typeof dataStr === 'string' && dataStr.includes('GMT')) {
                 var dataObj = new Date(dataStr);
                 if (!isNaN(dataObj.getTime())) {
@@ -854,7 +1501,6 @@
                     return ano + '-' + mes + '-' + dia;
                 }
             }
-            
             if (dataStr.includes('T')) return dataStr.split('T')[0];
             if (dataStr.includes(' ')) return dataStr.split(' ')[0];
             return dataStr;
@@ -922,7 +1568,85 @@
         }
 
         // ==========================================
-        // SISTEMA DE ATUALIZAÇÃO
+        // SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA
+        // ==========================================
+        function iniciarTimerAtualizacao() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            tempoRestante = TEMPO_ATUALIZACAO;
+            atualizarDisplayTempo();
+            
+            timerInterval = setInterval(function() {
+                tempoRestante--;
+                atualizarDisplayTempo();
+                
+                if (tempoRestante <= 0) {
+                    realizarAtualizacaoAutomatica();
+                }
+            }, 1000);
+        }
+
+        function atualizarDisplayTempo() {
+            var minutos = Math.floor(tempoRestante / 60);
+            var segundos = tempoRestante % 60;
+            var tempoFormatado = String(minutos).padStart(2, '0') + ':' + String(segundos).padStart(2, '0');
+            document.getElementById('tempoAtualizacao').textContent = tempoFormatado;
+        }
+
+        function realizarAtualizacaoAutomatica() {
+            if (atualizando) return;
+            atualizando = true;
+            
+            console.log('[ATUALIZAÇÃO] Iniciando atualização automática...');
+            
+            // Limpa cache
+            if ('caches' in window) {
+                caches.keys().then(function(keys) {
+                    keys.forEach(function(key) {
+                        caches.delete(key);
+                    });
+                });
+            }
+            
+            // Recarrega os dados
+            sincronizarAgenda().then(function() {
+                atualizando = false;
+                tempoRestante = TEMPO_ATUALIZACAO;
+                atualizarDisplayTempo();
+                showToast('🔄 Agenda atualizada automaticamente!', 3000);
+                console.log('[ATUALIZAÇÃO] Atualização concluída!');
+            }).catch(function() {
+                atualizando = false;
+                tempoRestante = TEMPO_ATUALIZACAO;
+                atualizarDisplayTempo();
+            });
+        }
+
+        function realizarAtualizacaoManual() {
+            if (atualizando) {
+                showToast('⏳ Atualização em andamento...', 2000);
+                return;
+            }
+            
+            Swal.fire({
+                title: '🔄 Atualizar Agenda',
+                text: 'Isso irá limpar o cache e buscar os dados mais recentes.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, atualizar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#009739'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    realizarAtualizacaoAutomatica();
+                }
+            });
+        }
+
+        document.getElementById('btnAtualizarManual').addEventListener('click', realizarAtualizacaoManual);
+
+        // ==========================================
+        // SISTEMA DE ATUALIZAÇÃO DE VERSÃO
         // ==========================================
         function verificarAtualizacao() {
             const versaoSalva = localStorage.getItem('app_version');
@@ -995,9 +1719,7 @@
         // LOGIN OBRIGATÓRIO
         // ==========================================
         function fazerLoginPrincipal() {
-            console.log('[LOGIN] Tentando fazer login...');
             var user = document.getElementById('loginUserPrincipal').value.trim();
-            console.log('[LOGIN] Usuário:', user);
 
             if (!user) {
                 var erro = document.getElementById('loginErroPrincipal');
@@ -1015,6 +1737,9 @@
             
             sessionStorage.setItem('usuarioAtual', user);
             
+            // Inicia o timer após o login
+            iniciarTimerAtualizacao();
+            
             Swal.fire({
                 title: 'Bem-vindo, ' + user + '!',
                 text: 'Você está visualizando a agenda.',
@@ -1024,12 +1749,12 @@
                 toast: true,
                 position: 'top-end'
             });
-            
-            console.log('[LOGIN] Login realizado com sucesso para:', user);
         }
 
         function fazerLogout() {
             if (!confirm('Tem certeza que deseja sair?')) return;
+            
+            if (timerInterval) clearInterval(timerInterval);
             
             usuarioAtual = '';
             sessionStorage.removeItem('usuarioAtual');
@@ -1184,7 +1909,7 @@
 
             var btnAll = document.createElement('div');
             btnAll.className = 'day-tab ' + (currentSelectedDate === 'ALL' ? 'active' : '');
-            btnAll.innerHTML = '<span class="day-name">MES</span><span class="day-num" style="font-size: 0.95rem; margin-top:6px;">Todos</span>';
+            btnAll.innerHTML = '<span class="day-name">MES</span><span class="day-num" style="font-size: 0.9rem; margin-top:4px;">Todos</span>';
             btnAll.onclick = function() { currentSelectedDate = 'ALL'; renderDaysCarousel(); aplicarFiltros(); };
             carousel.appendChild(btnAll);
 
@@ -1270,7 +1995,7 @@
                     var dataObj = new Date(formatarDataVisao(comp.dia) + 'T12:00:00');
                     if(!isNaN(dataObj)) { diaNum = String(dataObj.getDate()).padStart(2, '0'); mesNome = dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase(); }
                 }
-                var iconeDescricao = comp.descricao ? '<span title="Contém descrição" style="font-size: 0.8rem;">📝</span>' : '';
+                var iconeDescricao = comp.descricao ? '<span title="Contém descrição" style="font-size: 0.7rem;">📝</span>' : '';
                 var horaExibicao = formatarHoraVisao(comp.hora);
                 if (comp.horaFim) { var horaFimExibicao = formatarHoraVisao(comp.horaFim); horaExibicao = horaExibicao + ' às ' + horaFimExibicao; }
                 var porTexto = '';
@@ -1287,7 +2012,7 @@
                         '<div class="card-horario">🕒 ' + horaExibicao + '</div>' +
                         '<div class="card-local">📍 ' + (comp.local || 'Local não informado') + '</div>' +
                         statusBadge + porTexto +
-                        '<div class="card-actions">' + (temEndereco ? '<button class="btn-mapa" data-local="' + comp.local.replace(/"/g, '&quot;') + '">📍 Ver no Mapa</button>' : '') + '</div>' +
+                        '<div class="card-actions">' + (temEndereco ? '<button class="btn-mapa" data-local="' + (comp.local || '').replace(/"/g, '&quot;') + '">📍 Ver no Mapa</button>' : '') + '</div>' +
                     '</div>';
                 card.addEventListener('click', function(e) { if (e.target.classList.contains('btn-mapa')) return; abrirPopup(comp); });
                 var btnMapa = card.querySelector('.btn-mapa');
@@ -1506,7 +2231,7 @@
                     '<span class="data">📅 ' + strDataAdmin + ' | 🕒 ' + horaExibicao + '</span>' +
                     '<span class="data">📍 ' + (comp.local || 'Local nao informado') + '</span>' +
                     '<span class="data" style="color: #009739; font-weight: 600;">' + (comp.status || 'Pendente') + '</span>' +
-                    '<span class="data" style="color: #888; font-size: 0.75rem;">' + editadoInfo + '</span></div>' +
+                    '<span class="data" style="color: #888; font-size: 0.7rem;">' + editadoInfo + '</span></div>' +
                     '<div class="acoes"><button class="btn-editar" data-id="' + comp.id + '">✏️ Editar</button><button class="btn-excluir" data-id="' + comp.id + '">🗑️ Excluir</button></div>';
                 listaAdmin.appendChild(item);
                 item.querySelector('.btn-editar').addEventListener('click', function() { carregarParaEdicao(comp); });
@@ -1616,6 +2341,15 @@
                 } else { bgColor = '#fef9c3'; textColor = '#92400e'; }
             }
             ps.style.backgroundColor = bgColor; ps.style.color = textColor;
+            var porDiv = document.getElementById('popupPor');
+            var porTexto = '';
+            if (comp.editadoPor && comp.editadoPor.trim() !== '') {
+                porTexto = '✏️ Editado por <strong>' + comp.editadoPor + '</strong> em ' + formatarDataHoraParaExibicao(comp.editadoEm);
+            } else if (comp.criadoPor && comp.criadoPor.trim() !== '') {
+                porTexto = '📝 Criado por <strong>' + comp.criadoPor + '</strong> em ' + formatarDataHoraParaExibicao(comp.criadoEm);
+            }
+            porDiv.innerHTML = porTexto;
+            porDiv.style.display = porTexto ? 'block' : 'none';
             var temEndereco = comp.local && !comp.local.toLowerCase().includes('online') && !comp.local.toLowerCase().includes('virtual') && !comp.local.toLowerCase().includes('discord') && !comp.local.toLowerCase().includes('meet') && !comp.local.toLowerCase().includes('zoom');
             var btnMapaPopup = document.getElementById('btnMapaPopup');
             btnMapaPopup.style.display = temEndereco ? 'inline-block' : 'none';
@@ -1720,7 +2454,7 @@
         // FUNÇÕES DE COMPARTILHAMENTO
         // ==========================================
         function gerarTextoAgenda(periodo) {
-            periodo = periodo || 'all';
+            periodo = periodo || 'current';
             var lista = [];
             if (periodo === 'all') lista = compromissos.slice();
             else if (periodo === 'month') {
@@ -1893,7 +2627,7 @@
         });
 
         // ==========================================
-        // SISTEMA DE NOTIFICACOES
+        // NOTIFICAÇÕES
         // ==========================================
         function urlBase64ToUint8Array(base64String) {
             var padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -2118,6 +2852,7 @@
                 }
             } catch (error) { console.error('[SYNC] Erro:', error); }
             isSincronizandoAgenda = false;
+            return true;
         }
 
         // ==========================================
@@ -2168,6 +2903,7 @@
                     document.getElementById('loginOverlayPrincipal').classList.add('oculto');
                     document.getElementById('conteudo-principal').classList.add('visivel');
                     document.getElementById('nomeUsuarioExibido').textContent = userSalvo;
+                    iniciarTimerAtualizacao();
                 }
 
                 setInterval(function() {
@@ -2179,13 +2915,11 @@
                 
             } catch (error) {
                 console.error('[INIT] ❌ Erro:', error);
-                // Usa dados de exemplo
                 compromissos = DADOS_EXEMPLO;
                 proximoId = 4;
                 renderDaysCarousel();
                 aplicarFiltros();
                 
-                // Mostra o modo offline apenas se já tiver feito login
                 if (document.getElementById('conteudo-principal').classList.contains('visivel')) {
                     var grid2 = document.getElementById('agendaGrid');
                     grid2.innerHTML = '<div class="erro-conexao"><div class="icone">📡</div><p><strong>Modo offline</strong></p><p style="color: #6b7280; font-size: 0.95rem;">Exibindo dados de exemplo. Conecte-se à internet para sincronizar.</p><button class="btn-tentar" onclick="location.reload()">🔄 Tentar novamente</button></div>';
