@@ -26,7 +26,7 @@
     <script>
         // FORÇA O NAVEGADOR A NÃO USAR CACHE ANTIGO
         (function forcarLimpezaCache() {
-            const APP_VERSION = '3.0.3';
+            const APP_VERSION = '3.0.4';
             const versaoSalva = localStorage.getItem('app_version');
             
             if (!versaoSalva || versaoSalva !== APP_VERSION) {
@@ -774,7 +774,7 @@
         // ==========================================
         // VERSÃO DO APP
         // ==========================================
-        const APP_VERSION = '3.0.3';
+        const APP_VERSION = '3.0.4';
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBw-6qNMbjJv20PoRmzCOPU37qcRVz2XaPUtCox8kPaaSi5XldaCw8t61tVJx2oc6j/exec';
         const publicVapidKey = 'BParmwI8_pNiqJUPQ2iwJIADSBX_KKeq_SSL0Nbj-EUnl6Cmt626Fa5IliJFjaQxcWqTH7SVm9KyRzzX2ZZs0m4';
 
@@ -839,85 +839,26 @@
         ];
 
         // ==========================================
-        // SISTEMA DE ATUALIZAÇÃO
+        // FUNÇÕES DE FORMATAÇÃO - DEFINIDAS PRIMEIRO
         // ==========================================
-        function verificarAtualizacao() {
-            const versaoSalva = localStorage.getItem('app_version');
-            if (!versaoSalva) {
-                localStorage.setItem('app_version', APP_VERSION);
-                return;
-            }
-            if (versaoSalva !== APP_VERSION) {
-                document.getElementById('updateBanner').classList.add('visible');
-            }
-        }
-
-        function limparCacheERecarregar() {
-            if ('caches' in window) {
-                caches.keys().then(function(keys) {
-                    keys.forEach(function(key) {
-                        caches.delete(key);
-                    });
-                });
-            }
-            localStorage.clear();
-            sessionStorage.clear();
+        function formatarDataVisao(dataStr) {
+            if (!dataStr) return '';
             
-            document.getElementById('updateBanner').classList.remove('visible');
-            localStorage.setItem('app_version', APP_VERSION);
+            // Se for string no formato GMT
+            if (typeof dataStr === 'string' && dataStr.includes('GMT')) {
+                var dataObj = new Date(dataStr);
+                if (!isNaN(dataObj.getTime())) {
+                    var ano = dataObj.getFullYear();
+                    var mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+                    var dia = String(dataObj.getDate()).padStart(2, '0');
+                    return ano + '-' + mes + '-' + dia;
+                }
+            }
             
-            Swal.fire({
-                title: '🔄 Atualizando...',
-                text: 'O aplicativo será reiniciado com a nova versão.',
-                icon: 'info',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(function() {
-                window.location.reload(true);
-            });
+            if (dataStr.includes('T')) return dataStr.split('T')[0];
+            if (dataStr.includes(' ')) return dataStr.split(' ')[0];
+            return dataStr;
         }
-
-        document.getElementById('btnAtualizarApp').addEventListener('click', limparCacheERecarregar);
-        document.getElementById('btnIgnorarAtualizacao').addEventListener('click', function() {
-            document.getElementById('updateBanner').classList.remove('visible');
-            localStorage.setItem('app_version', APP_VERSION);
-        });
-
-        // ==========================================
-        // TOAST
-        // ==========================================
-        function showToast(mensagem, duracao) {
-            duracao = duracao || 3000;
-            var existing = document.querySelector('.toast-message');
-            if (existing) existing.remove();
-            var toast = document.createElement('div');
-            toast.className = 'toast-message';
-            toast.textContent = mensagem;
-            document.body.appendChild(toast);
-            setTimeout(function() { toast.remove(); }, duracao);
-        }
-
-        // ==========================================
-        // FUNÇÕES DE FORMATAÇÃO
-        // ==========================================
-       function formatarDataVisao(dataStr) {
-    if (!dataStr) return '';
-    
-    // Se for string no formato GMT
-    if (typeof dataStr === 'string' && dataStr.includes('GMT')) {
-        var dataObj = new Date(dataStr);
-        if (!isNaN(dataObj.getTime())) {
-            var ano = dataObj.getFullYear();
-            var mes = String(dataObj.getMonth() + 1).padStart(2, '0');
-            var dia = String(dataObj.getDate()).padStart(2, '0');
-            return ano + '-' + mes + '-' + dia;
-        }
-    }
-    
-    if (dataStr.includes('T')) return dataStr.split('T')[0];
-    if (dataStr.includes(' ')) return dataStr.split(' ')[0];
-    return dataStr;
-}
 
         function formatarDataBR(dataStr) {
             var d = formatarDataVisao(dataStr);
@@ -969,6 +910,62 @@
             return { ano: ano, mes: mes, dia: dia, yyyymm: ano + '-' + mes, yyyymmdd: ano + '-' + mes + '-' + dia };
         }
 
+        function showToast(mensagem, duracao) {
+            duracao = duracao || 3000;
+            var existing = document.querySelector('.toast-message');
+            if (existing) existing.remove();
+            var toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = mensagem;
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, duracao);
+        }
+
+        // ==========================================
+        // SISTEMA DE ATUALIZAÇÃO
+        // ==========================================
+        function verificarAtualizacao() {
+            const versaoSalva = localStorage.getItem('app_version');
+            if (!versaoSalva) {
+                localStorage.setItem('app_version', APP_VERSION);
+                return;
+            }
+            if (versaoSalva !== APP_VERSION) {
+                document.getElementById('updateBanner').classList.add('visible');
+            }
+        }
+
+        function limparCacheERecarregar() {
+            if ('caches' in window) {
+                caches.keys().then(function(keys) {
+                    keys.forEach(function(key) {
+                        caches.delete(key);
+                    });
+                });
+            }
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            document.getElementById('updateBanner').classList.remove('visible');
+            localStorage.setItem('app_version', APP_VERSION);
+            
+            Swal.fire({
+                title: '🔄 Atualizando...',
+                text: 'O aplicativo será reiniciado com a nova versão.',
+                icon: 'info',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(function() {
+                window.location.reload(true);
+            });
+        }
+
+        document.getElementById('btnAtualizarApp').addEventListener('click', limparCacheERecarregar);
+        document.getElementById('btnIgnorarAtualizacao').addEventListener('click', function() {
+            document.getElementById('updateBanner').classList.remove('visible');
+            localStorage.setItem('app_version', APP_VERSION);
+        });
+
         // ==========================================
         // COMUNICAÇÃO GOOGLE SHEETS
         // ==========================================
@@ -995,7 +992,7 @@
         }
 
         // ==========================================
-        // LOGIN OBRIGATÓRIO - CORRIGIDO COM REMOÇÃO DO FORM
+        // LOGIN OBRIGATÓRIO
         // ==========================================
         function fazerLoginPrincipal() {
             console.log('[LOGIN] Tentando fazer login...');
@@ -1011,14 +1008,11 @@
 
             usuarioAtual = user;
             
-            // Esconde login e mostra conteúdo
             document.getElementById('loginOverlayPrincipal').classList.add('oculto');
             document.getElementById('conteudo-principal').classList.add('visivel');
             
-            // Atualiza badge do usuário
             document.getElementById('nomeUsuarioExibido').textContent = user;
             
-            // Salva na sessão
             sessionStorage.setItem('usuarioAtual', user);
             
             Swal.fire({
@@ -1053,13 +1047,11 @@
             }
         }
 
-        // Evento do botão de login (NÃO USA SUBMIT)
         document.getElementById('btnLoginPrincipal').addEventListener('click', function(e) {
             e.preventDefault();
             fazerLoginPrincipal();
         });
         
-        // Enter no campo de login também funciona
         document.getElementById('loginUserPrincipal').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -1070,7 +1062,7 @@
         document.getElementById('btnSair').addEventListener('click', fazerLogout);
 
         // ==========================================
-        // LOGIN ADMIN (ORIGINAL)
+        // LOGIN ADMIN
         // ==========================================
         function abrirLogin() {
             document.getElementById('loginOverlay').classList.add('ativo');
@@ -1311,7 +1303,7 @@
         }
 
         // ==========================================
-        // ADMIN CRUD (ORIGINAL)
+        // ADMIN CRUD
         // ==========================================
         async function cadastrarCompromisso(e) {
             e.preventDefault();
@@ -1589,7 +1581,7 @@
         });
 
         // ==========================================
-        // POPUP (ORIGINAL)
+        // POPUP
         // ==========================================
         function abrirPopup(comp) {
             if (!comp) return;
@@ -2156,9 +2148,6 @@
                     console.log('[INIT] Nenhum dado do servidor, usando dados de exemplo...');
                     compromissos = DADOS_EXEMPLO;
                     proximoId = 4;
-                    if (document.getElementById('conteudo-principal').classList.contains('visivel')) {
-                        showToast('📱 Modo offline - usando dados de exemplo', 4000);
-                    }
                 }
 
                 var msg = await fetchGoogle('listar_chat');
@@ -2172,7 +2161,7 @@
                 aplicarFiltros();
                 atualizarChatUsuario();
 
-                // Verifica se já tem usuário na sessão (login obrigatório)
+                // Verifica se já tem usuário na sessão
                 var userSalvo = sessionStorage.getItem('usuarioAtual');
                 if (userSalvo) {
                     usuarioAtual = userSalvo;
@@ -2190,22 +2179,17 @@
                 
             } catch (error) {
                 console.error('[INIT] ❌ Erro:', error);
+                // Usa dados de exemplo
                 compromissos = DADOS_EXEMPLO;
                 proximoId = 4;
                 renderDaysCarousel();
                 aplicarFiltros();
                 
+                // Mostra o modo offline apenas se já tiver feito login
                 if (document.getElementById('conteudo-principal').classList.contains('visivel')) {
-                    var grid = document.getElementById('agendaGrid');
-                    grid.innerHTML = '<div class="erro-conexao"><div class="icone">📡</div><p><strong>Modo offline</strong></p><p style="color: #6b7280; font-size: 0.95rem;">Exibindo dados de exemplo. Conecte-se à internet para sincronizar.</p><button class="btn-tentar" onclick="location.reload()">🔄 Tentar novamente</button></div>';
+                    var grid2 = document.getElementById('agendaGrid');
+                    grid2.innerHTML = '<div class="erro-conexao"><div class="icone">📡</div><p><strong>Modo offline</strong></p><p style="color: #6b7280; font-size: 0.95rem;">Exibindo dados de exemplo. Conecte-se à internet para sincronizar.</p><button class="btn-tentar" onclick="location.reload()">🔄 Tentar novamente</button></div>';
                 }
-                
-                Swal.fire({
-                    title: '⚠️ Modo Offline',
-                    text: 'Não foi possível conectar ao servidor. Exibindo dados de exemplo.',
-                    icon: 'warning',
-                    confirmButtonText: 'OK'
-                });
             }
         }
 
